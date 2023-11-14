@@ -259,31 +259,20 @@
                       (set-clicked? (not clicked?)))}
    (str ns-name)])
 
-(defn namespace-information [zloc]
- [:div {:style {:padding "5 10"
-                :background :lightgreen
-                :color "#333"}}])
-   ;[:div [namespace-graph/view zloc]]])
-  ;;  (str "Required by: "
-  ;;       (clojure.string/join ", " 
-  ;;        (refactor/get-requires-by-namespace zloc)))])
-                                  
 
 (defn one-namespace [file-name zloc]
   (let [[clicked? set-clicked?] (react/useState false)
         style {:font-size "16px"
                :font-weight :bold
-               :cursor :pointer
-              } 
+               :cursor :pointer}
+               
         ns-name (rewrite/get-namespace-from-file zloc)]
     [:div
      [:div {:style style}
       [namespace-title ns-name set-clicked? clicked? file-name]
       ;
       (when clicked?
-        [:<>
-         [namespace-information zloc]
-         [forms-container (rewrite/get-forms-from-file zloc) ns-name]])]]))
+        [forms-container (rewrite/get-forms-from-file zloc) ns-name])]]))
 
 (defn namespaces [projects]
   (let [style {:display :flex
@@ -343,5 +332,5 @@
                    :color "#EEE"}}
      [title]
      
- ;[keyboard-shortcuts]
+     [namespace-graph/view]
      [namespaces  @(subscribe [:db/get [:parenoia :project]])]]))

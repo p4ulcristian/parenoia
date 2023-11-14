@@ -1,64 +1,77 @@
 (ns parenoia.namespace-graph
    (:require ["cytoscape" :as cytoscape]
+             ["vis" :as vis]
              ["react" :as react]
              [parenoia.refactor :as refactor]
              [re-frame.core :refer [subscribe]]))
 
-(def cyto-style 
- (clj->js 
-  [{:selector "node[id]"
-    :style {:background-color "#666"
-            :label            "data(id)"
-            :font-size 3}}
-   {:selector "edge"
-    :style {:width 1,
-            :line-color "orange"
-            :target-arrow-color "blue"
-            :target-arrow-shape "triangle"
-            :curve-style "bezier"}}]))
+(defn generate-node [id]
+  {:id id :label id})
 
+(defn generate-nodes [ids]
+  (mapv generate-node ids))
 
-(defn generate-cyto-node [id]
-  {:data {:id id}})
+(defn generate-edge [source-id target-id]
+  {:from source-id 
+   :to target-id})
 
-(defn generate-cyto-nodes [ids]
-  (mapv generate-cyto-node ids))
-
-(defn generate-cyto-edge [source-id target-id]
-  {:data {:id (str source-id " -> " target-id)
-          :source source-id 
-          :target target-id}})
-
-(defn generate-cyto-edges [ids target-id]
-  (mapv (fn [source-id] (generate-cyto-edge source-id target-id)) 
+(defn generate-edges [ids target-id]
+  (mapv (fn [source-id] (generate-edge source-id target-id)) 
         ids))
 
-(defn view [zloc]
-  (let [cyto-ref (react/useRef)
-        this-ns (refactor/get-ns zloc)
+(defn view []
+  (let [ref (react/useRef)
         files (map second @(subscribe [:db/get [:parenoia :project]]))
-        all-nodes (mapv (fn [a] (generate-cyto-node a)) 
+        all-nodes (mapv (fn [a] (generate-node a)) 
                         (sort (map refactor/get-ns files)))
         all-edges (vec (reduce concat 
                         (mapv (fn [file]  
                                (let [file-ns (refactor/get-ns file)
                                      required-by-this (refactor/get-requires-by-namespace file)
-                                     cyto-edges (generate-cyto-edges required-by-this (str file-ns))]
+                                     cyto-edges  (generate-edges required-by-this (str file-ns))]
                                    (vec cyto-edges)))
                              files)))
         all-elements (vec (concat all-nodes all-edges))]          
    (react/useEffect 
-     (fn []
-      (cytoscape (clj->js {:container (.-current cyto-ref)
-                           :style    cyto-style
-                           :elements all-elements}))
-                                     
-    
-                            
+     (fn [] 
+      (vis/Network. (.-current ref) #js {:nodes (vis/DataSet. (clj->js all-nodes)) 
+                                         :edges (vis/DataSet. (clj->js all-edges))} 
+                                    #js {})           
       (fn [])
-      #js []))
-   [:div {:ref cyto-ref
-          :style {:height "100vh"
+     #js []))
+   [:div {:ref ref
+          :style {:height "600px"
                   :width "100%"}}]))
-    ;(map (fn [a] [:div (str a)]) all-elements)]))      
+    ;(map (fn [a] [:div (str a)]) all-elements)])) 
+
+
+;; (def edges (vis/DataSet. (clj->js [{:from 1 :to 3}
+;;                                    {:from 1 :to 2}
+;;                                    {:from 2 :to 4}
+;;                                    {:from 2 :to 5}
+;;                                    {:from 3 :to 3}])))
+
+
+;; (def nodes (vis/DataSet. (clj->js [{:id 1 :label "node 1"}
+;;                                    {:id 2 :label "node 2"}
+;;                                    {:id 3 :label "node 3"}
+;;                                    {:id 4 :label "node 4"}
+;;                                    {:id 5 :label "node 5"}])))
+
+;; (def data (clj->js {:nodes nodes 
+;;                     :edges edges}))
+
+;; (def options (clj->js {}))
+
+;; (defn view [zloc]
+;;    (let [ref (react/useRef)]
+;;      (react/useEffect (fn []
+;;                         (vis/Network. (.-current ref) data options)
+;;                        (fn []))
+;;                       #js []) 
+;;      [:div 
+;;       {:style {:height 600
+;;                :width "100%"}
+;;         :ref ref}
+;;       "hello there"]))
     
