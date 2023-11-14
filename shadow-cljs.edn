@@ -1,0 +1,27 @@
+
+{:source-paths ["source-code"]
+ :dependencies [[cider/cider-nrepl "0.21.1"]]
+                ;[binaryage/devtools "1.0.6"]]
+ :builds {:frontend {:target :browser
+                     :output-dir "resources/frontend/js"
+                     :modules {:core {:init-fn core/start!}}
+                     :js-options  {:js-provider :external
+                                   :external-index "target/index.js"
+                                   :external-index-format :esm}
+                    
+                     :devtools         {:watch-dir "resources/frontend"
+                                        :after-load    core/start!
+                                        :preloads [devtools.preload]}}
+                  
+          :frontend-ready  {:modules            {:core {:init-fn core/start!}}
+                            :compiler-options   {:infer-externs :auto
+                                                 :optimizations      :advanced}
+                            :output-dir         "prod/resources/frontend/js"
+                            :target             :browser
+                            :js-options  {:js-provider :external
+                                          :external-index "target/index.js"
+                                          :external-index-format :esm}}
+  }}
+
+
+

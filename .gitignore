@@ -1,0 +1,16 @@
+
+node_modules/
+.shadow-cljs/
+.nrepl-port
+.clj-kondo
+.lsp
+.calva
+.cpcache
+.DS_Store
+resources/frontend/js
+resources/backend/core.js
+resources/backend/core.js
+prod
+target
+target/index.js
+.idea
