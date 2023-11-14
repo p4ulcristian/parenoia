@@ -44,7 +44,7 @@
 
 
 (defn get-project-structure []
-  (GET "/editor-data"
+  (GET "/files"
     {:with-credentials false
       :handler          (fn [e]
                          (let [processed-string (try (reader/read-string e)
@@ -80,7 +80,7 @@
  (fn [db [_]]
    (let [file-name (-> db :parenoia :selected-file)
          file      (z/root-string (get-in db [:parenoia :project file-name]))]           
-    (POST "http://127.0.0.1:3001"
+    (POST "/file"
      {:params {:path file-name 
                :content file}
       ;; :response-format    :text

@@ -15,8 +15,8 @@
   [config]
   (server/stop!)
   (server/start!)
-  (webpack-compile)
   (shadow/watch :frontend)
+  (webpack-compile)
   (editor/start)
   (println "Parenoia backend and frontend started"))
 

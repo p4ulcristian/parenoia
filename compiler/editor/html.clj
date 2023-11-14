@@ -4,12 +4,13 @@
 (defn head []
   [:head
    [:title "Parenoia"]
+   (include-css "css/normalize.css")
    (include-css "css/parenoia.css")])
 
 (defn page []
   (html5
     (head)
-    [:body {:class "body-container"}
+    [:body
      [:div#app "loading"]
      (include-js "/js/libs/node-modules.js")
      (include-js "/js/core.js")

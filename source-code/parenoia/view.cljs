@@ -129,8 +129,7 @@
                    ;w:color "#333"
                    :box-shadow style/box-shadow
                    :border-radius "10px"
-                   :padding "5 10"
-                   :min-width "20px"
+                   :padding "5px 10px"
                    :white-space :nowrap
                    :color (if selected?
                             (style/color [:selection :text-color])
@@ -252,7 +251,8 @@
      (map-indexed render-fn forms)]))
 
 (defn namespace-title [ns-name set-clicked? clicked? file-name]
-  [:div {:style {:padding "0 10"}
+  [:div {:style {:padding "0px 10px"
+                 :user-select "none"}
          :on-click (fn [e]
                       (dispatch [:db/set [:parenoia :selected-file] file-name])
                       (dispatch [:db/set [:parenoia :editable?] false])
@@ -273,10 +273,11 @@
   (let [[clicked? set-clicked?] (react/useState false)
         style {:font-size "16px"
                :font-weight :bold
-               :cursor :pointer} ns-name (rewrite/get-namespace-from-file zloc)]
+               :cursor :pointer
+              } 
+        ns-name (rewrite/get-namespace-from-file zloc)]
     [:div
-     [:div {
-            :style style}
+     [:div {:style style}
       [namespace-title ns-name set-clicked? clicked? file-name]
       ;
       (when clicked?

@@ -16,11 +16,16 @@
 (defn html-wrap [content]
       (request-wrap 200 "text/html" content))
 
+(defn string-wrap [content]
+      (request-wrap 200 "text/plain" content))
 
 (def app
   (reitit-ring/ring-handler
     (reitit-ring/router
-      [["/"      {:get {:handler  (fn [req] (html-wrap (html/page)))}}]])
+      [["/"      {:get  {:handler  (fn [req]  (html-wrap (html/page)))}}]
+       ["/file"  {:post {:handler  (fn [req]  (string-wrap (load-files/save-file (:body req))))}}]
+       ["/files" {:get  {:handler  (fn [req]  (string-wrap (str (load-files/project-structure))))}}]
+       ])
     (reitit-ring/routes
       (reitit-ring/create-resource-handler 
        {:path "/" :root "/frontend"})
