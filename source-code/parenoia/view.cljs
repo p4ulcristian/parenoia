@@ -8,6 +8,7 @@
             [parenoia.keyboard :as keyboard]
             [parenoia.namespace-graph :as namespace-graph]
             [parenoia.refactor :as refactor]
+            [parenoia.refactor-ui :as refactor-ui]
             [parenoia.rewrite :as rewrite]
             [parenoia.style :as style]
             [re-frame.core :refer [dispatch subscribe]]
@@ -259,7 +260,8 @@
   (let [[clicked? set-clicked?] (react/useState true)
         style {:font-size "16px"
                :font-weight :bold
-               :cursor :pointer}
+               :cursor :pointer
+               :padding-bottom "100px"}
 
         ns-name (rewrite/get-namespace-from-file zloc)]
     [:div
@@ -267,17 +269,6 @@
       (str file-path)
       [namespace-title ns-name set-clicked? clicked? file-path]
       [forms-container (rewrite/get-forms-from-file zloc) ns-name]]]))
-
-(defn namespaces [projects]
-  (let [style {:display :flex
-               :flex-direction :column
-               :gap "20px"}
-        sorted-projects (sort-by first projects)]
-    [:div {:style style}
-     (map (fn [[file-path zloc]]
-            ^{:key  file-path} [one-namespace file-path zloc])
-          ;[(first sorted-projects)]
-       sorted-projects)]))
 
 (defn title []
   (let [style {:font-weight :bold
@@ -324,9 +315,9 @@
            :style {:height "100vh"
                    :width "100vw"
                    :overflow-y "scroll"
-                   :position :fixed 
-                   :right 0 
-                   :top 0 
+                   :position :fixed
+                   :right 0
+                   :top 0
                    :z-index 10}}
      [title]
      ^{:key (str selected-file)} [one-namespace selected-file-path selected-file]]))
@@ -336,9 +327,9 @@
 
 (defn view []
   [:div {:style {:background "#333"
-                   :color "#EEE"
-                   :height "100vh" 
-                  :width "100vw"}}
+                 :color "#EEE"
+                 :height "100vh"
+                 :width "100vw"}}
    [namespace-graph/view]
-   [namespace-container]])
-   
+   [namespace-container]
+   [refactor-ui/view]])

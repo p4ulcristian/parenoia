@@ -6,5 +6,10 @@
 
 ;; Backend
 
-(def port 3000)
+(def port2 3000)
+
+(defn hello []
+  (str port2))
+
+  
 (def version "First")

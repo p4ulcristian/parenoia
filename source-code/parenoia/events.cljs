@@ -93,3 +93,21 @@
       :error-handler    (fn [e] (.log js/console e))}))
 
    db))
+
+
+(reg-event-db
+ :parenoia/refactor!
+ []
+ (fn [db [_ zloc]]
+   (let [file-name (-> db :parenoia :selected :file-path)
+         file      (z/root-string (get-in db [:parenoia :project file-name]))]           
+    (POST "/refactor"
+     {:params {:file-path file-name 
+               :position (z/position zloc)}
+      ;; :response-format    :text
+      ;; :format    :text
+       :handler          (fn [e]
+                           (println "Save: " e))
+      :error-handler    (fn [e] (.log js/console e))}))
+
+   db))
