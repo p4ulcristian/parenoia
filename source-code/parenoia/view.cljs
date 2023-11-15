@@ -18,7 +18,7 @@
 
 (defn load-effect []
   (react/useEffect
-    (fn []
+    (fn [] 
       (dispatch [:parenoia/get-files])
       (fn []))
     #js []))
@@ -260,8 +260,8 @@
    (str ns-name)])
 
 
-(defn one-namespace [file-name zloc]
-  (let [[clicked? set-clicked?] (react/useState false)
+(defn one-namespace [file-path zloc]
+  (let [[clicked? set-clicked?] (react/useState true)
         style {:font-size "16px"
                :font-weight :bold
                :cursor :pointer}
@@ -269,7 +269,7 @@
         ns-name (rewrite/get-namespace-from-file zloc)]
     [:div
      [:div {:style style}
-      [namespace-title ns-name set-clicked? clicked? file-name]
+      [namespace-title ns-name set-clicked? clicked? file-path]
       ;
       (when clicked?
         [forms-container (rewrite/get-forms-from-file zloc) ns-name])]]))
@@ -280,8 +280,8 @@
                :gap "20px"}
         sorted-projects (sort-by first projects)]
     [:div {:style style}
-     (map (fn [[file-name zloc]]
-            ^{:key  file-name} [one-namespace file-name zloc])
+     (map (fn [[file-path zloc]]
+            ^{:key  file-path} [one-namespace file-path zloc])
           ;[(first sorted-projects)]
        sorted-projects)]))
 
@@ -321,7 +321,9 @@
    [keyboard-shortcut "down" "select next node"]])
 
 (defn view []
-  (let [ref (react/useRef)]
+  (let [ref (react/useRef)
+        selected-file-path @(subscribe [:db/get [:parenoia :selected :file-path]])
+        selected-file @(subscribe [:db/get [:parenoia :project selected-file-path]])]
     (load-effect)
     (keyboard/effect ref)
     [:div {:ref ref
@@ -331,6 +333,7 @@
                    :background "#333"
                    :color "#EEE"}}
      [title]
-     
+     [one-namespace selected-file-path selected-file]
      [namespace-graph/view]
-     [namespaces  @(subscribe [:db/get [:parenoia :project]])]]))
+     ]))
+     ;[namespaces  @(subscribe [:db/get [:parenoia :project]])]]))

@@ -2,7 +2,6 @@
  (:require [re-frame.core :refer [dispatch subscribe]]
            [rewrite-clj.zip :as z]
            [rewrite-clj.paredit :as paredit]
-           [parenoia.rewrite :as rewrite]
            ["react" :as react]))
 
 

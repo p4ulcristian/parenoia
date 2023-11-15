@@ -5,8 +5,12 @@
    [rewrite-clj.node :as node]))
   
 
+
+(def default-path "source-code")
+(def experimental-path "/Users/paulcristian/projects/zgen/wizard/source-code")
+
 (defn get-all-files []
- (let [directory (clojure.java.io/file "source-code")
+ (let [directory (clojure.java.io/file default-path)
        dir? #(.isDirectory %)]
    (mapv #(.getPath %)
          (filter (comp not dir?)
