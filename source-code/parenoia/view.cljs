@@ -20,7 +20,7 @@
   (react/useEffect
     (fn [] 
       (dispatch [:parenoia/get-files])
-      (dispatch [:db/set [:parenoia :selected :file-path] "source-code/parenoia/form_interpreters.cljs"])
+      (dispatch [:db/set [:parenoia :selected :file-path] "/Users/paulcristian/projects/zgen/wizard/source-code/wizard/editor_overlays/layer/areas/area_items.cljs"])
      
       (fn []))
     #js []))
@@ -265,6 +265,7 @@
         ns-name (rewrite/get-namespace-from-file zloc)]
     [:div
      [:div {:style style}
+      (str file-path)
       [namespace-title ns-name set-clicked? clicked? file-path]
       [forms-container (rewrite/get-forms-from-file zloc) ns-name]]]))
 
@@ -314,7 +315,7 @@
    [keyboard-shortcut "up" "select prev node"]
    [keyboard-shortcut "down" "select next node"]])
 
-(defn view []
+(defn namespace-container []
   (let [ref (react/useRef)
         selected-file-path @(subscribe [:db/get [:parenoia :selected :file-path]])
         selected-file @(subscribe [:db/get [:parenoia :project selected-file-path]])]
@@ -327,7 +328,12 @@
                    :background "#333"
                    :color "#EEE"}}
      [title]
-     ^{:key (str selected-file)}[one-namespace selected-file-path selected-file]
-     [namespace-graph/view]]))
+     ^{:key (str selected-file)}[one-namespace selected-file-path selected-file]]))
+     ;[namespace-graph/view]]))
      
      ;[namespaces  @(subscribe [:db/get [:parenoia :project]])]]))
+
+(defn view []
+  [:div 
+   [namespace-container]
+   [namespace-graph/view]])

@@ -52,7 +52,10 @@
                           (dispatch
                            [:db/set [:parenoia :project]
                             (process-file-to-zloc 
-                             processed-string)])))
+                             processed-string)])
+                          (dispatch [:db/set [:parenoia :project-last-saved]
+                                            (process-file-to-zloc 
+                                             processed-string)])))
      :error-handler    (fn [e] (println "watdsakopdsakdl;as"))}))
 
 
