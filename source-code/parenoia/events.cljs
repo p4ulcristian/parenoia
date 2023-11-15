@@ -67,8 +67,7 @@
  :parenoia/set-file!
  [(undoable)]
  (fn [db [_ file zloc]]
-   (let [file-name (-> db :parenoia :selected-file)]
-    (println "MIZU VAN: " (z/string file))
+   (let [file-name (-> db :parenoia :selected :file-path)]
     (-> db 
       (assoc-in [:parenoia :project file-name] file)
       (assoc-in [:parenoia :selected-zloc] zloc)))))

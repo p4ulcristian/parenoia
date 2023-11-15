@@ -6,11 +6,11 @@
   
 
 
-(def default-path "source-code")
-(def experimental-path "/Users/paulcristian/projects/zgen/wizard/source-code")
+(def a-path "source-code")
+(def b-path "/Users/paulcristian/projects/zgen/wizard/source-code")
 
 (defn get-all-files []
- (let [directory (clojure.java.io/file default-path)
+ (let [directory (clojure.java.io/file a-path)
        dir? #(.isDirectory %)]
    (mapv #(.getPath %)
          (filter (comp not dir?)

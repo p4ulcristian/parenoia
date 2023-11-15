@@ -20,6 +20,8 @@
   (react/useEffect
     (fn [] 
       (dispatch [:parenoia/get-files])
+      (dispatch [:db/set [:parenoia :selected :file-path] "source-code/parenoia/form_interpreters.cljs"])
+     
       (fn []))
     #js []))
 
@@ -41,7 +43,8 @@
       (keyboard/check-key e "ArrowUp")
       (and (.-shiftKey e) (keyboard/check-key e "Enter"))
       (keyboard/check-key e " ")
-      (keyboard/check-key e "Backspace"))
+      (keyboard/check-key e "Backspace")
+      (keyboard/check-key e "m"))
     (.stopPropagation e)))
 
 (defn autofocus-input--unmount [current-ref zloc]
@@ -160,7 +163,6 @@
                         #js {:behavior "smooth"
                              :block "center"
                              :inline "center"}))
-
         (fn []))
       #js [selected?])
     [:div
@@ -228,12 +230,6 @@
             :position :relative
             :overflow-wrap "break-word"}}
    [sticky-function-header zloc index ns-name]
-
-  ;;  [:div {:style {:border "1px solid black"
-  ;;                 :width "100%"
-  ;;                 :height "10px"}}]
-   ;[:pre (str (z/string zloc))]
-
    [:div {:style {:display :flex
                   :gap "10px"
                   :flex-wrap :wrap
@@ -245,7 +241,7 @@
                :flex-direction :column
                :gap "20px"}
 
-        render-fn (fn [index form] [form-container form index ns-name])]
+        render-fn (fn [index form] ^{:key index}[form-container form index ns-name])]
     [:div {:style style
            :on-click (fn [e] (.stopPropagation e))}
      (map-indexed render-fn forms)]))
@@ -270,9 +266,7 @@
     [:div
      [:div {:style style}
       [namespace-title ns-name set-clicked? clicked? file-path]
-      ;
-      (when clicked?
-        [forms-container (rewrite/get-forms-from-file zloc) ns-name])]]))
+      [forms-container (rewrite/get-forms-from-file zloc) ns-name]]]))
 
 (defn namespaces [projects]
   (let [style {:display :flex
@@ -333,7 +327,7 @@
                    :background "#333"
                    :color "#EEE"}}
      [title]
-     [one-namespace selected-file-path selected-file]
-     [namespace-graph/view]
-     ]))
+     ^{:key (str selected-file)}[one-namespace selected-file-path selected-file]
+     [namespace-graph/view]]))
+     
      ;[namespaces  @(subscribe [:db/get [:parenoia :project]])]]))

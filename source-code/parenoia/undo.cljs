@@ -50,7 +50,7 @@
 (defn store-now!
   "Stores the value currently in app-db, so the user can later undo"
   [db]
-  (let [page-id             (-> db :parenoia :selected-file)
+  (let [page-id             (-> db :parenoia :selected :file-path)
         this-undo-list      (get @undo-list page-id [])
         this-editor-state   {:date      (.now js/Date)
                              :selection (get-in db [:parenoia :selected-zloc]) 
@@ -75,13 +75,13 @@
 (re-frame/reg-sub
  :parenoia/undos?                   ;;  usage:  (subscribe [:undos?])
  (fn [db _]
-   (let [page-id   (-> db :parenoia :selected-file)]
+   (let [page-id   (-> db :parenoia :selected :file-path)]
      (undos? page-id))))
 
 (re-frame/reg-sub
  :parenoia/redos?
  (fn [db _]
-   (let [page-id   (-> db :parenoia :selected-file)]
+   (let [page-id   (-> db :parenoia :selected :file-path)]
      (redos? page-id))))
 
 ;; -- event handlers  ----------------------------------------------------------------------------
@@ -129,7 +129,7 @@
 
 (defn undo-handler
   [db [_]]
-  (let [page-id   (-> db :parenoia :selected-file)]
+  (let [page-id   (-> db :parenoia :selected :file-path)]
      (println "undoing?"  (undos? page-id))
     (if-not (undos? page-id)
       db
@@ -137,7 +137,7 @@
 
 (defn redo-handler
   [db [_]]
-  (let [page-id   (-> db :parenoia :selected-file)]
+  (let [page-id   (-> db :parenoia :selected :file-path)]
     (if-not (redos? page-id)
       db
       (redo db page-id))))
