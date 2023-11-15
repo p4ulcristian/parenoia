@@ -6,6 +6,7 @@
             [parenoia.form-conditionals :as form-conditionals]
             [parenoia.form-interpreters  :as form-interpreters]
             [parenoia.keyboard :as keyboard]
+            [parenoia.namespace-graph :as namespace-graph]
             [parenoia.refactor :as refactor]
             [parenoia.rewrite :as rewrite]
             [parenoia.style :as style]
@@ -13,15 +14,14 @@
             [reagent.core :refer [atom]]
             [rewrite-clj.node :as znode]
             [rewrite-clj.parser :as zparser]
-            [parenoia.namespace-graph :as namespace-graph]
             [rewrite-clj.zip :as z]))
 
 (defn load-effect []
   (react/useEffect
-    (fn [] 
+    (fn []
       (dispatch [:parenoia/get-files])
       (dispatch [:db/set [:parenoia :selected :file-path] "/Users/paulcristian/projects/zgen/wizard/source-code/wizard/editor_overlays/layer/areas/area_items.cljs"])
-     
+
       (fn []))
     #js []))
 
@@ -241,7 +241,7 @@
                :flex-direction :column
                :gap "20px"}
 
-        render-fn (fn [index form] ^{:key index}[form-container form index ns-name])]
+        render-fn (fn [index form] ^{:key index} [form-container form index ns-name])]
     [:div {:style style
            :on-click (fn [e] (.stopPropagation e))}
      (map-indexed render-fn forms)]))
@@ -250,18 +250,17 @@
   [:div {:style {:padding "0px 10px"
                  :user-select "none"}
          :on-click (fn [e]
-                      (dispatch [:db/set [:parenoia :selected-file] file-name])
-                      (dispatch [:db/set [:parenoia :editable?] false])
-                      (set-clicked? (not clicked?)))}
+                     (dispatch [:db/set [:parenoia :selected-file] file-name])
+                     (dispatch [:db/set [:parenoia :editable?] false])
+                     (set-clicked? (not clicked?)))}
    (str ns-name)])
-
 
 (defn one-namespace [file-path zloc]
   (let [[clicked? set-clicked?] (react/useState true)
         style {:font-size "16px"
                :font-weight :bold
                :cursor :pointer}
-               
+
         ns-name (rewrite/get-namespace-from-file zloc)]
     [:div
      [:div {:style style}
@@ -325,15 +324,21 @@
            :style {:height "100vh"
                    :width "100vw"
                    :overflow-y "scroll"
-                   :background "#333"
-                   :color "#EEE"}}
+                   :position :fixed 
+                   :right 0 
+                   :top 0 
+                   :z-index 10}}
      [title]
-     ^{:key (str selected-file)}[one-namespace selected-file-path selected-file]]))
+     ^{:key (str selected-file)} [one-namespace selected-file-path selected-file]]))
      ;[namespace-graph/view]]))
-     
+
      ;[namespaces  @(subscribe [:db/get [:parenoia :project]])]]))
 
 (defn view []
-  [:div 
-   [namespace-container]
-   [namespace-graph/view]])
+  [:div {:style {:background "#333"
+                   :color "#EEE"
+                   :height "100vh" 
+                  :width "100vw"}}
+   [namespace-graph/view]
+   [namespace-container]])
+   

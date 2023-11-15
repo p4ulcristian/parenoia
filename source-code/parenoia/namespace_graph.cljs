@@ -62,12 +62,6 @@
   [:div {:ref ref 
           :style {:height "100vh" 
                   :width "100vw"
-                  :z-index 1000
-                  :position :fixed
-                  
-                  :right 0 
-                  :top 0
-                  :background "rgba(0,0,0,0.6)"
                   :border-radius "10px"}}
     [:> Graph {:graph graph :options options :events (events nodes)}]]))   
 
@@ -75,7 +69,13 @@
 
 (defn view-wrapper [content]
  (let [project-map? @(subscribe [:db/get [:parenoia :project-map?]])]
-  [:div {:style {:display (if project-map? :block :none)}}
+  [:div {:style {:position :fixed
+                  :right 0 
+                  :top 0
+                  :background "rgba(0,0,0,0.6)"
+                  :backdrop-filter (if project-map? "blur(10px)" "none" )
+                  :filter (if project-map? "none" "blur(10px)")
+                  :z-index (if project-map? 15 7)}}
     content]))
 
 

@@ -53,6 +53,7 @@
                            [:db/set [:parenoia :project]
                             (process-file-to-zloc 
                              processed-string)])
+                          (dispatch [:db/set [:parenoia :project-map?] true])
                           (dispatch [:db/set [:parenoia :project-last-saved]
                                             (process-file-to-zloc 
                                              processed-string)])))
@@ -80,7 +81,7 @@
  :parenoia/save!
  []
  (fn [db [_]]
-   (let [file-name (-> db :parenoia :selected-file)
+   (let [file-name (-> db :parenoia :selected :file-path)
          file      (z/root-string (get-in db [:parenoia :project file-name]))]           
     (POST "/file"
      {:params {:path file-name 

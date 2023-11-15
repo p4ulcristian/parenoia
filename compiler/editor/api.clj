@@ -4,6 +4,8 @@
             [editor.load-files :as load-files]
             [ring.middleware.reload :refer [wrap-reload]]
             [reitit.ring                  :as reitit-ring]
+            [ring.middleware.keyword-params :refer [wrap-keyword-params]]
+            [ring.middleware.params :refer [wrap-params]]
             [editor.html :as html]
             [ring.middleware.transit      :refer [wrap-transit-params]]))
 
@@ -23,16 +25,21 @@
   (reitit-ring/ring-handler
     (reitit-ring/router
       [["/"      {:get  {:handler  (fn [req]  (html-wrap (html/page)))}}]
-       ["/file"  {:post {:handler  (fn [req]  (string-wrap (load-files/save-file (:body req))))}}]
-       ["/files" {:get  {:handler  (fn [req]  (string-wrap (str (load-files/project-structure))))}}]
-       ])
+       ["/file"  {:post {:handler  (fn [req]  
+                                     (println "hello " req)
+                                     (string-wrap (load-files/save-file (:params req))))}}]
+       ["/files" {:get  {:handler  (fn [req]  (string-wrap (str (load-files/project-structure))))}}]])
+       
     (reitit-ring/routes
       (reitit-ring/create-resource-handler 
        {:path "/" :root "/frontend"})
-      (reitit-ring/create-default-handler))
+      )
     {:middleware
      (concat
-       [#(wrap-transit-params % {:opts {}})
+       [#(wrap-keyword-params %)
+        #(wrap-params %)
+        
+        #(wrap-transit-params % {:opts {}})
         #(wrap-reload %)])}))
         
 
