@@ -12,7 +12,8 @@
             [clojure-lsp.feature.move-form :as move-form]
             [clojure-lsp.db :as lsp-db]
             [editor.refactor :as refactor]
-            [rewrite-clj.zip :as z]))
+            [rewrite-clj.zip :as z]
+            [clojure.pprint :as pprint]))
 
 
 (defn request-wrap [status content-type body]
@@ -26,20 +27,12 @@
 (defn string-wrap [content]
       (request-wrap 200 "text/plain" content))
 
+
 (def app
   (reitit-ring/ring-handler
     (reitit-ring/router
       [["/"      {:get  {:handler  (fn [req]  (html-wrap (html/page)))}}]
-       ["/refactor"      {:post  {:handler  (fn [req]  (string-wrap (let [zloc (refactor/get-zloc (:params req))] 
-                                                                     (clojure-lsp/rename! {:from 'config/port
-                                                                                           :to 'configb/port2})
-                                                                    ;; (move-form zloc source-uri {:keys [db*] :as components} dest-filename)
-                                                                      (println "What is happening: "
-                                                                       (move-form/move-form zloc 
-                                                                        "file:///Users/paulcristian/projects/zgen/parenoia/source-code/config.cljs"
-                                                                        {:db* lsp-db/db*}
-                                                                        "file:///Users/paulcristian/projects/zgen/parenoia/source-code/configb.cljs")))))}}]
-                                                                              
+       ["/refactor"      {:get  {:handler  (fn [req]  (string-wrap (refactor/move-form 'test-a/a 'test-b/a)))}}]                                                                 
        ["/file"  {:post {:handler  (fn [req]  
                                      (println "hello " req)
                                      (string-wrap (load-files/save-file (:params req))))}}]
@@ -54,8 +47,8 @@
        [#(wrap-keyword-params %)
         #(wrap-params %)
         
-        #(wrap-transit-params % {:opts {}})
-        #(wrap-reload %)])}))
+        #(wrap-transit-params % {:opts {}})])}))
+        
         
 
 (defonce server (atom nil))
@@ -64,7 +57,9 @@
 
 (defn start []
   (reset! server
-          (http/run-server #'app {:port port :join? false}))
+          (http/run-server 
+           (wrap-reload #'app)
+           {:port port :join? false}))
   (println (str "Listening on port " port)))
 
 (defn stop []
