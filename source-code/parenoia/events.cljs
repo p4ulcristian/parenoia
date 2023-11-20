@@ -2,7 +2,7 @@
   (:require 
     [re-frame.core :refer [reg-event-db dispatch reg-sub]]
     [parenoia.undo :refer [undoable]]
-    [cljs.reader :as reader]
+    [cljs.reader :refer [read-string]]
     [parenoia.rewrite :as rewrite] 
     [ajax.core     :refer [GET POST]]
             
@@ -47,7 +47,7 @@
   (GET "/files"
     {:with-credentials false
       :handler          (fn [e]
-                         (let [processed-string (try (reader/read-string e)
+                         (let [processed-string (try (read-string e)
                                                      (catch js/Error e false))]
                           (dispatch
                            [:db/set [:parenoia :project]
@@ -96,18 +96,18 @@
 
 
 (reg-event-db
- :parenoia/refactor!
+ :parenoia/get-variable-info
  []
  (fn [db [_ zloc]]
    (let [file-name (-> db :parenoia :selected :file-path)
          file      (z/root-string (get-in db [:parenoia :project file-name]))]           
-    (POST "/refactor"
+    (POST "/variable-info"
      {:params {:file-path file-name 
                :position (z/position zloc)}
       ;; :response-format    :text
       ;; :format    :text
        :handler          (fn [e]
-                           (println "Save: " e))
+                           (dispatch [:db/set [:parenoia :variable-info] (read-string e)]))
       :error-handler    (fn [e] (.log js/console e))}))
 
    db))

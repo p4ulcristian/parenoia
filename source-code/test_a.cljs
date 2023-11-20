@@ -1,5 +1,10 @@
-(ns test-a)
+(ns test-a
+  (:require [cljs.reader :refer [read-string]]))
+  
 
+(defn b []
+ (str "b"))
 
 (defn a []
- (str "hello"))
+ (let [x 1]
+  (str read-string)))

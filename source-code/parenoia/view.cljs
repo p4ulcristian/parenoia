@@ -159,11 +159,14 @@
 
     (react/useEffect
       (fn []
-        (if selected? (.scrollIntoView
-                        (.-current ref)
-                        #js {:behavior "smooth"
-                             :block "center"
-                             :inline "center"}))
+        (if selected? 
+          (do
+           (dispatch [:parenoia/get-variable-info zloc])
+           (.scrollIntoView
+               (.-current ref)
+               #js {:behavior "smooth"
+                    :block "center"
+                    :inline "center"})))
         (fn []))
       #js [selected?])
     [:div

@@ -13,8 +13,13 @@
             [clojure-lsp.db :as lsp-db]
             [editor.refactor :as refactor]
             [rewrite-clj.zip :as z]
-            [clojure.pprint :as pprint]))
-
+            [clojure.pprint :as pprint]
+            [clojure-lsp.queries :as lsp-queries]
+            [clojure.core.async :as async]
+            [clojure.java.io :as io]
+            [editor.utils :as utils]
+            [clojure-lsp.internal-api :as internal-api]))
+            
 
 (defn request-wrap [status content-type body]
       {:status  status
@@ -27,12 +32,22 @@
 (defn string-wrap [content]
       (request-wrap 200 "text/plain" content))
 
+(refactor/move-form 'test-a/a 'test-b/a)
 
 (def app
   (reitit-ring/ring-handler
     (reitit-ring/router
-      [["/"      {:get  {:handler  (fn [req]  (html-wrap (html/page)))}}]
-       ["/refactor"      {:get  {:handler  (fn [req]  (string-wrap (refactor/move-form 'test-a/a 'test-b/a)))}}]                                                                 
+      [["/"           {:get  {:handler  (fn [req]  (html-wrap (html/page)))}}]
+       ["/db"         {:get  {:handler  (fn [req]  (string-wrap 
+                                                     "oi"))}}]
+       ["/variable-info" {:post {:handler (fn [req] 
+                                           (let [body (:params req)
+                                                 {:keys [file-path position]} body]
+                                            (string-wrap 
+                                             (refactor/get-variable-details 
+                                              file-path position))))}}]                                                      
+       ["/refactor"   {:get  {:handler  (fn [req]  (string-wrap (refactor/move-form 'test-a/a 'test-b/a)))}}]   
+       ["/references" {:get  {:handler  (fn [req]  (string-wrap (str (refactor/get-references 'test-a/a))))}}]                                                                                                                               
        ["/file"  {:post {:handler  (fn [req]  
                                      (println "hello " req)
                                      (string-wrap (load-files/save-file (:params req))))}}]
@@ -56,11 +71,11 @@
 (def port 4200)
 
 (defn start []
-  (reset! server
-          (http/run-server 
-           (wrap-reload #'app)
-           {:port port :join? false}))
-  (println (str "Listening on port " port)))
+   (reset! server
+           (http/run-server 
+            (wrap-reload #'app)
+            {:port port :join? false}))
+   (println (str "Listening on port " port)))
 
 (defn stop []
   (when @server

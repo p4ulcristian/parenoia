@@ -3,6 +3,7 @@
             [reagent.core :as reagent]
             ["react-dom/client" :as react-client]
             [parenoia.view :as parenoia]
+            [test-a :as test-a]
             [reagent.impl.template :as reagent-template]))
 
 (def functional-compiler (reagent/create-compiler {:function-components    true}))
