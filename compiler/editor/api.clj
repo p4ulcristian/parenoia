@@ -45,7 +45,13 @@
                                                  {:keys [file-path position]} body]
                                             (string-wrap 
                                              (refactor/get-variable-details 
-                                              file-path position))))}}]                                                      
+                                              file-path position))))}}]
+       ["/form-info" {:post {:handler (fn [req] 
+                                           (let [body (:params req)
+                                                 {:keys [file-path position]} body]
+                                            (string-wrap 
+                                             (refactor/get-form-details 
+                                              file-path position))))}}]                                                                                             
        ["/refactor"   {:get  {:handler  (fn [req]  (string-wrap (refactor/move-form 'test-a/a 'test-b/a)))}}]   
        ["/references" {:get  {:handler  (fn [req]  (string-wrap (str (refactor/get-references 'test-a/a))))}}]                                                                                                                               
        ["/file"  {:post {:handler  (fn [req]  

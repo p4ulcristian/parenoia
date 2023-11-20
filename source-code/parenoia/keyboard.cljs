@@ -216,7 +216,7 @@
         on-m               (on-m-fn current-zloc)]
     (react/useEffect
       (fn []
-        (.log js/console (.-current ref))
+        ;(.log js/console (.-current ref))
         (add-listener js/document on-left)
         (add-listener js/document on-right)
         (add-listener js/document on-shift-left)

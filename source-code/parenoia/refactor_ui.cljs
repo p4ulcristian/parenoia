@@ -1,7 +1,6 @@
-(ns parenoia.refactor-ui (:require [re-frame.core :refer [subscribe dispatch]]
-                                   [rewrite-clj.zip :as z]))
-
-
+(ns parenoia.refactor-ui 
+ (:require [re-frame.core :refer [subscribe dispatch]]
+           [rewrite-clj.zip :as z]))
 
 
 
@@ -17,7 +16,10 @@
                   :padding 10
                   :z-index 20
                   :overflow-y :scroll
-                  :height "100px"}} 
+                  :height "400px"}} 
     [:div "From: " (str from)]
     [:div "To: " (str to)]
-    [:div "Name: " (str name)]]))
+    [:div "Name: " (str name)]
+    [:div "Bucket: " (:bucket variable-info)]
+    [:div "Form info: " (clojure.string/join ","
+                         (map :name @(subscribe [:db/get [:parenoia :form-info]])))]]))

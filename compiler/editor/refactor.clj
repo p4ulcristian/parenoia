@@ -5,7 +5,8 @@
             [clojure.java.io :as io]
             [clojure-lsp.internal-api :as internal-api :refer [db*]]
             [clojure-lsp.dep-graph :as lsp-graph]
-            [clojure-lsp.api :as clojure-lsp]))
+            [clojure-lsp.api :as clojure-lsp]
+            [clojure-lsp.refactor.edit :as lsp-edit]))
 
 
 (defn get-zloc [{:keys [file-path position]}]
@@ -101,11 +102,11 @@
     ;; (println "definition: " 
     ;;  (lsp-queries/find-definition-from-cursor test-db test-uri 10 8))
                              
-    (println "element: " (let [ans (lsp-queries/find-element-under-cursor 
-                                     @internal-api/db* 
-                                     "file:///Users/paulcristian/Projects/zgen/parenoia/source-code/test_a.cljs" 
-                                      10 8)]
-                          (str (:name ans) " - " (:to ans))))                       
+    ;; (println "element: " (let [ans (lsp-queries/find-element-under-cursor 
+    ;;                                  @internal-api/db* 
+    ;;                                  "file:///Users/paulcristian/Projects/zgen/parenoia/source-code/test_a.cljs" 
+    ;;                                   10 8)]
+    ;;                       (str (:name ans) " - " (:to ans))))                       
     
     ;; (println 
     ;;  "vars in namespace: "
@@ -143,6 +144,26 @@
     (get-element-below-cursor 
      (relative-path->uri relative-path)
      row col)))) 
+
+
+(defn find-top-form-recursion [last-zloc zloc]
+ (let [up-loc (z/up zloc)]
+  (cond 
+    (nil? up-loc) last-zloc
+    :else (recur zloc up-loc))))
+ 
+
+(defn find-top-form [zloc]
+ (find-top-form-recursion nil zloc))
+
+(defn get-form-details [relative-path position]
+ (str
+  (var-usages-within 
+   (find-top-form
+    (get-zloc {:file-path (relative-path->uri relative-path)
+               :position position}))
+   (relative-path->uri relative-path) @db*)))
+     
        
  
 

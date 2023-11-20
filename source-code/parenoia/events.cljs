@@ -111,3 +111,54 @@
       :error-handler    (fn [e] (.log js/console e))}))
 
    db))
+
+
+(defn find-top-form-recursion [last-zloc zloc]
+ (let [up-loc (z/up zloc)]
+  (cond 
+    (nil? up-loc) last-zloc
+    :else (recur zloc up-loc))))
+ 
+
+(defn find-top-form [zloc]
+ (find-top-form-recursion nil zloc))
+
+(defn find-op
+  [zloc]
+  (loop [op-loc (or (and (= :list (z/tag zloc))
+                         (z/down zloc))
+                    (z/leftmost zloc))]
+    (let [up-loc (z/up op-loc)]
+      (cond
+        (nil? up-loc) nil
+        (= :list (z/tag up-loc)) op-loc
+        :else (recur (z/leftmost up-loc))))))
+
+(defn root? [loc]
+  (identical? :forms (z/tag loc)))
+
+(defn top? [loc]
+  (root? (z/up loc)))
+
+(defn to-top
+  "Returns the loc for the top-level form above the loc, or the loc itself if it
+  is top-level, or nil if the loc is at the `:forms` node."
+  [loc]
+  (z/find loc z/up top?))
+
+
+(reg-event-db
+ :parenoia/get-form-info
+ [] 
+ (fn [db [_ zloc]]
+   (println "Hello " (z/string (to-top zloc)))
+   (let [file-name (-> db :parenoia :selected :file-path)
+         file      (z/root-string (get-in db [:parenoia :project file-name]))]           
+    (POST "/form-info"
+     {:params {:file-path file-name 
+               :position (z/position zloc)}
+       :handler          (fn [e]
+                           (dispatch [:db/set [:parenoia :form-info] (read-string e)]))
+      :error-handler    (fn [e] (.log js/console e))}))
+
+   db))
