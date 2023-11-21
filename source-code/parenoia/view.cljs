@@ -2,6 +2,7 @@
   (:require ["parinfer" :as parinfer]
             ["react" :as react]
             [cljs.reader :as reader]
+            [clojure.string :as clojure.string]
             [parenoia.events]
             [parenoia.form-conditionals :as form-conditionals]
             [parenoia.form-interpreters  :as form-interpreters]
@@ -159,15 +160,16 @@
 
     (react/useEffect
       (fn []
-        (if selected? 
+        (if selected?
           (do
-           (dispatch [:parenoia/get-variable-info zloc])
-           (dispatch [:parenoia/get-form-info zloc])
-           (.scrollIntoView
-               (.-current ref)
-               #js {:behavior "smooth"
-                    :block "center"
-                    :inline "center"})))
+            (dispatch [:parenoia/get-variable-info zloc])
+            (dispatch [:parenoia/get-completion zloc])
+            (dispatch [:parenoia/get-form-info zloc])
+            (.scrollIntoView
+              (.-current ref)
+              #js {:behavior "smooth"
+                   :block "center"
+                   :inline "center"})))
         (fn []))
       #js [selected?])
     [:div
@@ -335,5 +337,5 @@
                  :height "100vh"
                  :width "100vw"}}
    [namespace-graph/view]
-   [namespace-container]
-   [refactor-ui/view]])
+   [namespace-container]])
+   ;[refactor-ui/view]])

@@ -40,6 +40,13 @@
       [["/"           {:get  {:handler  (fn [req]  (html-wrap (html/page)))}}]
        ["/db"         {:get  {:handler  (fn [req]  (string-wrap 
                                                      "oi"))}}]
+       ["/completion" {:post {:handler (fn [req] 
+                                        (let [body (:params req)
+                                              {:keys [file-path position]} body]
+                                            (string-wrap 
+                                             (refactor/get-completion
+                                              file-path position))))}}]
+       ["/reanalyze-project" {:post {:handler (fn [req] (string-wrap (str (clojure-lsp/analyze-project-only! {}))))}}]
        ["/variable-info" {:post {:handler (fn [req] 
                                            (let [body (:params req)
                                                  {:keys [file-path position]} body]

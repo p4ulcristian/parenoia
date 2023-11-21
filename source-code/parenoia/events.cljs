@@ -162,3 +162,33 @@
       :error-handler    (fn [e] (.log js/console e))}))
 
    db))
+
+(reg-event-db
+ :parenoia/get-completion
+ [] 
+ (fn [db [_ zloc]]
+   (let [file-name (-> db :parenoia :selected :file-path)
+         file      (z/root-string (get-in db [:parenoia :project file-name]))]           
+    (POST "/completion"
+     {:params {:file-path file-name 
+               :position (let [[r c] (z/position zloc)] [r (inc c)])}
+       :handler          (fn [e]
+                           (dispatch [:db/set [:parenoia :completion] (read-string e)]))
+      :error-handler    (fn [e] (.log js/console e))}))
+
+   db))
+
+(reg-event-db
+ :parenoia/reanalyze-project!
+ [] 
+ (fn [db [_ zloc]]
+   (println "Hello " (z/string (to-top zloc)))
+   (let [file-name (-> db :parenoia :selected :file-path)
+         file      (z/root-string (get-in db [:parenoia :project file-name]))]           
+    (POST "/reanalyze-project"
+     {:params {}
+       :handler          (fn [e] (println "Successful " e))
+                          
+      :error-handler    (fn [e] (.log js/console e))}))
+
+   db))

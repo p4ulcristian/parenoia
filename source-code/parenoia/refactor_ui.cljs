@@ -17,9 +17,12 @@
                   :z-index 20
                   :overflow-y :scroll
                   :height "400px"}} 
+    [:div {:on-click #(dispatch [:parenoia/reanalyze-project!])}
+     "Re analyze"]
     [:div "From: " (str from)]
     [:div "To: " (str to)]
     [:div "Name: " (str name)]
     [:div "Bucket: " (:bucket variable-info)]
+    [:div "Completion: " (str @(subscribe [:db/get [:parenoia :completion]]))]
     [:div "Form info: " (clojure.string/join ","
                          (map :name @(subscribe [:db/get [:parenoia :form-info]])))]]))

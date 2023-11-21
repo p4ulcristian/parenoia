@@ -6,7 +6,8 @@
             [clojure-lsp.internal-api :as internal-api :refer [db*]]
             [clojure-lsp.dep-graph :as lsp-graph]
             [clojure-lsp.api :as clojure-lsp]
-            [clojure-lsp.refactor.edit :as lsp-edit]))
+            [clojure-lsp.refactor.edit :as lsp-edit]
+            [clojure-lsp.feature.completion :as lsp-completion]))
 
 
 (defn get-zloc [{:keys [file-path position]}]
@@ -164,7 +165,15 @@
                :position position}))
    (relative-path->uri relative-path) @db*)))
      
-       
+
+
+(defn get-completion [relative-path position]
+ (let [[row col] position]
+  (lsp-completion/completion 
+    (relative-path->uri relative-path)
+    row 
+    col
+    @db*)))
  
 
 
