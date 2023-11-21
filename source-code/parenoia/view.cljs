@@ -127,8 +127,11 @@
         :else (style/color [:string? :text-color])))))
 
 (defn token [zloc selected?]
-  (let [selected-pos (has-position? @(subscribe [:db/get [:parenoia :selected-zloc]]))
-        this-pos     (has-position? zloc)]
+  (let [selected-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
+        selected-pos  (has-position? selected-zloc)
+        selected-string  (z/string selected-zloc)
+        this-pos     (has-position? zloc)
+        same-as-selected? (= (z/string zloc) selected-string)]
 
     [:div {:style {:flex-grow 1
                    ;w:color "#333"
@@ -136,15 +139,18 @@
                    :border-radius "10px"
                    :padding "5px 10px"
                    :white-space :nowrap
-                   :color (if selected?
-                            (style/color [:selection :text-color])
-                            (decide-token-text-color zloc))
-                   :background (if selected?
-                                 (style/color [:selection :background-color])
-                                 (decide-token-color zloc))}}
-     [:div (if (= nil (z/tag zloc))
-             [:br]
-             (z/string zloc))]]))
+                   :color (cond 
+                            selected? (style/color [:selection :text-color])
+                            same-as-selected? (style/color [:same-as-selection :text-color])
+                            :else (decide-token-text-color zloc))
+                   :background (cond  
+                                 selected?         (style/color [:selection :background-color])
+                                 same-as-selected? (style/color [:same-as-selection :background-color])
+                                 :else (decide-token-color zloc))}}
+     [:div 
+      (if (= nil (z/tag zloc))
+          [:br]
+          (z/string zloc))]]))
 
 (defn new-line-before-last? [zloc]
   (if (= :newline (z/tag zloc))
