@@ -107,7 +107,6 @@
       ;; :response-format    :text
       ;; :format    :text
        :handler          (fn [e]
-                           (.log js/console "-Mivan " e)
                            (dispatch [:db/set [:parenoia :variable-info] (read-string e)]))
       :error-handler    (fn [e] (.log js/console e))}))
 
@@ -159,7 +158,6 @@
      {:params {:file-path file-name 
                :position (z/position zloc)}
        :handler          (fn [e]
-                           (println "Wazzap: " e)
                            (dispatch [:db/set [:parenoia :form-info] (read-string e)]))
       :error-handler    (fn [e] (.log js/console e))}))
 
@@ -184,7 +182,6 @@
  :parenoia/reanalyze-project!
  [] 
  (fn [db [_ zloc]]
-   (println "Hello " (z/string (to-top zloc)))
    (let [file-name (-> db :parenoia :selected :file-path)
          file      (z/root-string (get-in db [:parenoia :project file-name]))]           
     (POST "/reanalyze-project"

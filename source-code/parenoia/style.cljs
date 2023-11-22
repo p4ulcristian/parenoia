@@ -27,8 +27,8 @@
                        :text-color "#333"}
               :selection {:background-color "linear-gradient(to right, #eea2a2 0%, #bbc1bf 19%, #57c6e1 42%, #b49fda 79%, #7ac5d8 100%)"
                           :text-color "#333"}
-              :same-as-selection {:background-color "linear-gradient(to right, lightblue 0%, #bbc1bf 19%, #57c6e1 42%, #b49fda 79%, #7ac5d8 100%)"
-                                  :text-color "#DDD"}})
+              :same-as-selection {:background-color "grey"
+                                  :text-color "lightgrey"}})
 
 (defn color [path] (get-in colors path))
 

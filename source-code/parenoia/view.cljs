@@ -143,9 +143,7 @@
         this-pos     (has-position? zloc)
         same-as-selected? (= (z/string zloc) selected-string)]
 
-    [:div {:style {:flex-grow 1
-                   ;w:color "#333"
-                   :box-shadow style/box-shadow
+    [:div {:style {:box-shadow style/box-shadow
                    :border-radius "10px"
                    :padding "5px 10px"
                    :white-space :nowrap
@@ -188,45 +186,49 @@
                    :inline "center"})))
         (fn []))
       #js [selected?])
-    [:div
-     {:ref ref
-      :style {:position :relative
-              :box-sizing :border-box
-              :border-radius "10px"
-              :padding "5px"}
-      :on-click (fn [e]
-                  (.stopPropagation e)
-                  (dispatch [:db/set [:parenoia :editable?] false])
-                  (js/window.setTimeout
-                    (fn [] (dispatch [:db/set [:parenoia :selected-zloc] zloc]))
-                    50))}
+    [:div {:style {:display :flex
+                   :justify-content :flex-start 
+                   :align-items :flex-start}}
+     [:div.form-interpreter
+      {:ref ref
+       :style {:position :relative
+               :box-sizing :border-box
+               :border-radius "10px"
+               :padding "5px"}
+       :on-click (fn [e]
+                   (js/console.log "eh: " (z/string zloc))
+                   (.stopPropagation e)
+                   (dispatch [:db/set [:parenoia :editable?] false])
+                   (js/window.setTimeout
+                     (fn [] (dispatch [:db/set [:parenoia :selected-zloc] zloc]))
+                     50))}
 
-      ;(str (new-line-before-last? (z/left* zloc)))
-      ;(z/tag (z/right* (z/skip-whitespace zloc)))
-     (cond
-       (form-conditionals/is-ns? zloc)
-       [form-interpreters/ns-interpreter zloc form-interpreter]
-       (form-conditionals/is-defn? zloc)
-       [form-interpreters/defn-interpreter zloc form-interpreter]
-       (form-conditionals/is-def? zloc)
-       [form-interpreters/def-interpreter zloc form-interpreter]
-       (or
-         (form-conditionals/is-let-vector? zloc)
-         (form-conditionals/is-loop-vector? zloc))
-       [form-interpreters/let-vector-interpreter  zloc form-interpreter]
-       (form-conditionals/is-map? zloc)
-       [form-interpreters/map-interpreter  zloc form-interpreter]
-        ;(form-conditionals/is-vector? zloc)  
-        ;[form-interpreters/vector-interpreter  zloc form-interpreter]
-       (or
-         (form-conditionals/is-vector? zloc)
-         (form-conditionals/is-function? zloc))
-       [form-interpreters/function-interpreter  zloc form-interpreter]
-        ;; (form-conditionals/is-function? zloc)
-        ;; [form-interpreters/form-interpreter-iterator (z/down zloc) form-interpreter :horizontal]
-       :else [token zloc selected?])
-     (if (and selected? editable?)
-       [autofocus-input zloc])]))
+       ;(str (new-line-before-last? (z/left* zloc)))
+       ;(z/tag (z/right* (z/skip-whitespace zloc)))
+      (cond
+        (form-conditionals/is-ns? zloc)
+        [form-interpreters/ns-interpreter zloc form-interpreter]
+        (form-conditionals/is-defn? zloc)
+        [form-interpreters/defn-interpreter zloc form-interpreter]
+        (form-conditionals/is-def? zloc)
+        [form-interpreters/def-interpreter zloc form-interpreter]
+        (or
+          (form-conditionals/is-let-vector? zloc)
+          (form-conditionals/is-loop-vector? zloc))
+        [form-interpreters/let-vector-interpreter  zloc form-interpreter]
+        (form-conditionals/is-map? zloc)
+        [form-interpreters/map-interpreter  zloc form-interpreter]
+         ;(form-conditionals/is-vector? zloc)  
+         ;[form-interpreters/vector-interpreter  zloc form-interpreter]
+        (or
+          (form-conditionals/is-vector? zloc)
+          (form-conditionals/is-function? zloc))
+        [form-interpreters/function-interpreter  zloc form-interpreter]
+         ;; (form-conditionals/is-function? zloc)
+         ;; [form-interpreters/form-interpreter-iterator (z/down zloc) form-interpreter :horizontal]
+        :else [token zloc selected?])
+      (if (and selected? editable?)
+        [autofocus-input zloc])]]))
 
 (defn sticky-function-header [zloc index ns-name]
   [:div {:style {:position :sticky
