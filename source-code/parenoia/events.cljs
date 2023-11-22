@@ -107,7 +107,7 @@
       ;; :response-format    :text
       ;; :format    :text
        :handler          (fn [e]
-                           
+                           (.log js/console "-Mivan " e)
                            (dispatch [:db/set [:parenoia :variable-info] (read-string e)]))
       :error-handler    (fn [e] (.log js/console e))}))
 

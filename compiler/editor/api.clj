@@ -54,16 +54,16 @@
                                              (refactor/get-variable-details 
                                               file-path position))))}}]
        ["/form-info" {:post {:handler (fn [req] 
-                                           (let [body (:params req)
-                                                 {:keys [file-path position]} body]
-                                            (string-wrap 
-                                             (refactor/get-form-details 
-                                              file-path position))))}}]                                                                                             
+                                          (let [body (:params req)
+                                                {:keys [file-path position]} body]
+                                           (string-wrap 
+                                            (refactor/get-form-details 
+                                             file-path position))))}}]                                                                                             
        ["/rename" {:post {:handler (fn [req]
                                      (let [body (:params req)
-                                                 {:keys [from to]} body]
-                                            (string-wrap 
-                                             (refactor/rename from to))))}}]
+                                           {:keys [from to]} body]
+                                        (string-wrap 
+                                         (refactor/rename from to))))}}]
        ["/refactor"   {:get  {:handler  (fn [req]  (string-wrap (refactor/move-form 'test-a/a 'test-b/a)))}}]   
        ["/references" {:get  {:handler  (fn [req]  (string-wrap (str (refactor/get-references 'test-a/a))))}}]                                                                                                                               
        ["/file"  {:post {:handler  (fn [req]  
@@ -77,9 +77,9 @@
       
     {:middleware
      (concat
-       [#(wrap-keyword-params %)
+       [#(wrap-reload % {:dirs ["compiler" "source-code"]})
+        #(wrap-keyword-params %)
         #(wrap-params %)
-        
         #(wrap-transit-params % {:opts {}})])}))
         
         
@@ -90,9 +90,7 @@
 
 (defn start []
    (reset! server
-           (http/run-server 
-            (wrap-reload #'app)
-            {:port port :join? false}))
+           (http/run-server app {:port port :join? false}))
    (println (str "Listening on port " port)))
 
 (defn stop []

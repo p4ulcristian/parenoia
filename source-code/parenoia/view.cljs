@@ -180,9 +180,9 @@
       (fn []
         (if selected?
           (do
-            ;(dispatch [:parenoia/get-variable-info zloc])
+            (dispatch [:parenoia/get-variable-info zloc])
             ;(dispatch [:parenoia/get-completion zloc])
-            ;(dispatch [:parenoia/get-form-info zloc])
+            (dispatch [:parenoia/get-form-info zloc])
             (.scrollIntoView
               (.-current ref)
               #js {:behavior "smooth"

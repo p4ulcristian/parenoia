@@ -39,7 +39,8 @@
 
 (defn var-usages-within [zloc uri db]
   (let [scope (meta (z/node zloc))]
-    (lsp-queries/find-var-usages-under-form db uri scope)))
+    (println "hehe" (lsp-queries/find-var-usages-under-form db uri scope))
+    (str (lsp-queries/find-var-usages-under-form db uri scope))))
     
 
 
@@ -136,6 +137,11 @@
 
 (defn get-variable-details [path position]
   (let [[row col] position]
+   (println "teis?" 
+     (str
+      (get-element-below-cursor 
+       (path->uri path)
+       row col)))
    (str
     (get-element-below-cursor 
      (path->uri path)
@@ -153,7 +159,7 @@
  (find-top-form-recursion nil zloc))
 
 (defn get-form-details [path position]
- (clojure-lsp.api/analyze-project-only! {:project-root (io/file path)})
+ (clojure-lsp.api/analyze-project-only! {:project-root (io/file config/project-path)})
  (str
   (var-usages-within 
    (find-top-form
