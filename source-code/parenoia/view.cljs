@@ -37,9 +37,12 @@
     (clojure.string/split  namespace #"\.")))
 
 (def autofocus-input-value (atom nil))
+
+
 (defn block-some-keyboard-events [^js e]
   (if
-    (or (keyboard/check-key e "ArrowLeft")
+    (or 
+      (keyboard/check-key e "ArrowLeft")
       (keyboard/check-key e "ArrowRight")
       (keyboard/check-key e "ArrowDown")
       (keyboard/check-key e "ArrowUp")
@@ -97,18 +100,27 @@
 
     (autofocus-input--effect ref zloc)
     [autofocus-input-wrapper
-     [:textarea {:ref ref
-                 :value @autofocus-input-value
-                ;:autofocus true
-                 :on-click #(.stopPropagation %)
-                 :style {:position :absolute
-                         :left 0
-                         :top 0
-                         :width "100%"
-                         :height "100%"
-                         :min-width 100
-                         :padding "5px"}
-                 :on-change  on-change}]]))
+     [:<>
+      [:div {:style {:position :absolute
+                      :background "#333"
+                      :border-radius 10
+                      :left 0
+                      :top 0
+                      :transform "translateY(-100%)"
+                      :min-width 100
+                      :padding "5px"
+                      :z-index 1000}}
+       [:button {:on-click #(dispatch [:parenoia/rename!
+                                         zloc og-string 
+                                         @autofocus-input-value])}
+         "Rename"]
+       [:textarea {:ref ref
+                   :value @autofocus-input-value
+                   ;:autofocus true
+                    :on-click #(.stopPropagation %)
+                  
+                   :on-change  on-change}]]]]))
+       
 
 (defn decide-token-color [zloc]
   (let [token-node (try (z/node zloc) (catch js/Error e nil))]
@@ -168,9 +180,9 @@
       (fn []
         (if selected?
           (do
-            (dispatch [:parenoia/get-variable-info zloc])
-            (dispatch [:parenoia/get-completion zloc])
-            (dispatch [:parenoia/get-form-info zloc])
+            ;(dispatch [:parenoia/get-variable-info zloc])
+            ;(dispatch [:parenoia/get-completion zloc])
+            ;(dispatch [:parenoia/get-form-info zloc])
             (.scrollIntoView
               (.-current ref)
               #js {:behavior "smooth"
@@ -342,6 +354,8 @@
                  :color "#EEE"
                  :height "100vh"
                  :width "100vw"}}
+   (str (keys @(subscribe [:db/get [:parenoia]])))
    [namespace-graph/view]
-   [namespace-container]])
-   ;[refactor-ui/view]])
+   [namespace-container]
+   
+   [refactor-ui/view]])
