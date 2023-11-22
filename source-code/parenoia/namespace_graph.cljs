@@ -145,8 +145,8 @@
         files @(subscribe [:db/get [:parenoia :project-last-saved]])
         [nodes set-nodes] (react/useState [])
         [edges set-edges] (react/useState [])
-        [local-string set-local-string] (react/useState "")
-        [filter-string set-filter-string]     (react/useState "")]
+        [local-string set-local-string]   (react/useState "")
+        [filter-string set-filter-string] (react/useState "")]
     (react/useEffect
       (fn []
         (set-nodes (filter-nodes-by-string (get-all-nodes files) filter-string))

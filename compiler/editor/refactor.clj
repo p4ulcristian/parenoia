@@ -7,7 +7,8 @@
             [clojure-lsp.dep-graph :as lsp-graph]
             [clojure-lsp.api :as clojure-lsp]
             [clojure-lsp.refactor.edit :as lsp-edit]
-            [clojure-lsp.feature.completion :as lsp-completion]))
+            [clojure-lsp.feature.completion :as lsp-completion]
+            [editor.config :as config]))
 
 
 (defn get-zloc [{:keys [file-path position]}]
@@ -40,9 +41,6 @@
   (let [scope (meta (z/node zloc))]
     (lsp-queries/find-var-usages-under-form db uri scope)))
     
-
-
-
 
 
 (defn get-references [symbol]
@@ -131,19 +129,16 @@
 (defn path->uri [path]
  (str "file://" path))
 
-(defn relative-path->uri [relative-path]
-   (path->uri (str (get-absolute-path) relative-path)))
-
 
 
 (defn get-element-below-cursor [uri row col]
  (lsp-queries/find-element-under-cursor @db* uri row col))
 
-(defn get-variable-details [relative-path position]
+(defn get-variable-details [path position]
   (let [[row col] position]
    (str
     (get-element-below-cursor 
-     (relative-path->uri relative-path)
+     (path->uri path)
      row col)))) 
 
 
@@ -157,23 +152,31 @@
 (defn find-top-form [zloc]
  (find-top-form-recursion nil zloc))
 
-(defn get-form-details [relative-path position]
+(defn get-form-details [path position]
+ (clojure-lsp.api/analyze-project-only! {:project-root (io/file path)})
  (str
   (var-usages-within 
    (find-top-form
-    (get-zloc {:file-path (relative-path->uri relative-path)
+    (get-zloc {:file-path (path->uri path)
                :position position}))
-   (relative-path->uri relative-path) @db*)))
+   (path->uri path) @db*)))
      
 
-
-(defn get-completion [relative-path position]
+(defn get-completion [path position]
  (let [[row col] position]
   (lsp-completion/completion 
-    (relative-path->uri relative-path)
+    (path->uri path)
     row 
     col
     @db*)))
+
+
+(defn rename [from to]
+ (clojure-lsp.api/analyze-project-only! {:project-root (io/file config/project-path)})
+ (clojure-lsp/rename!
+    {:project-root (io/file config/project-path)
+     :from (symbol from)
+     :to   (symbol to)}))
  
 
 

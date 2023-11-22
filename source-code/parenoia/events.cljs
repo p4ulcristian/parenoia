@@ -5,7 +5,7 @@
     [cljs.reader :refer [read-string]]
     [parenoia.rewrite :as rewrite] 
     [ajax.core     :refer [GET POST]]
-            
+    [parenoia.refactor :as refactor]
     [rewrite-clj.zip :as z]))
 
 
@@ -107,6 +107,7 @@
       ;; :response-format    :text
       ;; :format    :text
        :handler          (fn [e]
+                           
                            (dispatch [:db/set [:parenoia :variable-info] (read-string e)]))
       :error-handler    (fn [e] (.log js/console e))}))
 
@@ -151,13 +152,14 @@
  :parenoia/get-form-info
  [] 
  (fn [db [_ zloc]]
-   (println "Hello " (z/string (to-top zloc)))
+   
    (let [file-name (-> db :parenoia :selected :file-path)
          file      (z/root-string (get-in db [:parenoia :project file-name]))]           
     (POST "/form-info"
      {:params {:file-path file-name 
                :position (z/position zloc)}
        :handler          (fn [e]
+                           (println "Wazzap: " e)
                            (dispatch [:db/set [:parenoia :form-info] (read-string e)]))
       :error-handler    (fn [e] (.log js/console e))}))
 
@@ -190,5 +192,21 @@
        :handler          (fn [e] (println "Successful " e))
                           
       :error-handler    (fn [e] (.log js/console e))}))
+
+   db))
+
+
+(reg-event-db
+ :parenoia/rename!
+ [] 
+ (fn [db [_ zloc from to]]
+   (let [file-name  (-> db :parenoia :selected :file-path)
+         file-zloc  (get-in db [:parenoia :project file-name])]
+    (POST "/rename"
+      {:params {:from (str (refactor/get-ns file-zloc) "/" from)
+                :to   (str (refactor/get-ns file-zloc) "/" to)}
+        :handler          (fn [e] (println "Successful " e))
+                          
+       :error-handler    (fn [e] (.log js/console e))}))
 
    db))

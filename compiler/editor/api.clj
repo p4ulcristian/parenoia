@@ -32,7 +32,7 @@
 (defn string-wrap [content]
       (request-wrap 200 "text/plain" content))
 
-(refactor/move-form 'test-a/a 'test-b/a)
+;(refactor/move-form 'test-a/a 'test-b/a)
 
 (def app
   (reitit-ring/ring-handler
@@ -59,6 +59,11 @@
                                             (string-wrap 
                                              (refactor/get-form-details 
                                               file-path position))))}}]                                                                                             
+       ["/rename" {:post {:handler (fn [req]
+                                     (let [body (:params req)
+                                                 {:keys [from to]} body]
+                                            (string-wrap 
+                                             (refactor/rename from to))))}}]
        ["/refactor"   {:get  {:handler  (fn [req]  (string-wrap (refactor/move-form 'test-a/a 'test-b/a)))}}]   
        ["/references" {:get  {:handler  (fn [req]  (string-wrap (str (refactor/get-references 'test-a/a))))}}]                                                                                                                               
        ["/file"  {:post {:handler  (fn [req]  
