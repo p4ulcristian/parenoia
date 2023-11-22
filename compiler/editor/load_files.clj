@@ -2,15 +2,12 @@
   (:require 
    [editor.utils :as utils]
    [rewrite-clj.zip :as z]
-   [rewrite-clj.node :as node]))
+   [rewrite-clj.node :as node]
+   [editor.config :as config]))
   
 
-
-(def a-path "source-code")
-(def b-path "/Users/paulcristian/projects/zgen/wizard/source-code")
-
 (defn get-all-files []
- (let [directory (clojure.java.io/file b-path)
+ (let [directory (clojure.java.io/file config/project-path)
        dir? #(.isDirectory %)]
    (mapv #(.getPath %)
          (filter (comp not dir?)

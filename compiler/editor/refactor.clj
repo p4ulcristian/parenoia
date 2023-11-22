@@ -137,11 +137,9 @@
 
 (defn get-variable-details [path position]
   (let [[row col] position]
-   (println "teis?" 
-     (str
-      (get-element-below-cursor 
-       (path->uri path)
-       row col)))
+   (clojure-lsp.api/analyze-project-only! {:project-root (io/file config/project-path)})
+   (println "1: " (path->uri path))
+   (println "2: " (map :name (lsp-queries/find-var-definitions @internal-api/db* (path->uri path) true)))
    (str
     (get-element-below-cursor 
      (path->uri path)

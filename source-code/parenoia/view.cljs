@@ -22,8 +22,6 @@
   (react/useEffect
     (fn []
       (dispatch [:parenoia/get-files])
-      (dispatch [:db/set [:parenoia :selected :file-path] "/Users/paulcristian/projects/zgen/wizard/source-code/wizard/editor_overlays/layer/areas/area_items.cljs"])
-
       (fn []))
     #js []))
 
@@ -357,5 +355,4 @@
    (str (keys @(subscribe [:db/get [:parenoia]])))
    [namespace-graph/view]
    [namespace-container]
-   
    [refactor-ui/view]])

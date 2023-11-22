@@ -11,14 +11,12 @@
    [:div {:style {:position :fixed
                   :top 0
                   :right 0
-                  :background :red
+                  :background "#444"
                   :width 400
                   :padding 10
                   :z-index 20
-                  :overflow-y :scroll
-                  :height "400px"}} 
-    [:div {:on-click #(dispatch [:parenoia/reanalyze-project!])}
-     "Re analyze"]
+                  
+                  }} 
     [:div "From: " (str from)]
     [:div "To: " (str to)]
     [:div "Name: " (str name)]
