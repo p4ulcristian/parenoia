@@ -47,6 +47,11 @@
                                              (refactor/get-completion
                                               file-path position))))}}]
        ["/reanalyze-project" {:post {:handler (fn [req] (string-wrap (str (clojure-lsp/analyze-project-only! {}))))}}]
+       
+       ["/kondo-lints" {:post {:handler (fn [req] 
+                                           (let [body (:params req)
+                                                 {:keys [file-path position]} body]
+                                            (string-wrap (refactor/get-kondo-lints file-path))))}}]
        ["/variable-info" {:post {:handler (fn [req] 
                                            (let [body (:params req)
                                                  {:keys [file-path position]} body]

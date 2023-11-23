@@ -8,7 +8,10 @@
             [clojure-lsp.api :as clojure-lsp]
             [clojure-lsp.refactor.edit :as lsp-edit]
             [clojure-lsp.feature.completion :as lsp-completion]
-            [editor.config :as config]))
+            [clojure-lsp.feature.inline-symbol :as lsp-inline-symbol]
+            [clojure-lsp.feature.move-form :as lsp-move-form]
+            [editor.config :as config]
+            [clj-kondo.core :as clj-kondo]))
 
 
 (defn get-zloc [{:keys [file-path position]}]
@@ -39,7 +42,6 @@
 
 (defn var-usages-within [zloc uri db]
   (let [scope (meta (z/node zloc))]
-    (println "hehe" (lsp-queries/find-var-usages-under-form db uri scope))
     (str (lsp-queries/find-var-usages-under-form db uri scope))))
     
 
@@ -138,8 +140,8 @@
 (defn get-variable-details [path position]
   (let [[row col] position]
    (clojure-lsp.api/analyze-project-only! {:project-root (io/file config/project-path)})
-   (println "1: " (path->uri path))
-   (println "2: " (map :name (lsp-queries/find-var-definitions @internal-api/db* (path->uri path) true)))
+   ;(println "1: " (path->uri path))
+   ;(println "2: " (map :name (lsp-queries/find-var-definitions @internal-api/db* (path->uri path) true)))
    (str
     (get-element-below-cursor 
      (path->uri path)
@@ -156,14 +158,24 @@
 (defn find-top-form [zloc]
  (find-top-form-recursion nil zloc))
 
+
+(defn get-kondo-lints [path]
+ (println "Linting " path)
+ (str (mapv (fn [tip] {:type (:type tip)
+                       :row  (:row tip)
+                       :col  (:col tip)})
+            (-> (clj-kondo/run! {:lint [path]})
+                :findings))))
+
 (defn get-form-details [path position]
- (clojure-lsp.api/analyze-project-only! {:project-root (io/file config/project-path)})
- (str
-  (var-usages-within 
-   (find-top-form
-    (get-zloc {:file-path (path->uri path)
-               :position position}))
-   (path->uri path) @db*)))
+ (let [[row col] position] 
+  (clojure-lsp.api/analyze-project-only! {:project-root (io/file config/project-path)})
+  (str
+   (var-usages-within 
+    (find-top-form
+     (get-zloc {:file-path (path->uri path)
+                :position position}))
+    (path->uri path) @db*))))
      
 
 (defn get-completion [path position]

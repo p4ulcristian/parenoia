@@ -21,6 +21,7 @@
     [:div "To: " (str to)]
     [:div "Name: " (str name)]
     [:div "Bucket: " (:bucket variable-info)]
+    [:div "Kondo lints: " (str @(subscribe [:db/get [:parenoia :kondo-lints]]))]
     [:div "Completion: " (str @(subscribe [:db/get [:parenoia :completion]]))]
     [:div "Form info: " (clojure.string/join ","
                          (map :name @(subscribe [:db/get [:parenoia :form-info]])))]]))
