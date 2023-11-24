@@ -276,6 +276,7 @@
             ;(dispatch [:parenoia/get-completion zloc])
             (dispatch [:parenoia/get-form-info zloc])
             (dispatch [:parenoia/get-kondo-lints zloc])
+            (dispatch [:parenoia/get-definition zloc])
             (.scrollIntoView
               (.-current ref)
               #js {:behavior "smooth"

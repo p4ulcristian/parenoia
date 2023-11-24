@@ -170,6 +170,7 @@
 
 (defn get-form-details [path position]
  (let [[row col] position] 
+
   (clojure-lsp.api/analyze-project-only! {:project-root (io/file config/project-path)})
   (str
    (var-usages-within 
@@ -178,6 +179,14 @@
                 :position position}))
     (path->uri path) @db*))))
      
+
+(defn get-definition [path position]
+ (let [[row col] position] 
+  (clojure-lsp.api/analyze-project-only! {:project-root (io/file config/project-path)})
+  (let [the-def (lsp-queries/find-definition-from-cursor @db* (path->uri path) row col)]
+       (str {:uri (:uri the-def)
+             :col (:col the-def)
+             :row (:row the-def)}))))
 
 (defn get-completion [path position]
  (let [[row col] position]

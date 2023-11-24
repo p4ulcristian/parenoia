@@ -193,6 +193,21 @@
 
    db))
 
+(reg-event-db
+ :parenoia/get-definition
+ [] 
+ (fn [db [_ zloc]]
+   (let [file-name (-> db :parenoia :selected :file-path)
+         file      (z/root-string (get-in db [:parenoia :project file-name]))]           
+    (POST "/get-definition"
+     {:params {:file-path file-name 
+               :position (let [[r c] (z/position zloc)] [r (inc c)])}
+       :handler          (fn [e]
+                           (dispatch [:db/set [:parenoia :definition] (read-string e)]))
+      :error-handler    (fn [e] (.log js/console e))}))
+
+   db))
+
 
 
 
