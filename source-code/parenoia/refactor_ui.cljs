@@ -18,6 +18,7 @@
                   
                   }} 
     [:div "From: " (str from)]
+    ;[:div (str @(subscribe [:db/get [:parenoia :selected :file-path]]))]
     [:div "To: " (str to)]
     [:div "Name: " (str name)]
     [:div "Bucket: " (:bucket variable-info)]

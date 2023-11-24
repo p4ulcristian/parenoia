@@ -225,6 +225,12 @@
                            lints)]
            (not (empty? this-lints))))))     
 
+
+(defn first-in-list? [zloc]
+  (let [is-first? (z/leftmost? zloc)
+        is-in-list? (z/list? (z/up zloc))]
+    (and is-first? is-in-list?)))
+
 (defn token [zloc selected?]
   (let [selected-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
         selected-pos  (has-position? selected-zloc)
@@ -238,6 +244,7 @@
                    :border-radius "10px"
                    :padding "5px 10px"
                    :white-space :nowrap
+                   :border (str "2px solid " (if (first-in-list? zloc) "orange" "transparent"))
                    :color (cond 
                             selected? (style/color [:selection :text-color])
                             same-as-selected? (style/color [:same-as-selection :text-color])
@@ -246,6 +253,7 @@
                    :background (cond  
                                  selected?         (style/color [:selection :background-color])
                                  same-as-selected? (style/color [:same-as-selection :background-color])
+                        
                                  unused-binding?   (style/color [:unused-binding :background-color])
                                  :else (decide-token-color zloc))}}
      [:div {:ref ref} 
@@ -280,8 +288,8 @@
             (.scrollIntoView
               (.-current ref)
               #js {:behavior "smooth"
-                   :block "center"
-                   :inline "center"})))
+                   :block "center"})))
+                   ;:inline "center"})))
         (fn []))
       #js [selected?])
     [:div {:style {:display :flex

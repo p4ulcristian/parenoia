@@ -331,9 +331,6 @@
    [:div {:style {:grid-area (number-to-letter index)
                   :display :flex
                   :justify-content :flex-start
-                  ;:background (if (and (z/leftmost? zloc)
-                  ;                  (not (z/vector? (z/up zloc))))
-                  ;              :turquoise)
                   :border-radius "10px"
                   :align-items :center}}
     [form-interpreter zloc]]

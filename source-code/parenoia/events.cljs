@@ -89,7 +89,8 @@
       ;; :response-format    :text
       ;; :format    :text
        :handler          (fn [e]
-                           (println "Save: " e))
+                           (println "Save: " e)
+                           (dispatch [:parenoia/get-kondo-lints (get-in db [:parenoia :project file-name])]))
       :error-handler    (fn [e] (.log js/console e))}))
 
    db))
