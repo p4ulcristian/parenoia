@@ -77,6 +77,20 @@
       (assoc-in [:parenoia :selected-zloc] zloc)))))
 
 
+(defn uri->path [uri]
+ (apply str (drop 7 uri)))
+
+(reg-event-db 
+  :parenoia/set-selected-file-by-uri
+  [(undoable)]
+  (fn [db [_ uri row col]]
+   (let [path (uri->path uri)
+         zloc (get-in db [:parenoia :project path])
+         new-zloc (z/find-last-by-pos zloc [row col])]
+    (-> db 
+       (assoc-in [:parenoia :selected :file-path] path)
+       (assoc-in [:parenoia :selected-zloc]       new-zloc)))))
+
 (reg-event-db
  :parenoia/save!
  []

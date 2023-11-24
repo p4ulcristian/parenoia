@@ -244,15 +244,18 @@
                    :border-radius "10px"
                    :padding "5px 10px"
                    :white-space :nowrap
-                   :border (str "2px solid " (if (first-in-list? zloc) "orange" "transparent"))
+                   :border (str "2px solid " (cond 
+                                               same-as-selected?     "magenta"
+                                               (first-in-list? zloc) "lightgreen" 
+                                               :else "transparent"))
                    :color (cond 
                             selected? (style/color [:selection :text-color])
-                            same-as-selected? (style/color [:same-as-selection :text-color])
+                            ;same-as-selected? (style/color [:same-as-selection :text-color])
                             unused-binding?   (style/color [:unused-binding :text-color])
                             :else (decide-token-text-color zloc))
                    :background (cond  
                                  selected?         (style/color [:selection :background-color])
-                                 same-as-selected? (style/color [:same-as-selection :background-color])
+                                 ;same-as-selected? (style/color [:same-as-selection :background-color])
                         
                                  unused-binding?   (style/color [:unused-binding :background-color])
                                  :else (decide-token-color zloc))}}

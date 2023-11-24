@@ -14,15 +14,20 @@
                   :background "#444"
                   :width 400
                   :padding 10
-                  :z-index 20
+                  :z-index 20}}
                   
-                  }} 
+                   
     [:div "From: " (str from)]
     ;[:div (str @(subscribe [:db/get [:parenoia :selected :file-path]]))]
     [:div "To: " (str to)]
     [:div "Name: " (str name)]
     [:div "Bucket: " (:bucket variable-info)]
     [:div "Definition: " (str @(subscribe [:db/get [:parenoia :definition]]))]
+    [:button {:on-click #(dispatch [:parenoia/set-selected-file-by-uri 
+                                     (:uri @(subscribe [:db/get [:parenoia :definition]]))
+                                     (:row @(subscribe [:db/get [:parenoia :definition]]))
+                                     (:col @(subscribe [:db/get [:parenoia :definition]]))])} 
+      "Go to definition"]
     [:div "Completion: " (str @(subscribe [:db/get [:parenoia :completion]]))]
     [:div "Form info: " (clojure.string/join ","
                          (map :name @(subscribe [:db/get [:parenoia :form-info]])))]]))
