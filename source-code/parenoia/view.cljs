@@ -178,10 +178,11 @@
                      :position :absolute
                        :top y
                        :left x
-                       :z-index 10000 
-                       :transform "translate(-10px, -10px)"
+                       :border "1px solid black"
+                       :z-index (if open? 10000 5000)
+                       :transform "translate(0px, 0px)"
                        :height (if open? "auto" "10px")
-                       :width (if open? "100px" "10px")
+                       :width (if open? "auto" "10px")
                        :border-radius (if open? "10px" "50%")
                        :background (lint-background (:level (first this-lints)))}}
         [:div {:style {:display (if open? "block" "none")}}
@@ -198,8 +199,9 @@
    (when-let [lints @(subscribe [:db/get [:parenoia :kondo-lints]])]
      (when-let [[this-row this-col] position]
         (let [this-lints (filter (fn [{:keys [col row]}]
-                                   (= col this-col)
-                                   (= row this-row))
+                                   (and 
+                                    (= col this-col)
+                                    (= row this-row)))
                            lints)
               empty-lints? (empty? this-lints)]                        
          (when-not empty-lints?
@@ -207,8 +209,21 @@
             {:style {:position :absolute 
                       :top 0 
                       :right 0 
-                      :transform "translate(100%, -100%)"}}  
+                      :transform "translate(100%, -100%)"
+                      :background :white}}  
             [info-circle ref this-lints zloc]])))))
+
+
+(defn is-unused-binding? [position]
+ (when-let [lints @(subscribe [:db/get [:parenoia :kondo-lints]])]
+     (when-let [[this-row this-col] position]
+        (let [this-lints (filter (fn [{:keys [col row type]}]
+                                   (and 
+                                    (= col this-col)
+                                    (= row this-row)
+                                    (= :unused-binding type)))
+                           lints)]
+           (not (empty? this-lints))))))     
 
 (defn token [zloc selected?]
   (let [selected-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
@@ -216,7 +231,8 @@
         selected-string  (z/string selected-zloc)
         this-pos     (has-position? zloc)
         ref               (react/useRef)
-        same-as-selected? (= (z/string zloc) selected-string)]
+        same-as-selected? (= (z/string zloc) selected-string)
+        unused-binding?   (is-unused-binding? this-pos)]
 
     [:div {:style {:box-shadow style/box-shadow
                    :border-radius "10px"
@@ -225,16 +241,18 @@
                    :color (cond 
                             selected? (style/color [:selection :text-color])
                             same-as-selected? (style/color [:same-as-selection :text-color])
+                            unused-binding?   (style/color [:unused-binding :text-color])
                             :else (decide-token-text-color zloc))
                    :background (cond  
                                  selected?         (style/color [:selection :background-color])
                                  same-as-selected? (style/color [:same-as-selection :background-color])
+                                 unused-binding?   (style/color [:unused-binding :background-color])
                                  :else (decide-token-color zloc))}}
      [:div {:ref ref} 
       (if (= nil (z/tag zloc))
           [:br]
-          (z/string zloc))]
-     [lint this-pos zloc ref]]))
+          (z/string zloc))]]))
+     
           
 
 (defn new-line-before-last? [zloc]
@@ -246,6 +264,7 @@
 
 (defn form-interpreter [zloc]
   (let [ref (react/useRef)
+        this-pos     (has-position? zloc)
         selected? (form-interpreters/selected-zloc? zloc)
         editable?     @(subscribe [:db/get [:parenoia :editable?]])]
 
@@ -283,6 +302,7 @@
 
        ;(str (new-line-before-last? (z/left* zloc)))
        ;(z/tag (z/right* (z/skip-whitespace zloc)))
+      [lint this-pos zloc ref]
       (cond
         (form-conditionals/is-ns? zloc)
         [form-interpreters/ns-interpreter zloc form-interpreter]
