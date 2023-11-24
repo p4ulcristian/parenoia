@@ -1,6 +1,8 @@
 (ns parenoia.view
   (:require ["parinfer" :as parinfer]
             ["react" :as react]
+            ["react-dom" :as react-dom]
+            [reagent.core :as reagent]
             [cljs.reader :as reader]
             [clojure.string :as clojure.string]
             [parenoia.events]
@@ -136,11 +138,84 @@
         (znode/symbol-node? token-node)         (style/color [:symbol? :text-color])
         :else (style/color [:string? :text-color])))))
 
+(defn lint-background [level]
+ (case level
+       :warning :orange 
+       :error :red 
+       :green))
+
+(defn one-lint [lint]
+ [:div {:style {:background (lint-background (:level lint))
+                :padding "5px"
+                :color :black 
+                :opacity 0.3 
+                :pointer-events :none}} 
+   (str (:type lint))])
+ 
+
+(defn info-circle [ref this-lints zloc]
+ (let [[open? set-open?] (react/useState false)
+       [x set-x] (react/useState 0)
+       [y set-y] (react/useState 0)]
+  (react/useEffect 
+   (fn []
+    (let [scroll-top (.-scrollTop (.getElementById js/document "parenoia-body"))
+          scroll-left (.-scrollLeft (.getElementById js/document "parenoia-body"))
+          this-x (.-x (.getBoundingClientRect (.-current ref)))
+          this-y (.-y (.getBoundingClientRect (.-current ref)))]
+     (println "mizu " (.-x (.getBoundingClientRect (.-current ref))))
+     (println "he" scroll-top)
+     (set-x (+ scroll-left this-x))
+     (set-y (+ scroll-top this-y)))
+    (fn []))
+   #js [(.-current ref)])
+  (react-dom/createPortal 
+    (reagent/as-element
+     [:div {:class "info-circle"
+            :on-mouse-enter #(set-open? true)
+            :on-mouse-leave #(set-open? false)
+            :style {:cursor :pointer
+                     :position :absolute
+                       :top y
+                       :left x
+                       :z-index 10000 
+                       :transform "translate(-10px, -10px)"
+                       :height (if open? "auto" "10px")
+                       :width (if open? "100px" "10px")
+                       :border-radius (if open? "10px" "50%")
+                       :background (lint-background (:level (first this-lints)))}}
+        [:div {:style {:display (if open? "block" "none")}}
+          (map 
+            (fn [this-lint] [one-lint this-lint])
+            this-lints)]])
+    (.getElementById js/document "parenoia-body"))))     
+   
+         
+        
+                  
+
+(defn lint [position zloc ref]   
+   (when-let [lints @(subscribe [:db/get [:parenoia :kondo-lints]])]
+     (when-let [[this-row this-col] position]
+        (let [this-lints (filter (fn [{:keys [col row]}]
+                                   (= col this-col)
+                                   (= row this-row))
+                           lints)
+              empty-lints? (empty? this-lints)]                        
+         (when-not empty-lints?
+          [:div  
+            {:style {:position :absolute 
+                      :top 0 
+                      :right 0 
+                      :transform "translate(100%, -100%)"}}  
+            [info-circle ref this-lints zloc]])))))
+
 (defn token [zloc selected?]
   (let [selected-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
         selected-pos  (has-position? selected-zloc)
         selected-string  (z/string selected-zloc)
         this-pos     (has-position? zloc)
+        ref               (react/useRef)
         same-as-selected? (= (z/string zloc) selected-string)]
 
     [:div {:style {:box-shadow style/box-shadow
@@ -155,10 +230,12 @@
                                  selected?         (style/color [:selection :background-color])
                                  same-as-selected? (style/color [:same-as-selection :background-color])
                                  :else (decide-token-color zloc))}}
-     [:div 
+     [:div {:ref ref} 
       (if (= nil (z/tag zloc))
           [:br]
-          (z/string zloc))]]))
+          (z/string zloc))]
+     [lint this-pos zloc ref]]))
+          
 
 (defn new-line-before-last? [zloc]
   (if (= :newline (z/tag zloc))
@@ -337,6 +414,7 @@
     (load-effect)
     (keyboard/effect ref)
     [:div {:ref ref
+           :id "parenoia-body"
            :style {:height "100vh"
                    :width "100vw"
                    :overflow-y "scroll"
@@ -355,7 +433,6 @@
                  :color "#EEE"
                  :height "100vh"
                  :width "100vw"}}
-   (str (keys @(subscribe [:db/get [:parenoia]])))
    [namespace-graph/view]
    [namespace-container]
    [refactor-ui/view]])

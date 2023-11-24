@@ -163,7 +163,8 @@
  (println "Linting " path)
  (str (mapv (fn [tip] {:type (:type tip)
                        :row  (:row tip)
-                       :col  (:col tip)})
+                       :col  (:col tip)
+                       :level (:level tip)})
             (-> (clj-kondo/run! {:lint [path]})
                 :findings))))
 
