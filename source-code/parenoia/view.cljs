@@ -153,9 +153,8 @@
    (str (:type lint))])
  
 
-(defn info-circle [ref this-lints zloc]
- (let [[open? set-open?] (react/useState false)
-       [x set-x] (react/useState 0)
+(defn overlay-wrapper [ref set-open? content additional-style]
+ (let [[x set-x] (react/useState 0)
        [y set-y] (react/useState 0)]
   (react/useEffect 
    (fn []
@@ -163,37 +162,43 @@
           scroll-left (.-scrollLeft (.getElementById js/document "parenoia-body"))
           this-x (.-x (.getBoundingClientRect (.-current ref)))
           this-y (.-y (.getBoundingClientRect (.-current ref)))]
-     (println "mizu " (.-x (.getBoundingClientRect (.-current ref))))
-     (println "he" scroll-top)
      (set-x (+ scroll-left this-x))
      (set-y (+ scroll-top this-y)))
     (fn []))
    #js [(.-current ref)])
-  (react-dom/createPortal 
-    (reagent/as-element
-     [:div {:class "info-circle"
-            :on-mouse-enter #(set-open? true)
-            :on-mouse-leave #(set-open? false)
-            :style {:cursor :pointer
-                     :position :absolute
-                       :top y
-                       :left x
-                       :border "1px solid black"
-                       :z-index (if open? 10000 5000)
-                       :transform "translate(0px, 0px)"
-                       :height (if open? "auto" "10px")
-                       :width (if open? "auto" "10px")
-                       :border-radius (if open? "10px" "50%")
-                       :background (lint-background (:level (first this-lints)))}}
-        [:div {:style {:display (if open? "block" "none")}}
+  (when (.getElementById js/document "parenoia-body")
+   (react-dom/createPortal 
+     (reagent/as-element
+      [:div {:class "overlay-wrapper"
+             :on-mouse-enter #(set-open? true)
+             :on-mouse-leave #(set-open? false)
+             :style (merge {:cursor :pointer
+                             :position :absolute
+                               :top y
+                               :left x}
+                           additional-style)}                                  
+         content])
+     (.getElementById js/document "parenoia-body")))))     
+   
+    
+(defn info-circle [ref this-lints zloc]
+  (let [[open? set-open?] (react/useState false)]
+   [overlay-wrapper 
+     ref 
+     set-open?
+     [:div 
+         (when open?
           (map 
             (fn [this-lint] [one-lint this-lint])
-            this-lints)]])
-    (.getElementById js/document "parenoia-body"))))     
-   
-         
-        
-                  
+            this-lints))]
+     {:border "1px solid black"
+      :z-index (if open? 10000 5000)
+      :transform "translate(0px, 0px)"
+      :height (if open? "auto" "10px")
+      :width (if open? "auto" "10px")
+      :border-radius (if open? "10px" "50%")
+      :background (lint-background (:level (first this-lints)))}]))  
+                   
 
 (defn lint [position zloc ref]   
    (when-let [lints @(subscribe [:db/get [:parenoia :kondo-lints]])]
@@ -213,6 +218,36 @@
                       :background :white}}  
             [info-circle ref this-lints zloc]])))))
 
+
+(defn find-top-form-recursion [last-zloc zloc]
+ (let [up-loc (z/up zloc)]
+  (cond 
+    (nil? up-loc) last-zloc
+    :else (recur zloc up-loc))))
+ 
+
+(defn find-top-form [zloc]
+ (find-top-form-recursion nil zloc))
+
+(defn pin-circle [zloc ref]
+  (let [[open? set-open?] (react/useState false)
+        top-form? (= zloc (find-top-form zloc))]
+   (when (and top-form? ref)
+    [overlay-wrapper 
+      ref 
+      set-open?
+      [:div {:style {:color "magenta"}}
+          [:i {:class "fa-solid fa-location-dot"}]]
+      {:border "1px solid black"
+       :z-index (if open? 10000 5000)
+       :transform "translate(10px, -5px)"
+       :height 30
+       :width 30
+       :border-radius "50%"
+       :display :flex 
+       :justify-content :center 
+       :align-items :center
+       :background "lightgreen"}])))  
 
 (defn is-unused-binding? [position]
  (when-let [lints @(subscribe [:db/get [:parenoia :kondo-lints]])]
@@ -315,6 +350,7 @@
        ;(str (new-line-before-last? (z/left* zloc)))
        ;(z/tag (z/right* (z/skip-whitespace zloc)))
       [lint this-pos zloc ref]
+      [pin-circle zloc ref]
       (cond
         (form-conditionals/is-ns? zloc)
         [form-interpreters/ns-interpreter zloc form-interpreter]
