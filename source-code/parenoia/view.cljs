@@ -441,14 +441,24 @@
                  "fa-solid fa-circle"
                  "fa-regular fa-circle")}]]))
 
+
+(defn global-search []
+ [:div {:style {:padding "5px 10px"}}
+  [:input.global-search 
+   {:style {:border-bottom-left-radius "30px"
+            :border-bottom-right-radius "30px"
+            :border-top-left-radius "10px"
+            :border-top-right-radius "10px"
+            :padding "5px"
+            :text-align :center 
+            :font-weight :bold
+            :opacity "0.3"}
+     :placeholder "search."}]])
+
 (defn title []
   (let [style {:font-weight :bold
                :font-size "28px"
-               :top 0 
-               :left "50%" 
-               :z-index 1000
-               :transform "translateX(-50%)"
-               :position :fixed
+               
                :border-bottom-left-radius "10px"
                :border-bottom-right-radius "10px"
                :padding "10px 20px"
@@ -461,12 +471,17 @@
                :font-family "'Syne Mono', monospace"
                 :background "radial-gradient(circle, rgba(245,201,49,1) 0%, rgba(191,165,76,1) 100%)"}]
                
-               
-    [:div
-     {:style style}
-     [:div "Paren"]
-     [parenoia-icon]
-     [:div [:span "ia"]]])) 
+    [:div   {:style {:top 0 
+                      :left "50%" 
+                      :z-index 1000
+                      :transform "translateX(-50%)"
+                      :position :fixed}}        
+     [:div
+      {:style style}
+      [:div "Paren"]
+      [parenoia-icon]
+      [:div [:span "ia"]]]
+     [global-search]])) 
 
 (defn keyboard-shortcut [shortcut desc]
   [:<>
@@ -586,9 +601,33 @@
       project)])) 
 
 
+(defn open-project []
+ [:div 
+  {:style {:display :flex 
+           :justify-content :center 
+           :text-align :center 
+           :padding-bottom "10px"}}
+  [:input {:style {:text-align :center 
+                   :padding "5px"
+                   :border-radius "5px"}
+           :placeholder "Project path"}]])
+
+
+(defn menu-inner []
+ (let [ref (react/useRef)]
+  (react/useEffect 
+      (fn []
+         (keyboard/add-listener (.-current ref) block-some-keyboard-events)
+       (fn []
+         (keyboard/remove-listener (.-current ref) block-some-keyboard-events)))
+      #js [])       
+  [:div {:ref ref}
+   [open-project]
+   [menu-namespaces]]))
+
 (defn menu []
   (let [menu? @(subscribe [:db/get [:parenoia :menu?]])]
-        
+     
      [:div.fade-animation 
        {:style {:display (if menu? "block" "none")
                 :position :fixed 
@@ -603,7 +642,7 @@
                 :top 100 
                 :left "50%"
                 :background "radial-gradient(circle, rgba(245,201,49,1) 0%, rgba(191,165,76,1) 100%)"}}
-       [menu-namespaces]]))   
+       [menu-inner]]))   
 
 (defn view []
   [:div {:style {:background "#333"
