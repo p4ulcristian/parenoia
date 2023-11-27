@@ -237,7 +237,8 @@
                                     (= col this-col)
                                     (= row this-row)
                                     (or (= :unused-binding type)
-                                        (= :unused-referred-var type))))
+                                        (= :unused-referred-var type)
+                                        (= :unused-namespace type))))
                            lints)]
            (not (empty? this-lints))))))     
 
@@ -537,7 +538,9 @@
                    :z-index 10}}
      
      
-     ^{:key (str selected-file)} [one-namespace selected-file-path selected-file]]))
+     ^{:key (str selected-file)} 
+     [one-namespace selected-file-path selected-file]
+     [:div {:style {:height "50vh"}}]]))
      ;[namespace-graph/view]]))
 
      ;[namespaces  @(subscribe [:db/get [:parenoia :project]])]]))
@@ -546,9 +549,10 @@
 
 (defn ns-part [index part]
  [:div 
-   {:style {:padding "10px"
+   {:style {:padding "10px 15px"
             :border-radius "30px"
-            :background (str "rgba(255,100,0," (- 1 (* 2 (/ index 10))) ")")}}
+            :color "#eee"
+            :background (str "rgba(100,100,100," (- 1 (* 2 (/ index 10))) ")")}}
    part])
 
 (defn menu-namespace [namespace project-item]
@@ -564,7 +568,7 @@
              :display :flex
              :border "1px solid black"
              :cursor :pointer
-             :background (if selected? :red :none)}}
+             :background (if selected? :turquoise :none)}}
    (map-indexed 
      (fn [i a] [ns-part i a])
      (clojure.string/split namespace #"\."))]))
