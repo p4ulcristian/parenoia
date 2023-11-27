@@ -236,7 +236,8 @@
     [overlay-wrapper 
       ref 
       set-open?
-      [:div {:style {:color "magenta"}}
+      [:div {:on-click #(dispatch [:parenoia/add-pin! zloc])
+             :style {:color "magenta"}}
           [:i {:class "fa-solid fa-location-dot"}]]
       {:border "1px solid black"
        :z-index (if open? 10000 5000)
@@ -417,15 +418,6 @@
            :on-click (fn [e] (.stopPropagation e))}
      (map-indexed render-fn forms)]))
 
-(defn namespace-title [ns-name set-clicked? clicked? file-name]
-  [:div {:style {:padding "0px 10px"
-                 :user-select "none"}
-         :on-click (fn [e]
-                     (dispatch [:db/set [:parenoia :selected-file] file-name])
-                     (dispatch [:db/set [:parenoia :editable?] false])
-                     (set-clicked? (not clicked?)))}
-   (str ns-name)])
-
 (defn one-namespace [file-path zloc]
   (let [[clicked? set-clicked?] (react/useState true)
         style {:font-size "16px"
@@ -434,11 +426,8 @@
                :padding-bottom "100px"}
 
         ns-name (rewrite/get-namespace-from-file zloc)]
-    [:div
-     [:div {:style style}
-      (str file-path)
-      [namespace-title ns-name set-clicked? clicked? file-path]
-      [forms-container (rewrite/get-forms-from-file zloc) ns-name]]]))
+    [:div {:style style}
+      [forms-container (rewrite/get-forms-from-file zloc) ns-name]]))
 
 (defn title []
   (let [style {:font-weight :bold
@@ -475,6 +464,35 @@
    [keyboard-shortcut "up" "select prev node"]
    [keyboard-shortcut "down" "select next node"]])
 
+(defn pins []
+  (let [pins-data @(subscribe [:db/get [:parenoia :pins]])]
+   [:div 
+    {:style {:position :fixed 
+             :bottom 0
+             
+             :right 0 
+             :background "#333"
+             :border-bottom-left-radius "10px"
+             :border-top-left-radius "10px"
+             :z-index 1000
+             :padding "10px"
+             :display :flex 
+             :flex-direction :column
+             :gap 5}}
+    (map (fn [one-pin]
+          [:div {:on-click #(dispatch [:parenoia/select-pin! one-pin])
+                 :style {:color "magenta"
+                         :gap "5px"
+                         :display :flex
+                         :cursor :pointer}}
+             [:i {:on-click (fn [e] (.stopPropagation e)
+                                    (dispatch [:parenoia/remove-pin! one-pin]))
+                  :class "fa-solid fa-x"}]
+             [:i {:class "fa-solid fa-location-dot"}]
+             [:div (str (:function-name one-pin))]])
+                  
+         pins-data)]))
+
 (defn namespace-container []
   (let [ref (react/useRef)
         selected-file-path @(subscribe [:db/get [:parenoia :selected :file-path]])
@@ -491,10 +509,14 @@
                    :top 0
                    :z-index 10}}
      [title]
+     
      ^{:key (str selected-file)} [one-namespace selected-file-path selected-file]]))
      ;[namespace-graph/view]]))
 
      ;[namespaces  @(subscribe [:db/get [:parenoia :project]])]]))
+
+
+
 
 (defn view []
   [:div {:style {:background "#333"
@@ -503,4 +525,5 @@
                  :width "100vw"}}
    [namespace-graph/view]
    [namespace-container]
-   [refactor-ui/view]])
+   [pins]])
+   ;[refactor-ui/view]])

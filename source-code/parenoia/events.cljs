@@ -240,3 +240,42 @@
        :error-handler    (fn [e] (.log js/console e))}))
 
    db))
+
+(reg-event-db
+ :parenoia/remove-pin!
+ [] 
+ (fn [db [_ pin]]
+   (println "Remove pin " pin)
+   (let [pins (get-in db [:parenoia :pins] [])
+         new-pins (vec (remove (fn [a] (= a pin)) 
+                               pins))]
+     (assoc-in db [:parenoia :pins] new-pins)))) 
+
+(reg-event-db
+ :parenoia/select-pin!
+ [] 
+ (fn [db [_ {:keys [position file-path]}]]
+   (println "Selecting pin " position file-path)
+   (let [file-zloc (get-in db [:parenoia :project file-path])
+         zloc (z/find-last-by-pos file-zloc position)]
+    (-> db
+     (assoc-in [:parenoia :selected :file-path] file-path)
+     (assoc-in [:parenoia :selected-zloc] zloc))))) 
+
+(reg-event-db
+ :parenoia/add-pin!
+ [] 
+ (fn [db [_ zloc]]
+   (let [file-name  (-> db :parenoia :selected :file-path)
+         file-zloc  (get-in db [:parenoia :project file-name])
+         pins (get-in db [:parenoia :pins] [])
+         top-form (find-top-form zloc)
+         function-name (z/string (z/right (z/down top-form)))
+         namespaced-function-name (str (refactor/get-ns file-zloc) "/" function-name)]
+    (assoc-in db [:parenoia :pins] (vec (set (conj pins
+                                              {:position (z/position zloc)
+                                               :file-path file-name
+                                               :function-name namespaced-function-name}))))))) 
+                                    
+
+   
