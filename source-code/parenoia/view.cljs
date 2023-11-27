@@ -509,7 +509,7 @@
                      (.setTimeout js/window 
                        (fn [e] 
                          (set-timeout? nil)
-                         (dispatch [:parenoia/global-search term]))
+                         (dispatch [:parenoia/global-search (-> a .-target .-value)]))
                        300)))}]
    (when-not (empty? results)
     [:div

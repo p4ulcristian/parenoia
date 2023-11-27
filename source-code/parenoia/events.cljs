@@ -131,9 +131,10 @@
                                                   
                              
     (println "Searching for " term)
-    (if (not= "" term) 
-      (assoc-in db  [:parenoia :search-results] filtered-projects)
-      db))))
+    (if (= "" term) 
+      (assoc-in db  [:parenoia :search-results] [])
+      (assoc-in db  [:parenoia :search-results] filtered-projects)))))
+      
 
 (reg-event-db
  :parenoia/set-file!
