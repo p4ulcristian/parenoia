@@ -254,7 +254,7 @@
         selected-string  (z/string selected-zloc)
         this-pos     (has-position? zloc)
         ref               (react/useRef)
-        same-as-selected? (= (z/string zloc) selected-string)
+        same-as-selected? (and (not selected?) (= (z/string zloc) selected-string))
         unused-binding?   (is-unused-binding? this-pos)]
 
     [:div {:style {:box-shadow style/box-shadow
@@ -314,13 +314,17 @@
       #js [selected?])
     [:div {:style {:display :flex
                    :justify-content :flex-start 
-                   :align-items :flex-start}}
+                   :align-items :flex-start
+                   :padding "5px"}}
+                   
      [:div.form-interpreter
-      {:ref ref
+      {:class (when selected? "selected")
+        :ref ref
        :style {:position :relative
                :box-sizing :border-box
                :border-radius "10px"
-               :padding "5px"}
+               }
+                 
        :on-click (fn [e]
                    (.stopPropagation e)
                    (dispatch [:db/set [:parenoia :editable?] false])
@@ -361,10 +365,12 @@
                  :top 0
                  :z-index 1000}}
    [:div
-    {:style {:background "#FFBF00"
+    {:style {:background "rgba(100,0,0,0.4)"
+             :backdrop-filter "blur(10px)"
              :box-shadow style/box-shadow
              :padding "10px"
-             :color "#333"
+             :color "white"
+             :border "1px solid white"
              :border-bottom-left-radius 10
              :border-bottom-right-radius 10
              :display :flex
@@ -400,6 +406,9 @@
    [sticky-function-header zloc index ns-name]
    [:div {:style {:display :flex
                   :gap "10px"
+                  :padding "20px"
+                  :margin-left "45px"
+              
                   :flex-wrap :wrap
                   :margin-top 10}}
     [form-interpreter zloc]]])
@@ -468,7 +477,6 @@
 (defn global-search []
  (let [ref (react/useRef)
        [term set-term] (react/useState "")
-       [focused? set-focused?] (react/useState false)
        [timeout? set-timeout?] (react/useState nil)
        results (or @(subscribe [:db/get [:parenoia :search-results]]) [])]
   (react/useEffect 
@@ -496,11 +504,9 @@
              :padding "5px"
              :text-align :center 
              :font-weight :bold
-             :opacity (if focused? "1" "0.3")}
+            }
       :placeholder "search."
       :value term
-      :on-blur #(set-focused? false) 
-      :on-focus #(set-focused? true)
       :on-change (fn [a] 
                     (set-term (-> a .-target .-value))
                     (if timeout?
@@ -510,7 +516,7 @@
                        (fn [e] 
                          (set-timeout? nil)
                          (dispatch [:parenoia/global-search (-> a .-target .-value)]))
-                       300)))}]
+                       500)))}]
    (when-not (empty? results)
     [:div
      {:style {:width "450px"
@@ -626,7 +632,7 @@
      
      ^{:key (str selected-file)} 
      [one-namespace selected-file-path selected-file]
-     [:div {:style {:height "50vh"}}]]))
+     [:div {:style {:height "80vh"}}]]))
      ;[namespace-graph/view]]))
 
      ;[namespaces  @(subscribe [:db/get [:parenoia :project]])]]))
@@ -710,7 +716,8 @@
        [menu-inner]]))   
 
 (defn view []
-  [:div {:style {:background "#333"
+  [:div {:class "parenoia-background"
+         :style {
                  :color "#EEE"
                  :height "100vh"
                  :width "100vw"}}

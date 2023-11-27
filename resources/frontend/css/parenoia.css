@@ -28,3 +28,43 @@ body {
       opacity: 1;
    }
 }
+
+.selected {
+	border-radius: 50%;
+	box-shadow: 0 0 0 0 rgba(0, 0, 0, 1);
+	animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+	0% {
+		box-shadow: 0 0 0 0 rgba(0, 255, 34, 0.8);
+	}
+
+	70% {
+		box-shadow: 0 0 0 20px rgba(0,184,255, 0.3);
+	}
+
+	100% {
+		box-shadow: 0 0 0 0 rgba(214,0,255, 0.8);
+	}
+}
+
+
+.parenoia-background {
+	background: linear-gradient(-45deg, #4d4d4d, #3c3c3c, #1e1e1e, #111111, #4a0505, #090f49	);
+	background-size: 400% 400%;
+	animation: gradient 15s ease infinite;
+	height: 100vh;
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}

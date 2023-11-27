@@ -99,7 +99,6 @@
         parameter-list  (z/right function-name)
         selected?       (selected-zloc? zloc)]
     [:div {:style {:border-radius  "10px"
-                   :margin-left "20px"
                    :background (if selected?
                                     (style/color [:selection :background-color])
                                     (style/color [:defn  :background-color]))
@@ -120,7 +119,6 @@
         ns-name         (z/right ns-symbol)
         selected?       (selected-zloc? zloc)]
     [:div {:style {:border-radius  "10px"
-                   :margin-left "20px"
                    :padding "10px"
                    :background (if selected?
                                     (style/color [:selection :background-color])
@@ -140,7 +138,7 @@
         def-name         (z/right def-symbol)
         selected?       (selected-zloc? zloc)]
     [:div {:style {:border-radius  "10px"
-                   :margin-left "20px"
+              
                    :padding "10px"
                    :background (if selected?
                                     (style/color [:selection :background-color])
