@@ -101,25 +101,25 @@
     (autofocus-input--effect ref zloc)
     [autofocus-input-wrapper
      [:<>
-      [:div {:style {:position :absolute
-                      :background "#333"
-                      :border-radius 10
-                      :left 0
-                      :top 0
-                      :transform "translateY(-100%)"
-                      :min-width 100
-                      :padding "5px"
-                      :z-index 1000}}
-       [:button {:on-click #(dispatch [:parenoia/rename!
-                                         zloc og-string 
-                                         @autofocus-input-value])}
-         "Rename"]
-       [:textarea {:ref ref
-                   :value @autofocus-input-value
-                   ;:autofocus true
-                    :on-click #(.stopPropagation %)
+      [:textarea {:style {:position :absolute
+                           :background "#BBB"
+                           :border-radius 10
+                           :left 0
+                           :top 0
+                           ;:transform "translateY(-100%)"
+                           :min-width 100
+                           :height "100%"
+                           :width "100%"
+                           :padding "5px"
+                           :z-index 1000}
+                         
+ 
+                   :ref ref
+                    :value @autofocus-input-value
+                    ;:autofocus true
+                     :on-click #(.stopPropagation %)
                   
-                   :on-change  on-change}]]]]))
+                    :on-change  on-change}]]]))
        
 
 (defn decide-token-color [zloc]
@@ -229,27 +229,6 @@
 (defn find-top-form [zloc]
  (find-top-form-recursion nil zloc))
 
-(defn pin-circle [zloc ref]
-  (let [[open? set-open?] (react/useState false)
-        top-form? (= zloc (find-top-form zloc))]
-   (when (and top-form? ref)
-    [overlay-wrapper 
-      ref 
-      set-open?
-      [:div {:on-click #(dispatch [:parenoia/add-pin! zloc])
-             :style {:color "magenta"}}
-          [:i {:class "fa-solid fa-location-dot"}]]
-      {:border "1px solid black"
-       :z-index (if open? 10000 5000)
-       :transform "translate(10px, -5px)"
-       :height 30
-       :width 30
-       :border-radius "50%"
-       :display :flex 
-       :justify-content :center 
-       :align-items :center
-       :background "lightgreen"}])))  
-
 (defn is-unused-binding? [position]
  (when-let [lints @(subscribe [:db/get [:parenoia :kondo-lints]])]
      (when-let [[this-row this-col] position]
@@ -351,7 +330,6 @@
        ;(str (new-line-before-last? (z/left* zloc)))
        ;(z/tag (z/right* (z/skip-whitespace zloc)))
       [lint this-pos zloc ref]
-      [pin-circle zloc ref]
       (cond
         (form-conditionals/is-ns? zloc)
         [form-interpreters/ns-interpreter zloc form-interpreter]
@@ -383,11 +361,28 @@
                  :z-index 1000}}
    [:div
     {:style {:background "#FFBF00"
+             :box-shadow style/box-shadow
              :padding "10px"
              :color "#333"
              :border-bottom-left-radius 10
              :border-bottom-right-radius 10
-             :display :flex}}
+             :display :flex
+             :align-items :center 
+             :gap "10px"}}
+    [:div
+     {:on-click (fn [e] 
+                    (.stopPropagation e)
+                    (dispatch [:parenoia/add-pin! zloc]))
+      :style {:border "1px solid black"
+              :height 30
+              :width 30
+              :border-radius "50%"
+              :display :flex 
+              :justify-content :center 
+              :align-items :center
+              :background "lightgreen"}}
+     [:div {:style {:color "magenta"}}
+           [:i {:class "fa-solid fa-location-dot"}]]]
     [:div
      (str index
        " | "
@@ -424,21 +419,49 @@
                :font-weight :bold
                :cursor :pointer
                :padding-bottom "100px"}
+               
 
         ns-name (rewrite/get-namespace-from-file zloc)]
     [:div {:style style}
       [forms-container (rewrite/get-forms-from-file zloc) ns-name]]))
 
+
+
+(defn parenoia-icon []
+ (let [[open? set-open?] (react/useState false)]
+  [:div 
+   {:on-mouse-enter #(set-open? true)
+    :on-mouse-leave #(set-open? false)}
+   [:i {:style {:font-size "18px"
+                :cursor :pointer}
+        :class (if open? 
+                 "fa-solid fa-circle"
+                 "fa-regular fa-circle")}]]))
+
 (defn title []
   (let [style {:font-weight :bold
-               :display :flex
-               :justify-content :center
                :font-size "24px"
-               :padding "10px"
-               :margin "10px"}]
+               :top 10 
+               :left "50%" 
+               :z-index 1000
+               :transform "translateX(-50%)"
+               :position :fixed
+               :border-radius "10px"
+               :padding "10px 20px"
+               :color "#333"
+               :display :flex 
+               :justify-content :center 
+               :align-items :center
+               :box-shadow style/box-shadow
+               :gap "5px"
+                :background "rgb(255, 191, 0)"}]
+               
+               
     [:div
      {:style style}
-     [:div "Parenoia"]]))
+     [:div "Paren"]
+     [parenoia-icon]
+     [:div [:span "ia"]]])) 
 
 (defn keyboard-shortcut [shortcut desc]
   [:<>
@@ -508,7 +531,7 @@
                    :right 0
                    :top 0
                    :z-index 10}}
-     [title]
+     
      
      ^{:key (str selected-file)} [one-namespace selected-file-path selected-file]]))
      ;[namespace-graph/view]]))
@@ -523,6 +546,7 @@
                  :color "#EEE"
                  :height "100vh"
                  :width "100vw"}}
+   [title]
    [namespace-graph/view]
    [namespace-container]
    [pins]])
