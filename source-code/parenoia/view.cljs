@@ -322,7 +322,6 @@
                :border-radius "10px"
                :padding "5px"}
        :on-click (fn [e]
-                   (js/console.log "eh: " (z/string zloc))
                    (.stopPropagation e)
                    (dispatch [:db/set [:parenoia :editable?] false])
                    (js/window.setTimeout
@@ -444,19 +443,34 @@
 
 (defn one-result [result]
  [:div 
-   {:style {:padding "5px"
-            :background :white 
+   {:on-click #(dispatch [:parenoia/go-to! 
+                           (:file-path result)
+                           (:position result)])
+    :style {:padding "5px"
+            :background "rgba(255,255,255,0.8)"
             :color "#333"
-            :border-radius "5px"}}
-   [:div (:namespace result)]
-   [:div (str (:position result))]])
+            :border-radius "5px"
+            :cursor :pointer
+            :margin "20px"}}
+            
+   [:div 
+     {:style
+      {:background "yellow" 
+       :padding "10px"
+       :font-weight :bold
+       :color "#333"}}
+     (:namespace result)]
+   [:pre 
+     {:style {:overflow-x :auto}}
+     (str (:content result))]])
    ;[:pre (:content result)]])
 
 (defn global-search []
  (let [ref (react/useRef)
        [term set-term] (react/useState "")
        [focused? set-focused?] (react/useState false)
-       results @(subscribe [:parenoia/global-search term])]
+       [timeout? set-timeout?] (react/useState nil)
+       results (or @(subscribe [:db/get [:parenoia :search-results]]) [])]
   (react/useEffect 
       (fn []
          (let [current-ref (.-current ref)]
@@ -467,12 +481,16 @@
   [:div {:ref ref
          :style {:padding "5px 10px"
                  :display :flex 
+                 :position :fixed 
+                 :right 0 
+                 :top 50
+                 :z-index 1000
                  :flex-direction :column 
                  :justify-content :center 
-                 :align-items :center}}
+                 :align-items :flex-end}}
    [:input.global-search 
-    {:style {:border-bottom-left-radius "30px"
-             :border-bottom-right-radius "30px"
+    {:style {:border-bottom-left-radius "50px"
+             :border-bottom-right-radius "10px"
              :border-top-left-radius "10px"
              :border-top-right-radius "10px"
              :padding "5px"
@@ -483,16 +501,29 @@
       :value term
       :on-blur #(set-focused? false) 
       :on-focus #(set-focused? true)
-      :on-change (fn [a] (set-term (-> a .-target .-value)))}]
-   [:div
-    {:style {:display :flex 
-             :gap "5px"
-             :flex-direction :column
-             :padding "10px"
-             :border-radius "10px"
-             :background "#CCC"}} 
-    (map (fn [a] [one-result a]) 
-         results)]]))
+      :on-change (fn [a] 
+                    (set-term (-> a .-target .-value))
+                    (if timeout?
+                     (.clearTimeout js/window timeout?))
+                    (set-timeout? 
+                     (.setTimeout js/window 
+                       (fn [e] 
+                         (set-timeout? nil)
+                         (dispatch [:parenoia/global-search term]))
+                       300)))}]
+   (when-not (empty? results)
+    [:div
+     {:style {:width "450px"
+              
+              
+              :border-radius "10px"
+              :overflow-y :auto 
+              :max-height "80vh"
+              :padding "20px"
+              :border "1px solid black"}}
+               
+     (map (fn [a] [one-result a]) 
+          results)])]))
 
 (defn title []
   (let [style {:font-weight :bold
@@ -520,8 +551,8 @@
       {:style style}
       [:div "Paren"]
       [parenoia-icon]
-      [:div [:span "ia"]]]
-     [global-search]])) 
+      [:div [:span "ia"]]]]))
+     
 
 (defn keyboard-shortcut [shortcut desc]
   [:<>
@@ -687,5 +718,6 @@
    [menu]
    [namespace-graph/view]
    [namespace-container]
-   [pins]])
+   [pins]
+   [global-search]])
    ;[refactor-ui/view]])

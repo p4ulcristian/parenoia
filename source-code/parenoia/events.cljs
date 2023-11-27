@@ -9,6 +9,16 @@
     [rewrite-clj.zip :as z]))
 
 
+(defn find-top-form-recursion [last-zloc zloc]
+ (let [up-loc (z/up zloc)]
+  (cond 
+    (nil? up-loc) last-zloc
+    :else (recur zloc up-loc))))
+ 
+
+(defn find-top-form [zloc]
+ (find-top-form-recursion nil zloc))
+
 (reg-event-db
  :db/set
  (fn [db [_ path value]]
@@ -74,8 +84,10 @@
  (fn [db [_ path pos]]
    (let [file-zloc (get-in db [:parenoia :project path])
          selected-zloc (z/find-last-by-pos file-zloc pos)]
+      (println path pos)
+      (.setTimeout js/window #(dispatch [:db/set [:parenoia :selected-zloc]  selected-zloc])
+                  150)
       (-> db
-       (assoc-in [:parenoia :selected-zloc]  selected-zloc)
        (assoc-in [:parenoia :selected :file-path] path)))))
    
 
@@ -92,9 +104,9 @@
          splitted-lines  (clojure.string/split text-till-index #"\n")
          last-line       (last splitted-lines)]
     [(count splitted-lines)
-     (count last-line)]))
+     (inc (count last-line))]))
      
-(reg-sub
+(reg-event-db
  :parenoia/global-search
  (fn [db [_ term]]
    (let [project (-> db :parenoia :project)
@@ -107,17 +119,21 @@
                                project)
          filtered-projects (map (fn [[path zloc]]
                                    (let [root-string (z/root-string zloc)
-                                         search-index (clojure.string/index-of root-string term)] 
+                                         search-index (clojure.string/index-of root-string term)
+                                         pos          (get-text-position root-string search-index)
+                                         pos-zloc     (z/find-last-by-pos zloc pos)
+                                         top-form     (z/string (find-top-form pos-zloc))] 
                                     {:namespace (refactor/get-ns zloc)
                                      :file-path path
-                                     :position  (get-text-position root-string search-index)
-                                     :content   (get-text-context root-string search-index)})) 
+                                     :position  pos
+                                     :content   top-form})) 
                                 filtered-namespaces)]
                                                   
                              
-    
+    (println "Searching for " term)
     (if (not= "" term) 
-      filtered-projects []))))
+      (assoc-in db  [:parenoia :search-results] filtered-projects)
+      db))))
 
 (reg-event-db
  :parenoia/set-file!
@@ -180,26 +196,7 @@
    db))
 
 
-(defn find-top-form-recursion [last-zloc zloc]
- (let [up-loc (z/up zloc)]
-  (cond 
-    (nil? up-loc) last-zloc
-    :else (recur zloc up-loc))))
- 
 
-(defn find-top-form [zloc]
- (find-top-form-recursion nil zloc))
-
-(defn find-op
-  [zloc]
-  (loop [op-loc (or (and (= :list (z/tag zloc))
-                         (z/down zloc))
-                    (z/leftmost zloc))]
-    (let [up-loc (z/up op-loc)]
-      (cond
-        (nil? up-loc) nil
-        (= :list (z/tag up-loc)) op-loc
-        :else (recur (z/leftmost up-loc))))))
 
 (defn root? [loc]
   (identical? :forms (z/tag loc)))
