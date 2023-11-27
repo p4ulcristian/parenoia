@@ -1,9 +1,13 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Syne+Mono&display=swap');
+
 @font-face {
   font-family: "Source Code Pro";
   src:
     local("Source Code Pro"),
     url("/css/SourceCodePro-VariableFont_wght.ttf") format("truetype");
 }
+
 
 body {
   font-family: "Source Code Pro";

@@ -431,8 +431,8 @@
  (let [[open? set-open?] (react/useState false)]
   [:div 
    {:on-mouse-enter #(set-open? true)
-    :on-mouse-leave #(set-open? false)}
-   [:i {:style {:font-size "18px"
+    :on-mouse-leave #(set-open? false)} 
+   [:i {:style {:font-size "22px"
                 :cursor :pointer}
         :class (if open? 
                  "fa-solid fa-circle"
@@ -440,7 +440,7 @@
 
 (defn title []
   (let [style {:font-weight :bold
-               :font-size "24px"
+               :font-size "28px"
                :top 10 
                :left "50%" 
                :z-index 1000
@@ -454,6 +454,7 @@
                :align-items :center
                :box-shadow style/box-shadow
                :gap "5px"
+               :font-family "'Syne Mono', monospace"
                 :background "rgb(255, 191, 0)"}]
                
                
