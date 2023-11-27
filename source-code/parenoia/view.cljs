@@ -442,25 +442,65 @@
                  "fa-regular fa-circle")}]]))
 
 
+(defn one-result [result]
+ [:div 
+   {:style {:padding "5px"
+            :background :white 
+            :color "#333"
+            :border-radius "5px"}}
+   [:div (:namespace result)]
+   [:div (str (:position result))]])
+   ;[:pre (:content result)]])
+
 (defn global-search []
- [:div {:style {:padding "5px 10px"}}
-  [:input.global-search 
-   {:style {:border-bottom-left-radius "30px"
-            :border-bottom-right-radius "30px"
-            :border-top-left-radius "10px"
-            :border-top-right-radius "10px"
-            :padding "5px"
-            :text-align :center 
-            :font-weight :bold
-            :opacity "0.3"}
-     :placeholder "search."}]])
+ (let [ref (react/useRef)
+       [term set-term] (react/useState "")
+       [focused? set-focused?] (react/useState false)
+       results @(subscribe [:parenoia/global-search term])]
+  (react/useEffect 
+      (fn []
+         (let [current-ref (.-current ref)]
+          (keyboard/add-listener current-ref block-some-keyboard-events)
+          (fn []
+            (keyboard/remove-listener current-ref block-some-keyboard-events))))
+      #js []) 
+  [:div {:ref ref
+         :style {:padding "5px 10px"
+                 :display :flex 
+                 :flex-direction :column 
+                 :justify-content :center 
+                 :align-items :center}}
+   [:input.global-search 
+    {:style {:border-bottom-left-radius "30px"
+             :border-bottom-right-radius "30px"
+             :border-top-left-radius "10px"
+             :border-top-right-radius "10px"
+             :padding "5px"
+             :text-align :center 
+             :font-weight :bold
+             :opacity (if focused? "1" "0.3")}
+      :placeholder "search."
+      :value term
+      :on-blur #(set-focused? false) 
+      :on-focus #(set-focused? true)
+      :on-change (fn [a] (set-term (-> a .-target .-value)))}]
+   [:div
+    {:style {:display :flex 
+             :gap "5px"
+             :flex-direction :column
+             :padding "10px"
+             :border-radius "10px"
+             :background "#CCC"}} 
+    (map (fn [a] [one-result a]) 
+         results)]]))
 
 (defn title []
   (let [style {:font-weight :bold
                :font-size "28px"
                
-               :border-bottom-left-radius "10px"
-               :border-bottom-right-radius "10px"
+               :border-bottom-left-radius "20px"
+               :border-bottom-right-radius "20px"
+               
                :padding "10px 20px"
                :color "#333"
                :display :flex 
@@ -575,8 +615,8 @@
                     @(subscribe [:db/get [:parenoia :selected :file-path]]))]
   [:div 
    {:on-click (fn [e]
-                (dispatch [:db/set [:parenoia :selected-zloc]  (second project-item)])
-                (dispatch [:db/set [:parenoia :selected :file-path] (first project-item)]))
+                (dispatch [:parenoia/go-to! (first project-item) (z/position (second project-item))])) 
+                
      :style {:font-weight "bold"
              :padding "5px"
              :gap "10px"
@@ -595,10 +635,11 @@
                   :flex-direction :column 
                   :gap "10px"
                   :justify-content :flex-start}}
+     ;(str (sort-by first project))
      (map 
       (fn [a project-item] [:div [menu-namespace a project-item]])
       (sort namespaces)
-      project)])) 
+      (sort (fn [a b] (compare (first a) (first b))) project))])) 
 
 
 (defn open-project []
@@ -614,16 +655,9 @@
 
 
 (defn menu-inner []
- (let [ref (react/useRef)]
-  (react/useEffect 
-      (fn []
-         (keyboard/add-listener (.-current ref) block-some-keyboard-events)
-       (fn []
-         (keyboard/remove-listener (.-current ref) block-some-keyboard-events)))
-      #js [])       
-  [:div {:ref ref}
+  [:div 
    [open-project]
-   [menu-namespaces]]))
+   [menu-namespaces]])
 
 (defn menu []
   (let [menu? @(subscribe [:db/get [:parenoia :menu?]])]

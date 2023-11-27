@@ -67,6 +67,58 @@
    (get-project-structure)
    db))
 
+
+(reg-event-db 
+ :parenoia/go-to!
+ []
+ (fn [db [_ path pos]]
+   (let [file-zloc (get-in db [:parenoia :project path])
+         selected-zloc (z/find-last-by-pos file-zloc pos)]
+      (-> db
+       (assoc-in [:parenoia :selected-zloc]  selected-zloc)
+       (assoc-in [:parenoia :selected :file-path] path)))))
+   
+
+
+(defn get-text-context [text index]
+ (let [context-radius 200
+       a (max 0 (- index context-radius))
+       b (min (count text) (+ index context-radius))]
+  (subs text a b)))
+
+
+(defn get-text-position [text index]
+   (let [text-till-index (subs text 0 index)
+         splitted-lines  (clojure.string/split text-till-index #"\n")
+         last-line       (last splitted-lines)]
+    [(count splitted-lines)
+     (count last-line)]))
+     
+(reg-sub
+ :parenoia/global-search
+ (fn [db [_ term]]
+   (let [project (-> db :parenoia :project)
+         filtered-indexes  (remove false? (map (fn [[path file]]
+                                                 (clojure.string/index-of (z/root-string file) term))
+                                               project))
+         filtered-namespaces (filter
+                               (fn [[path file]]
+                                 (clojure.string/includes? (z/root-string file) term))
+                               project)
+         filtered-projects (map (fn [[path zloc]]
+                                   (let [root-string (z/root-string zloc)
+                                         search-index (clojure.string/index-of root-string term)] 
+                                    {:namespace (refactor/get-ns zloc)
+                                     :file-path path
+                                     :position  (get-text-position root-string search-index)
+                                     :content   (get-text-context root-string search-index)})) 
+                                filtered-namespaces)]
+                                                  
+                             
+    
+    (if (not= "" term) 
+      filtered-projects []))))
+
 (reg-event-db
  :parenoia/set-file!
  [(undoable)]
