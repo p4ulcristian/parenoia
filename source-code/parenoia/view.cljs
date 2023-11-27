@@ -236,7 +236,8 @@
                                    (and 
                                     (= col this-col)
                                     (= row this-row)
-                                    (= :unused-binding type)))
+                                    (or (= :unused-binding type)
+                                        (= :unused-referred-var type))))
                            lints)]
            (not (empty? this-lints))))))     
 
@@ -431,7 +432,8 @@
  (let [[open? set-open?] (react/useState false)]
   [:div 
    {:on-mouse-enter #(set-open? true)
-    :on-mouse-leave #(set-open? false)} 
+    :on-mouse-leave #(set-open? false)
+    :on-click #(dispatch [:db/set [:parenoia :menu?] (not @(subscribe [:db/get [:parenoia :menu?]]))])} 
    [:i {:style {:font-size "22px"
                 :cursor :pointer}
         :class (if open? 
@@ -441,12 +443,13 @@
 (defn title []
   (let [style {:font-weight :bold
                :font-size "28px"
-               :top 10 
+               :top 0 
                :left "50%" 
                :z-index 1000
                :transform "translateX(-50%)"
                :position :fixed
-               :border-radius "10px"
+               :border-bottom-left-radius "10px"
+               :border-bottom-right-radius "10px"
                :padding "10px 20px"
                :color "#333"
                :display :flex 
@@ -455,7 +458,7 @@
                :box-shadow style/box-shadow
                :gap "5px"
                :font-family "'Syne Mono', monospace"
-                :background "rgb(255, 191, 0)"}]
+                :background "radial-gradient(circle, rgba(245,201,49,1) 0%, rgba(191,165,76,1) 100%)"}]
                
                
     [:div
@@ -541,6 +544,62 @@
 
 
 
+(defn ns-part [index part]
+ [:div 
+   {:style {:padding "10px"
+            :border-radius "30px"
+            :background (str "rgba(255,100,0," (- 1 (* 2 (/ index 10))) ")")}}
+   part])
+
+(defn menu-namespace [namespace project-item]
+ (let [selected? (= (first project-item)
+                    @(subscribe [:db/get [:parenoia :selected :file-path]]))]
+  [:div 
+   {:on-click (fn [e]
+                (dispatch [:db/set [:parenoia :selected-zloc]  (second project-item)])
+                (dispatch [:db/set [:parenoia :selected :file-path] (first project-item)]))
+     :style {:font-weight "bold"
+             :padding "5px"
+             :gap "10px"
+             :display :flex
+             :border "1px solid black"
+             :cursor :pointer
+             :background (if selected? :red :none)}}
+   (map-indexed 
+     (fn [i a] [ns-part i a])
+     (clojure.string/split namespace #"\."))]))
+
+(defn menu-namespaces []
+ (let [project @(subscribe [:db/get [:parenoia :project]])
+       namespaces (map refactor/get-ns (map second project))]
+   [:div {:style {:display :flex 
+                  :flex-direction :column 
+                  :gap "10px"
+                  :justify-content :flex-start}}
+     (map 
+      (fn [a project-item] [:div [menu-namespace a project-item]])
+      (sort namespaces)
+      project)])) 
+
+
+(defn menu []
+  (let [menu? @(subscribe [:db/get [:parenoia :menu?]])]
+        
+     [:div.fade-animation 
+       {:style {:display (if menu? "block" "none")
+                :position :fixed 
+                :z-index 10000
+                :transform "translateX(-50%)"
+                :padding "20px"
+                :border-radius "10px"
+                :color "#333"
+                :height "80vh"
+                :width "80vw"
+                :overflow-y "auto"
+                :top 100 
+                :left "50%"
+                :background "radial-gradient(circle, rgba(245,201,49,1) 0%, rgba(191,165,76,1) 100%)"}}
+       [menu-namespaces]]))   
 
 (defn view []
   [:div {:style {:background "#333"
@@ -548,6 +607,7 @@
                  :height "100vh"
                  :width "100vw"}}
    [title]
+   [menu]
    [namespace-graph/view]
    [namespace-container]
    [pins]])

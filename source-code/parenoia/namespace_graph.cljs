@@ -101,7 +101,7 @@
                 :events (events nodes)}]]))
 
 (defn view-wrapper [content]
-  (let [project-map? @(subscribe [:db/get [:parenoia :project-map?]])]
+  (let [project-map? (not @(subscribe [:db/get [:parenoia :project-map?]]))]
     [:div {:style {:position :fixed
                    :right 0
                    :top 0
