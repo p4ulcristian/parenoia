@@ -501,22 +501,22 @@
    {:on-click #(dispatch [:parenoia/go-to! 
                            (:file-path result)
                            (:position result)])
-    :style {:padding "5px"
-            :background "rgba(255,255,255,0.8)"
-            :color "#333"
-            :border-radius "5px"
+    :style {:color "white"
             :cursor :pointer
-            :margin "20px"}}
+            :margin-bottom "20px"}}
             
    [:div 
      {:style
-      {:background "yellow" 
+      {:background "#FFBF00" 
        :padding "10px"
+       :border-bottom-left-radius "10px"
+       :border-bottom-right-radius "10px"
        :font-weight :bold
        :color "#333"}}
      (:namespace result)]
    [:pre 
-     {:style {:overflow-x :auto}}
+     {:style {:overflow-x :auto
+              :padding "10px"}}
      (str (:content result))]])
    ;[:pre (:content result)]])
 
@@ -566,14 +566,13 @@
                        500)))}]
    (when-not (empty? results)
     [:div
-     {:style {:width "450px"
-              
-              
+     {:style {:width "400px"       
               :border-radius "10px"
               :overflow-y :auto 
               :max-height "80vh"
-              :padding "20px"
-              :border "1px solid black"}}
+              
+              :background "rgba(0,0,0,0.3)"
+              :backdrop-filter "blur(4px)"}}
                
      (map (fn [a] [one-result a]) 
           results)])]))
@@ -709,7 +708,7 @@
              :cursor :pointer
              :background (if selected? :turquoise :none)}}
    (map-indexed 
-     (fn [i a] [ns-part i a])
+     (fn [i a] ^{:key a}[ns-part i a])
      (clojure.string/split namespace #"\."))]))
 
 (defn menu-namespaces []
@@ -721,7 +720,7 @@
                   :justify-content :flex-start}}
      ;(str (sort-by first project))
      (map 
-      (fn [a project-item] [:div [menu-namespace a project-item]])
+      (fn [a project-item] ^{:key a}[:div [menu-namespace a project-item]])
       (sort namespaces)
       (sort (fn [a b] (compare (first a) (first b))) project))])) 
 
