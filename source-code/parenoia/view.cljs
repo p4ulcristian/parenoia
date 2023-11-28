@@ -353,6 +353,7 @@
                    ;:inline "center"})))
         (fn []))
       #js [selected?])
+    ^{:key (str this-pos (z/string zloc))}
     [:div {:style {:display :flex
                    :justify-content :flex-start 
                    :align-items :flex-start
