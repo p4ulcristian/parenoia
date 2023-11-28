@@ -322,6 +322,7 @@
  (fn [db [_ path]]
    (let [file-name  (-> db :parenoia :selected :file-path)
          file-zloc  (get-in db [:parenoia :project file-name])]
+    (println "Setting project path")
     (POST "/set-project-path"
       {:params {:path path}
         :handler          (fn [e] (get-project-structure))

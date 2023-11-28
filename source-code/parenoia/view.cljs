@@ -87,6 +87,7 @@
           (keyboard/add-listener current-ref block-some-keyboard-events)
           (.setTimeout js/window #(.select current-ref) 50))
         (autofocus-input--unmount current-ref zloc)))
+        
     #js []))
 
 (defn autofocus-input-wrapper [content]
@@ -692,6 +693,7 @@
 
 (defn namespace-container []
   (let [ref (react/useRef)
+        current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
         selected-file-path @(subscribe [:db/get [:parenoia :selected :file-path]])
         selected-file @(subscribe [:db/get [:parenoia :project selected-file-path]])]
     (load-effect)
@@ -759,16 +761,25 @@
 
 
 (defn open-project []
- [:div 
-  {:style {:display :flex 
-           :justify-content :center 
-           :text-align :center 
-           :padding-bottom "10px"}}
-  [:input {:style {:text-align :center 
-                   :padding "5px"
-                   :border-radius "5px"}
-           :on-blur (fn [a] (dispatch [:parenoia/set-project-path! (-> a .-target .-value)]))
-           :placeholder "Project path"}]])
+ (let [ref (react/useRef)]
+  (react/useEffect
+     (fn []
+       (let [current-ref (.-current ref)]
+         (keyboard/add-listener current-ref block-some-keyboard-events)
+         (fn [] 
+          (keyboard/remove-listener current-ref block-some-keyboard-events))))
+     #js [])
+  [:div 
+   {:style {:display :flex 
+            :justify-content :center 
+            :text-align :center 
+            :padding-bottom "10px"}}
+   [:input {:ref ref
+            :style {:text-align :center 
+                    :padding "5px"
+                    :border-radius "5px"}
+            :on-blur (fn [a] (dispatch [:parenoia/set-project-path! (-> a .-target .-value)]))
+            :placeholder "Project path"}]]))
 
 
 (defn menu-inner []
