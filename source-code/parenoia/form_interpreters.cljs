@@ -76,6 +76,108 @@
                   :grid-row-gap    "5px"}}
     [map-row-interpreter (z/down zloc) form-interpreter]]))
 
+(defn cond-interpreter  [zloc form-interpreter]
+  (let [selected? (selected-zloc? zloc)
+        cond-symbol (z/down zloc)
+        next-symbol (z/right cond-symbol)]
+   [:div {:class "cond"
+          :style {;:border-left    "4px double black"
+                  ;:border-right   "4px double black"
+                  :border-radius  "10px"
+                  :background  (if selected? 
+                                 (style/color [:selection :background-color]) 
+                                 (style/color [:function :background-color]))
+                  :color       (style/color [:function :text-color])
+
+                  :box-shadow style/box-shadow
+                  :width "fit-content"
+                  :padding "5px"}}
+                  
+    [:div {:style {:font-size "22px"}}
+     [form-interpreter cond-symbol]]
+    [:div {:style {:display :grid
+                    :grid-template-columns "auto auto"
+                    :grid-column-gap "15px"
+                    :grid-row-gap    "5px"}}
+     [map-row-interpreter next-symbol form-interpreter]]]))
+
+
+(defn case-interpreter  [zloc form-interpreter]
+  (let [selected? (selected-zloc? zloc)
+        case-symbol (z/down zloc)
+        case-condition (z/right case-symbol)
+        next-symbol (z/right case-condition)]
+   [:div {:class "case"
+          :style {;:border-left    "4px double black"
+                  ;:border-right   "4px double black"
+                  :border-radius  "10px"
+                  :background  (if selected? 
+                                 (style/color [:selection :background-color]) 
+                                 (style/color [:function :background-color]))
+                  :color       (style/color [:function :text-color])
+
+                  :box-shadow style/box-shadow
+                  :width "fit-content"
+                  :padding "5px"}}
+                  
+    [:div {:style {:font-size "22px" 
+                   :display :flex
+                   :padding-bottom "20px"}}
+     [form-interpreter case-symbol]
+     [form-interpreter case-condition]]
+    [:div {:style {:display :grid
+                    :grid-template-columns "auto auto"
+                    :grid-column-gap "15px"
+                    :grid-row-gap    "5px"}}
+     [map-row-interpreter next-symbol form-interpreter]]]))
+
+
+(defn if-interpreter  [zloc form-interpreter]
+  (let [selected? (selected-zloc? zloc)
+        if-symbol    (z/down zloc)
+        if-condition (z/right if-symbol)
+        if-true (z/right if-condition)
+        if-false (z/right if-true)
+        next-symbol (z/right if-false)]
+   [:div {:class "if"
+          :style {;:border-left    "4px double black"
+                  ;:border-right   "4px double black"
+                  :border-radius  "10px"
+                  :background  (if selected? 
+                                 (style/color [:selection :background-color]) 
+                                 (style/color [:function :background-color]))
+                  :color       (style/color [:function :text-color])
+
+                  :box-shadow style/box-shadow
+                  :width "fit-content"
+                  :padding "5px"}}
+    [:div {:style {:display :flex}}             
+     [:div {:style {:font-size "22px"
+                    :margin-bottom "10px"
+                    :margin-right "10px"}} 
+      [form-interpreter if-symbol]]
+     [:div
+      [:div 
+         {:style {:background "#FFA500"
+                   :padding "5px"
+                   :margin-bottom "10px"
+                   :border-radius "10px"}}
+                
+         [form-interpreter if-condition]]
+      [:div 
+        {:style {:background "#66FF66"
+                   :border-radius "10px"
+                   :padding "5px"
+                   :margin-bottom "10px"}}
+        [form-interpreter if-true]]
+      [:div 
+        {:style {:background "crimson"
+                 :padding "5px"
+                 :border-radius "10px"}}
+        [form-interpreter if-false]]]]
+    (when next-symbol [form-interpreter next-symbol])]))
+
+
 (defn vector-interpreter  [zloc form-interpreter]
   [:div.vector {:style {:border-left    "1px solid black"
                         :border-right   "1px solid black"
@@ -391,9 +493,9 @@
                       :align-items :center
                       :background  (if selected? 
                                      (style/color [:selection :background-color]) 
-                                     (style/color [:deref :background-color]))})}
+                                     (style/color [:function :background-color]))})}
       [:div {:style {:padding "10px"
-                     :color (style/color [:deref :text-color])}}
+                     :color (style/color [:function :text-color])}}
            "@"]
       [function-child-interpreter
        reader-macro 
@@ -429,9 +531,9 @@
                       :align-items :center
                       :background  (if selected? 
                                      (style/color [:selection :background-color]) 
-                                     (style/color [:anonym-fn :background-color]))})}
+                                     (style/color [:function :background-color]))})}
       [:div {:style {:padding "10px"
-                     :color (style/color [:anonym-fn :text-color])}}
+                     :color (style/color [:function :text-color])}}
            "#"]
       [:div {:style {:display :flex}}
        [function-child-interpreter

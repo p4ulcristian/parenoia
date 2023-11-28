@@ -19,6 +19,24 @@
         def?        (= "def" first-token)]
     (and is-list? def?)))
 
+(defn is-cond? [zloc]
+  (let [is-list?    (z/list? zloc)
+        first-token (z/string (z/down zloc))
+        def?        (= "cond" first-token)]
+    (and is-list? def?)))
+
+(defn is-case? [zloc]
+  (let [is-list?    (z/list? zloc)
+        first-token (z/string (z/down zloc))
+        def?        (= "case" first-token)]
+    (and is-list? def?)))
+
+(defn is-if? [zloc]
+  (let [is-list?    (z/list? zloc)
+        first-token (z/string (z/down zloc))
+        def?        (= "if" first-token)]
+    (and is-list? def?)))
+
 (defn is-let-vector? [zloc]
   (let [is-vector?    (z/vector? zloc)
         is-let?       (= "let" (z/string (z/left zloc)))]

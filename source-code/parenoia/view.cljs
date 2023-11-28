@@ -397,6 +397,13 @@
         [form-interpreters/map-interpreter  zloc form-interpreter]
          ;(form-conditionals/is-vector? zloc)  
          ;[form-interpreters/vector-interpreter  zloc form-interpreter]
+        (form-conditionals/is-cond? zloc) 
+        [form-interpreters/cond-interpreter  zloc form-interpreter]
+        (form-conditionals/is-case? zloc) 
+        [form-interpreters/case-interpreter  zloc form-interpreter]
+        (form-conditionals/is-if? zloc) 
+        [form-interpreters/if-interpreter  zloc form-interpreter]
+        
         (or
           (form-conditionals/is-vector? zloc)
           (form-conditionals/is-function? zloc))
@@ -409,6 +416,7 @@
         [form-interpreters/meta-interpreter  zloc form-interpreter]
         (form-conditionals/is-anonym-fn? zloc) 
         [form-interpreters/anonym-fn-interpreter  zloc form-interpreter]
+        
          ;; (form-conditionals/is-function? zloc)
          ;; [form-interpreters/form-interpreter-iterator (z/down zloc) form-interpreter :horizontal]
         :else [token zloc selected?])
