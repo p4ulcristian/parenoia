@@ -463,14 +463,16 @@
             :position :relative
             :overflow-wrap "break-word"}}
    [sticky-function-header zloc index ns-name]
-   [:div {:style {:display :flex
-                  :gap "10px"
-                  :padding "20px"
-                  :margin-left "45px"
-              
-                  :flex-wrap :wrap
-                  :margin-top 10}}
-    [form-interpreter zloc]]])
+   [:div {:style {:padding "40px"}}
+    [:div {:style {:width "100%"
+                   :box-sizing :border-box
+                   :overflow-x :auto}}
+     [:div {:style {:display :flex
+                    :gap "10px"
+                   
+                    :flex-wrap :wrap
+                    :margin-top 10}}
+      [form-interpreter zloc]]]]])
 
 (defn forms-container [forms ns-name]
   (let [style {:display :flex
