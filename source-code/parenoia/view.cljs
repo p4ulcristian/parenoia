@@ -54,7 +54,10 @@
       (keyboard/check-key e "q")
       (keyboard/check-key e "w")
       (keyboard/check-key e "e")
-      (keyboard/check-key e "r"))
+      (keyboard/check-key e "r")
+      (keyboard/check-key e "a")
+      (keyboard/check-key e "s")
+      (keyboard/check-key e "d"))
     (.stopPropagation e)))
 
 (defn autofocus-input--unmount [current-ref zloc]

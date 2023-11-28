@@ -69,6 +69,46 @@
         (.preventDefault event)
         (modify-file (paredit/slurp-forward current-zloc))))))
 
+(defn on-a-fn [current-zloc]
+  (fn [^js event]
+    (when (and (without-special-keys event) (check-key event "a"))
+      (do
+        (.preventDefault event)
+        (modify-file (z/left (z/insert-left current-zloc 'x)))))))
+
+(defn on-s-fn [current-zloc]
+  (fn [^js event]
+    (when (and (without-special-keys event) (check-key event "s"))
+      (do
+        (.preventDefault event)
+        (modify-file (z/left (z/insert-left (z/down current-zloc) 'x)))))))
+
+(defn on-d-fn [current-zloc]
+  (fn [^js event]
+    (when (and (without-special-keys event) (check-key event "d"))
+      (do
+        (.preventDefault event)
+        (modify-file (z/right (z/insert-right current-zloc 'x)))))))
+
+(defn on-shift-a-fn [current-zloc]
+  (fn [^js event]
+    (when (and (.-shiftKey event) (check-key event "A"))
+      (do
+        (.preventDefault event)
+        (modify-file
+          (z/left (z/insert-newline-left (z/insert-left current-zloc 'x))))))))
+
+
+(defn on-shift-d-fn [current-zloc]
+  (fn [^js event]
+    (when (and (.-shiftKey event) (check-key event "D"))
+      (do
+        (.preventDefault event)
+        (modify-file
+          (z/right (z/insert-newline-right (z/insert-right current-zloc 'x))))))))
+
+
+
 (defn on-left-fn [current-zloc]
   (fn [^js event]
     (when (check-key event "ArrowLeft")
@@ -166,7 +206,11 @@
     (when (and (check-key event "Backspace") (not (.-shiftKey event)))
       (do
         (.preventDefault event)
-        (modify-file (z/remove current-zloc))))))
+        (let [removed-zloc (z/remove current-zloc)
+              to-right (z/right removed-zloc)]
+         (modify-file (if to-right 
+                         to-right
+                         removed-zloc)))))))
 
 (defn remove-till-prev-node [zloc]
   (println (z/tag zloc) " - " (z/whitespace-or-comment? zloc))
@@ -254,7 +298,12 @@
         on-q               (on-q-fn current-zloc)
         on-w               (on-w-fn current-zloc)
         on-e               (on-e-fn current-zloc)
-        on-r               (on-r-fn current-zloc)]
+        on-r               (on-r-fn current-zloc)
+        on-a               (on-a-fn current-zloc)
+        on-s               (on-s-fn current-zloc)
+        on-d               (on-d-fn current-zloc)
+        on-shift-a         (on-shift-a-fn current-zloc)
+        on-shift-d         (on-shift-d-fn current-zloc)]
     (react/useEffect
       (fn []
         ;(.log js/console (.-current ref))
@@ -281,6 +330,11 @@
         (add-listener js/document on-w)
         (add-listener js/document on-e)
         (add-listener js/document on-r)
+        (add-listener js/document on-a)
+        (add-listener js/document on-s)
+        (add-listener js/document on-d)
+        (add-listener js/document on-shift-a)
+        (add-listener js/document on-shift-d)
 
         (fn []
           (remove-listener js/document on-left)
@@ -304,6 +358,11 @@
           (remove-listener js/document on-q)
           (remove-listener js/document on-w)
           (remove-listener js/document on-e)
-          (remove-listener js/document on-r)))
+          (remove-listener js/document on-r)
+          (remove-listener js/document on-a)
+          (remove-listener js/document on-s)
+          (remove-listener js/document on-d)
+          (remove-listener js/document on-shift-a)
+          (remove-listener js/document on-shift-d)))
       #js [current-zloc])))
 
