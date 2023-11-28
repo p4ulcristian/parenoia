@@ -36,7 +36,9 @@
                :reader-macro {:background-color "purple"
                                 :text-color "#AAA"}
                :meta  {:background-color "pink"
-                                :text-color "#333"}})
+                                :text-color "#333"}
+               :anonym-fn  {:background-color "#DC143C"
+                                :text-color "white"}})
 
 (defn color [path] (get-in colors path))
 

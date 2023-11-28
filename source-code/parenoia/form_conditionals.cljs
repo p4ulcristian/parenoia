@@ -56,3 +56,8 @@
   (let [tag     (z/tag zloc)
         is-meta? (= tag :meta)]
     is-meta?))
+
+(defn is-anonym-fn? [zloc]
+  (let [tag     (z/tag zloc)
+        is-anonym-fn? (= tag :fn)]
+    is-anonym-fn?))

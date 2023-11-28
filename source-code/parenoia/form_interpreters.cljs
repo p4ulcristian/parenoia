@@ -419,6 +419,23 @@
         reader-macro 
         0 form-interpreter]]]]))
 
-
+(defn anonym-fn-interpreter  [zloc form-interpreter]
+  (let [reader-macro (z/down zloc)
+        selected? (selected-zloc? zloc)]
+    [:<>
+     [:div {:style (merge
+                     function-container-style
+                     {:display :flex
+                      :align-items :center
+                      :background  (if selected? 
+                                     (style/color [:selection :background-color]) 
+                                     (style/color [:anonym-fn :background-color]))})}
+      [:div {:style {:padding "10px"
+                     :color (style/color [:anonym-fn :text-color])}}
+           "#"]
+      [:div {:style {:display :flex}}
+       [function-child-interpreter
+        reader-macro 
+        0 form-interpreter]]]]))
 
 

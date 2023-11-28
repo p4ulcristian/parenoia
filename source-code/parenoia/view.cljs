@@ -407,6 +407,8 @@
         [form-interpreters/deref-interpreter  zloc form-interpreter]
         (form-conditionals/is-meta? zloc) 
         [form-interpreters/meta-interpreter  zloc form-interpreter]
+        (form-conditionals/is-anonym-fn? zloc) 
+        [form-interpreters/anonym-fn-interpreter  zloc form-interpreter]
          ;; (form-conditionals/is-function? zloc)
          ;; [form-interpreters/form-interpreter-iterator (z/down zloc) form-interpreter :horizontal]
         :else [token zloc selected?])
