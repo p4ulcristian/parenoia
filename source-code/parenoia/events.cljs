@@ -104,7 +104,35 @@
          last-line       (last splitted-lines)]
     [(count splitted-lines)
      (inc (count last-line))]))
-     
+
+
+(defn get-search-indexes-recursion [string term index-at results]
+  (let [next-index (clojure.string/index-of string term)]      
+      (if next-index
+       (get-search-indexes-recursion 
+         (subs string (inc next-index)) 
+         term 
+         (inc (+ index-at next-index))
+         (vec (conj results  (inc (+ index-at next-index)))))
+       results)))  
+
+(defn get-search-indexes [root-string term]
+  (get-search-indexes-recursion root-string term 0 []))   
+
+
+
+(defn generate-search-result [zloc root-string path search-index]
+ (let [pos          (get-text-position root-string search-index)
+       pos-zloc     (z/find-last-by-pos zloc pos)
+       zloc-comm?   (z/whitespace-or-comment? pos-zloc)
+       top-form     (z/string  (if zloc-comm? 
+                                  pos-zloc
+                                  ( z/up pos-zloc)))]
+  {:namespace (refactor/get-ns zloc)
+   :file-path path
+   :position  pos
+   :content   top-form}))
+
 (reg-event-db
  :parenoia/global-search
  (fn [db [_ term]]
@@ -116,17 +144,16 @@
                                (fn [[path file]]
                                  (clojure.string/includes? (z/root-string file) term))
                                project)
-         filtered-projects (map (fn [[path zloc]]
-                                   (let [root-string (z/root-string zloc)
-                                         search-index (clojure.string/index-of root-string term)
-                                         pos          (get-text-position root-string search-index)
-                                         pos-zloc     (z/find-last-by-pos zloc pos)
-                                         top-form     (z/string (find-top-form pos-zloc))] 
-                                    {:namespace (refactor/get-ns zloc)
-                                     :file-path path
-                                     :position  pos
-                                     :content   top-form})) 
-                                filtered-namespaces)]
+         filtered-projects 
+         (vec (reduce concat
+               (map (fn [[path zloc]]
+                       (let [root-string (z/root-string zloc)
+                             search-indexes (get-search-indexes root-string term)]   
+                        (mapv (fn [search-index]
+                                (generate-search-result zloc root-string path search-index))
+                              search-indexes)))
+                                     
+                    filtered-namespaces)))]
                                                   
                              
     (println "Searching for " term)
