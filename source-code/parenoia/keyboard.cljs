@@ -34,33 +34,61 @@
 (defn run-on-key [^js event event-name]
   (when (check-key event event-name)))
 
+
+(defn without-special-keys [^js event]
+ (and 
+  (not (.-shiftKey event))
+  (not (.-metaKey event))))
+
+(defn on-q-fn [current-zloc]
+  (fn [^js event]
+    (when (and (without-special-keys event) (check-key event "q"))
+      (do
+        (.preventDefault event)
+        (modify-file (paredit/slurp-backward current-zloc))))))
+
+(defn on-w-fn [current-zloc]
+  (fn [^js event]
+    (when (and (without-special-keys event) (check-key event "w"))
+      (do
+        (.preventDefault event)
+        (modify-file (paredit/barf-backward current-zloc))))))
+
+
+(defn on-e-fn [current-zloc]
+  (fn [^js event]
+    (when (and (without-special-keys event) (check-key event "e"))
+      (do
+        (.preventDefault event)
+        (modify-file (paredit/barf-forward current-zloc))))))
+
+(defn on-r-fn [current-zloc]
+  (fn [^js event]
+    (when (and (without-special-keys event) (check-key event "r"))
+      (do
+        (.preventDefault event)
+        (modify-file (paredit/slurp-forward current-zloc))))))
+
 (defn on-left-fn [current-zloc]
   (fn [^js event]
     (when (check-key event "ArrowLeft")
       (do
         (.preventDefault event)
-        (modify-file          (paredit/slurp-backward current-zloc))))))
+        (set-zloc
+          (if (has-position? (z/left current-zloc))
+            (z/left current-zloc)
+            (z/prev current-zloc)))))))
 
 (defn on-right-fn [current-zloc]
   (fn [^js event]
     (when (check-key event "ArrowRight")
       (do
         (.preventDefault event)
-        (modify-file          (paredit/barf-backward current-zloc))))))
+        (set-zloc
+          (if (has-position? (z/right current-zloc))
+            (z/right current-zloc)
+            (z/next current-zloc)))))))
 
-(defn on-shift-left-fn [current-zloc]
-  (fn [^js event]
-    (when (and (check-key event "ArrowLeft") (.-shiftKey event))
-      (do
-        (.preventDefault event)
-        (modify-file        (paredit/barf-forward current-zloc))))))
-
-(defn on-shift-right-fn [current-zloc]
-  (fn [^js event]
-    (when (and (check-key event "ArrowRight") (.-shiftKey event))
-      (do
-        (.preventDefault event)
-        (modify-file       (paredit/slurp-forward current-zloc))))))
 
 (defn on-up-fn [current-zloc]
   (fn [^js event]
@@ -195,7 +223,6 @@
 (defn on-g-fn [current-zloc]
   (fn [^js event]
     (when (check-key event "g")
-
       (do
         (.preventDefault event)
         (let [project-map? @(subscribe [:db/get [:parenoia :project-map?]])]
@@ -207,8 +234,7 @@
 
         on-left            (on-left-fn current-zloc)
         on-right           (on-right-fn current-zloc)
-        on-shift-left      (on-shift-left-fn current-zloc)
-        on-shift-right     (on-shift-right-fn current-zloc)
+       
         on-up              (on-up-fn current-zloc)
         on-down            (on-down-fn current-zloc)
         on-tab             (on-tab-fn current-zloc)
@@ -224,14 +250,17 @@
         on-command-shift-z       (on-command-shift-z-fn current-zloc)
         on-command-s       (on-command-s-fn current-zloc)
         on-m               (on-m-fn current-zloc)
-        on-g               (on-g-fn current-zloc)]
+        on-g               (on-g-fn current-zloc)
+        on-q               (on-q-fn current-zloc)
+        on-w               (on-w-fn current-zloc)
+        on-e               (on-e-fn current-zloc)
+        on-r               (on-r-fn current-zloc)]
     (react/useEffect
       (fn []
         ;(.log js/console (.-current ref))
         (add-listener js/document on-left)
         (add-listener js/document on-right)
-        (add-listener js/document on-shift-left)
-        (add-listener js/document on-shift-right)
+       
         (add-listener js/document on-up)
         (add-listener js/document on-down)
         (add-listener js/document on-tab)
@@ -248,12 +277,14 @@
         (add-listener js/document on-command-s)
         (add-listener js/document on-m)
         (add-listener js/document on-g)
+        (add-listener js/document on-q)
+        (add-listener js/document on-w)
+        (add-listener js/document on-e)
+        (add-listener js/document on-r)
 
         (fn []
           (remove-listener js/document on-left)
           (remove-listener js/document on-right)
-          (remove-listener js/document on-shift-left)
-          (remove-listener js/document on-shift-right)
           (remove-listener js/document on-up)
           (remove-listener js/document on-down)
           (remove-listener js/document on-tab)
@@ -269,6 +300,10 @@
           (remove-listener js/document on-command-shift-z)
           (remove-listener js/document on-command-s)
           (remove-listener js/document on-m)
-          (remove-listener js/document on-g)))
+          (remove-listener js/document on-g)
+          (remove-listener js/document on-q)
+          (remove-listener js/document on-w)
+          (remove-listener js/document on-e)
+          (remove-listener js/document on-r)))
       #js [current-zloc])))
 
