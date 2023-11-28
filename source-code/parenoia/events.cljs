@@ -314,6 +314,19 @@
         :handler          (fn [e] (println "Successful " e))
                           
        :error-handler    (fn [e] (.log js/console e))}))
+   db))
+
+(reg-event-db
+ :parenoia/set-project-path!
+ [] 
+ (fn [db [_ path]]
+   (let [file-name  (-> db :parenoia :selected :file-path)
+         file-zloc  (get-in db [:parenoia :project file-name])]
+    (POST "/set-project-path"
+      {:params {:path path}
+        :handler          (fn [e] (get-project-structure))
+                          
+       :error-handler    (fn [e] (.log js/console e))}))
 
    db))
 

@@ -7,7 +7,7 @@
   
 
 (defn get-all-files []
- (let [directory (clojure.java.io/file config/project-path)
+ (let [directory (clojure.java.io/file @config/project-path)
        dir? #(.isDirectory %)]
    (mapv #(.getPath %)
          (filter (comp not dir?)

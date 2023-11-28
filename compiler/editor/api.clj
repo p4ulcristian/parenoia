@@ -18,7 +18,8 @@
             [clojure.core.async :as async]
             [clojure.java.io :as io]
             [editor.utils :as utils]
-            [clojure-lsp.internal-api :as internal-api]))
+            [clojure-lsp.internal-api :as internal-api]
+            [editor.config :as config]))
             
 
 (defn request-wrap [status content-type body]
@@ -72,6 +73,11 @@
                                            {:keys [from to]} body]
                                         (string-wrap 
                                          (refactor/rename from to))))}}]
+       ["/set-project-path" {:post {:handler (fn [req]
+                                              (let [body (:params req)
+                                                    {:keys [path]} body]
+                                                (string-wrap 
+                                                 (str (reset! config/project-path path)))))}}]                                 
        ["/refactor"   {:get  {:handler  (fn [req]  (string-wrap (refactor/move-form 'test-a/a 'test-b/a)))}}]   
        ["/references" {:get  {:handler  (fn [req]  (string-wrap (str (refactor/get-references 'test-a/a))))}}]                                                                                                                               
        ["/file"  {:post {:handler  (fn [req]  

@@ -1,5 +1,5 @@
 (ns editor.config)
 
 
-(def project-path "/Users/paulcristian/Projects/zgen/wizard")
-(def project-root (str "file://" project-path))
+(def project-path (atom "/Users/paulcristian/Projects/zgen/wizard"))
+(defn project-root [] (str "file://" @project-path))

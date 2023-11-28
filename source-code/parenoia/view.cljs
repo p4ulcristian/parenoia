@@ -767,6 +767,7 @@
   [:input {:style {:text-align :center 
                    :padding "5px"
                    :border-radius "5px"}
+           :on-blur (fn [a] (dispatch [:parenoia/set-project-path! (-> a .-target .-value)]))
            :placeholder "Project path"}]])
 
 

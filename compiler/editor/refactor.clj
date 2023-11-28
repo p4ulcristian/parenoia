@@ -22,14 +22,6 @@
 
 
 
-
-
-
-
-
-
-
-
 ;(clojure-lsp/analyze-project-and-deps! {:project-root (io/file ".")})
                                         
 ;; (utils/write-file 
@@ -139,7 +131,7 @@
 
 (defn get-variable-details [path position]
   (let [[row col] position]
-   (clojure-lsp.api/analyze-project-only! {:project-root (io/file config/project-path)})
+   (clojure-lsp.api/analyze-project-only! {:project-root (io/file @config/project-path)})
    ;(println "1: " (path->uri path))
    ;(println "2: " (map :name (lsp-queries/find-var-definitions @internal-api/db* (path->uri path) true)))
    (str
@@ -171,7 +163,7 @@
 (defn get-form-details [path position]
  (let [[row col] position] 
 
-  (clojure-lsp.api/analyze-project-only! {:project-root (io/file config/project-path)})
+  (clojure-lsp.api/analyze-project-only! {:project-root (io/file @config/project-path)})
   (str
    (var-usages-within 
     (find-top-form
@@ -182,7 +174,7 @@
 
 (defn get-definition [path position]
  (let [[row col] position] 
-  (clojure-lsp.api/analyze-project-only! {:project-root (io/file config/project-path)})
+  (clojure-lsp.api/analyze-project-only! {:project-root (io/file @config/project-path)})
   (let [the-def (lsp-queries/find-definition-from-cursor @db* (path->uri path) row col)]
        (str {:uri (:uri the-def)
              :col (:col the-def)
@@ -198,9 +190,9 @@
 
 
 (defn rename [from to]
- (clojure-lsp.api/analyze-project-only! {:project-root (io/file config/project-path)})
+ (clojure-lsp.api/analyze-project-only! {:project-root (io/file @config/project-path)})
  (clojure-lsp/rename!
-    {:project-root (io/file config/project-path)
+    {:project-root (io/file @config/project-path)
      :from (symbol from)
      :to   (symbol to)}))
  
