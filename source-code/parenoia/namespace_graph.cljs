@@ -101,9 +101,8 @@
                 :events (events nodes)}]]))
 
 (defn view-wrapper [content]
-  (let [project-map? (not @(subscribe [:db/get [:parenoia :project-map?]]))]
-    (if project-map?
-     [:div {:style {:position :fixed
+  (let [project-map? @(subscribe [:db/get [:parenoia :project-map?]])]
+    [:div {:style {:position :fixed
                     :right 0
                     :top 0
                     :background "rgba(0,0,0,0.6)"
@@ -111,7 +110,7 @@
                     :filter (if project-map? "none" "blur(10px)")
                     :z-index (if project-map? 15 7)}}
      
-      content])))
+      content]))
 
 (defn get-all-edges [files]
   (vec (reduce concat
@@ -141,7 +140,7 @@
        edges))
   
 
-(defn view []
+(defn view-inner []
   (let [ref (react/useRef)
         files @(subscribe [:db/get [:parenoia :project-last-saved]])
         [nodes set-nodes] (react/useState [])
@@ -161,3 +160,10 @@
                :on-change #(set-local-string (-> % .-target .-value))
                :on-blur   #(set-filter-string (-> % .-target .-value))}] 
       [vis-js-component nodes edges]]]))
+
+
+(defn view []
+  (let [project-map? @(subscribe [:db/get [:parenoia :project-map?]])]
+     (cond 
+      (= nil project-map?) nil 
+      :else [view-inner])))

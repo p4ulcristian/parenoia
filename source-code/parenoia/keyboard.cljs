@@ -189,8 +189,18 @@
 
       (do
         (.preventDefault event)
+        (let [menu? @(subscribe [:db/get [:parenoia :menu?]])]
+          (dispatch [:db/set [:parenoia :menu?] (not menu?)]))))))
+
+(defn on-g-fn [current-zloc]
+  (fn [^js event]
+    (when (check-key event "g")
+
+      (do
+        (.preventDefault event)
         (let [project-map? @(subscribe [:db/get [:parenoia :project-map?]])]
           (dispatch [:db/set [:parenoia :project-map?] (not project-map?)]))))))
+
 
 (defn effect [ref]
   (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
@@ -213,7 +223,8 @@
         on-command-z       (on-command-z-fn current-zloc)
         on-command-shift-z       (on-command-shift-z-fn current-zloc)
         on-command-s       (on-command-s-fn current-zloc)
-        on-m               (on-m-fn current-zloc)]
+        on-m               (on-m-fn current-zloc)
+        on-g               (on-g-fn current-zloc)]
     (react/useEffect
       (fn []
         ;(.log js/console (.-current ref))
@@ -236,6 +247,7 @@
         (add-listener js/document on-command-shift-z)
         (add-listener js/document on-command-s)
         (add-listener js/document on-m)
+        (add-listener js/document on-g)
 
         (fn []
           (remove-listener js/document on-left)
@@ -256,6 +268,7 @@
           (remove-listener js/document on-command-z)
           (remove-listener js/document on-command-shift-z)
           (remove-listener js/document on-command-s)
-          (remove-listener js/document on-m)))
+          (remove-listener js/document on-m)
+          (remove-listener js/document on-g)))
       #js [current-zloc])))
 

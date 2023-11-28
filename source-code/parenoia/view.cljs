@@ -102,12 +102,13 @@
     [autofocus-input-wrapper
      [:<>
       [:textarea {:style {:position :absolute
-                           :background "#BBB"
+                           :background "white"
                            :border-radius 10
                            :left 0
                            :top 0
                            ;:transform "translateY(-100%)"
                            :min-width 100
+                           :box-sizing "border-box"
                            :height "100%"
                            :width "100%"
                            :padding "5px"
@@ -152,18 +153,20 @@
                 :pointer-events :none}} 
    (str (:type lint))])
  
-
 (defn overlay-wrapper [ref set-open? content additional-style]
  (let [[x set-x] (react/useState 0)
        [y set-y] (react/useState 0)]
+      
   (react/useEffect 
    (fn []
     (let [scroll-top (.-scrollTop (.getElementById js/document "parenoia-body"))
           scroll-left (.-scrollLeft (.getElementById js/document "parenoia-body"))
           this-x (.-x (.getBoundingClientRect (.-current ref)))
           this-y (.-y (.getBoundingClientRect (.-current ref)))]
+         
      (set-x (+ scroll-left this-x))
      (set-y (+ scroll-top this-y)))
+   
     (fn []))
    #js [(.-current ref)])
   (when (.getElementById js/document "parenoia-body")
@@ -176,6 +179,44 @@
                              :position :absolute
                                :top y
                                :left x}
+                               
+                           additional-style)}                                  
+         content])
+     (.getElementById js/document "parenoia-body"))))) 
+
+(defn overlay-wrapper-beta [ref set-open? content additional-style]
+ (let [[x set-x] (react/useState 0)
+       [y set-y] (react/useState 0)
+       [width set-width] (react/useState 0)
+       [height set-height] (react/useState 0)]
+  (react/useEffect 
+   (fn []
+    (let [scroll-top (.-scrollTop (.getElementById js/document "parenoia-body"))
+          scroll-left (.-scrollLeft (.getElementById js/document "parenoia-body"))
+          this-x (.-x (.getBoundingClientRect (.-current ref)))
+          this-y (.-y (.getBoundingClientRect (.-current ref)))
+          this-height (.-height (.getBoundingClientRect (.-current ref)))
+          this-width  (.-width (.getBoundingClientRect (.-current ref)))]
+     (set-x (+ scroll-left this-x))
+     (set-y (+ scroll-top this-y))
+     (set-height this-height)
+     (set-width this-width))
+    (fn []))
+   #js [(.-current ref)])
+  (when (.getElementById js/document "parenoia-body")
+   (react-dom/createPortal 
+     (reagent/as-element
+      [:div {:class "overlay-wrapper"
+             :on-mouse-enter #(set-open? true)
+             :on-mouse-leave #(set-open? false)
+             :style (merge {:cursor :pointer
+                             :position :absolute
+                               :top y
+                               :left x
+                               :height height 
+                               :width width
+                               :min-width "400px"
+                               :min-height "50px"}
                            additional-style)}                                  
          content])
      (.getElementById js/document "parenoia-body")))))     
@@ -322,8 +363,8 @@
         :ref ref
        :style {:position :relative
                :box-sizing :border-box
-               :border-radius "10px"
-               }
+               :border-radius "10px"}
+               
                  
        :on-click (fn [e]
                    (.stopPropagation e)
@@ -358,7 +399,12 @@
          ;; [form-interpreters/form-interpreter-iterator (z/down zloc) form-interpreter :horizontal]
         :else [token zloc selected?])
       (if (and selected? editable?)
-        [autofocus-input zloc])]]))
+      
+       [overlay-wrapper-beta
+          ref (fn [e]) [autofocus-input zloc] {
+                                               :overflow :auto
+                                               :z-index 10000}])]]))
+       
 
 (defn sticky-function-header [zloc index ns-name]
   [:div {:style {:position :sticky
@@ -496,6 +542,7 @@
                  :flex-direction :column 
                  :justify-content :center 
                  :align-items :flex-end}}
+   
    [:input.global-search 
     {:style {:border-bottom-left-radius "50px"
              :border-bottom-right-radius "10px"
@@ -503,8 +550,8 @@
              :border-top-right-radius "10px"
              :padding "5px"
              :text-align :center 
-             :font-weight :bold
-            }
+             :font-weight :bold}
+            
       :placeholder "search."
       :value term
       :on-change (fn [a] 
@@ -723,6 +770,7 @@
                  :width "100vw"}}
    [title]
    [menu]
+   
    [namespace-graph/view]
    [namespace-container]
    [pins]

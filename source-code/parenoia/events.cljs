@@ -63,7 +63,6 @@
                            [:db/set [:parenoia :project]
                             (process-file-to-zloc 
                              processed-string)])
-                          (dispatch [:db/set [:parenoia :project-map?] true])
                           (dispatch [:db/set [:parenoia :project-last-saved]
                                             (process-file-to-zloc 
                                              processed-string)])))
