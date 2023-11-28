@@ -414,9 +414,10 @@
       [:div {:style {:padding "10px"
                      :color (style/color [:meta :text-color])}}
            "^"]
-      [function-child-interpreter
-       reader-macro 
-       0 form-interpreter]]]))
+      [:div {:style {:display :flex}}
+       [function-child-interpreter
+        reader-macro 
+        0 form-interpreter]]]]))
 
 
 

@@ -367,12 +367,14 @@
         :ref ref
        :style {:position :relative
                :box-sizing :border-box
-               :border-radius "10px"}
+               :border-radius "10px"
+               :pointer-events (if zloc "auto" "none")}
                
                  
        :on-click (fn [e]
                    (.stopPropagation e)
                    (dispatch [:db/set [:parenoia :editable?] false])
+                   
                    (js/window.setTimeout
                      (fn [] (dispatch [:db/set [:parenoia :selected-zloc] zloc]))
                      50))}
