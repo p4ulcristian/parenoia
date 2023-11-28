@@ -41,3 +41,13 @@
 (defn is-function? [zloc]
   (let [is-list?     (z/list? zloc)]
     is-list?))
+
+(defn is-reader-macro? [zloc]
+  (let [tag     (z/tag zloc)
+        is-reader-macro? (= tag :reader-macro)]
+    is-reader-macro?))
+
+(defn is-deref? [zloc]
+  (let [tag     (z/tag zloc)
+        is-deref? (= tag :deref)]
+    is-deref?))

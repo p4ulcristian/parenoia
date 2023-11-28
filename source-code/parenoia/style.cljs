@@ -30,6 +30,10 @@
               :same-as-selection {:background-color "white"
                                   :text-color "#333"}
               :unused-binding {:background-color "#333"
+                                :text-color "#AAA"}
+               :deref {:background-color "maroon"
+                                :text-color "white"}
+               :reader-macro {:background-color "purple"
                                 :text-color "#AAA"}})
 
 (defn color [path] (get-in colors path))

@@ -1,16 +1,12 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Syne+Mono&display=swap');
 
-@font-face {
-  font-family: "Source Code Pro";
-  src:
-    local("Source Code Pro"),
-    url("/css/SourceCodePro-VariableFont_wght.ttf") format("truetype");
-}
+@import url(@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 
 body {
-  font-family: "Source Code Pro";
+  font-family: 'Source Code Pro', monospace;
+	-webkit-font-smoothing: antialiased;
 }
 
 
@@ -51,20 +47,7 @@ body {
 
 
 .parenoia-background {
-	background: linear-gradient(-45deg, #4d4d4d, #3c3c3c, #1e1e1e, #111111, #4a0505, #090f49	);
-	background-size: 400% 400%;
-	animation: gradient 15s ease infinite;
+	background: #333;
 	height: 100vh;
 }
 
-@keyframes gradient {
-	0% {
-		background-position: 0% 50%;
-	}
-	50% {
-		background-position: 100% 50%;
-	}
-	100% {
-		background-position: 0% 50%;
-	}
-}

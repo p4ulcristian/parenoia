@@ -88,6 +88,7 @@
             :left "50%"
             :min-width "100%"
             :height "100%"
+            :min-height "200px"
             :transform "translateX(-50%)"
             :color "#333"}}
    content])
@@ -111,6 +112,7 @@
                            :box-sizing "border-box"
                            :height "100%"
                            :width "100%"
+                           
                            :padding "5px"
                            :z-index 1000}
                          
@@ -396,13 +398,18 @@
           (form-conditionals/is-vector? zloc)
           (form-conditionals/is-function? zloc))
         [form-interpreters/function-interpreter  zloc form-interpreter]
+        (form-conditionals/is-reader-macro? zloc) 
+        [form-interpreters/reader-macro-interpreter  zloc form-interpreter]
+        (form-conditionals/is-deref? zloc) 
+        [form-interpreters/deref-interpreter  zloc form-interpreter]
          ;; (form-conditionals/is-function? zloc)
          ;; [form-interpreters/form-interpreter-iterator (z/down zloc) form-interpreter :horizontal]
         :else [token zloc selected?])
       (if (and selected? editable?)
       
        [overlay-wrapper-beta
-          ref (fn [e]) [autofocus-input zloc] {
+          ref (fn [e]) [autofocus-input zloc] {:min-height "200px"
+                                               :min-width "200px"
                                                :overflow :auto
                                                :z-index 10000}])]]))
        
@@ -412,11 +419,11 @@
                  :top 0
                  :z-index 1000}}
    [:div
-    {:style {:background "rgba(100,0,0,0.4)"
-             :backdrop-filter "blur(10px)"
+    {:style {:background "#FFBF00"
+             
              :box-shadow style/box-shadow
              :padding "10px"
-             :color "white"
+             :color "#333"
              :border "1px solid white"
              :border-bottom-left-radius 10
              :border-bottom-right-radius 10
@@ -572,10 +579,9 @@
               :overflow-y :auto 
               :max-height "80vh"
               
-              :background "rgba(0,0,0,0.3)"
-              :backdrop-filter "blur(4px)"}}
+              :background "#111"}}
                
-     (map (fn [a] [one-result a]) 
+     (map (fn [a] ^{:key (str a)}[one-result a]) 
           results)])]))
 
 (defn title []
@@ -753,6 +759,7 @@
                 :transform "translateX(-50%)"
                 :padding "20px"
                 :border-radius "10px"
+                :border "10px solid black"
                 :color "#333"
                 :height "80vh"
                 :width "80vw"

@@ -109,7 +109,7 @@
 (defn get-search-indexes-recursion [string term index-at results]
   (let [next-index (clojure.string/index-of string term)]      
       (if next-index
-       (get-search-indexes-recursion 
+       (recur
          (subs string (inc next-index)) 
          term 
          (inc (+ index-at next-index))
@@ -136,30 +136,30 @@
 (reg-event-db
  :parenoia/global-search
  (fn [db [_ term]]
-   (let [project (-> db :parenoia :project)
-         filtered-indexes  (remove false? (map (fn [[path file]]
-                                                 (clojure.string/index-of (z/root-string file) term))
-                                               project))
-         filtered-namespaces (filter
-                               (fn [[path file]]
-                                 (clojure.string/includes? (z/root-string file) term))
-                               project)
-         filtered-projects 
-         (vec (reduce concat
-               (map (fn [[path zloc]]
-                       (let [root-string (z/root-string zloc)
-                             search-indexes (get-search-indexes root-string term)]   
-                        (mapv (fn [search-index]
-                                (generate-search-result zloc root-string path search-index))
-                              search-indexes)))
+   (if (or (= "" term) (> 4 (count term)))
+    (assoc-in db  [:parenoia :search-results] [])
+    (let [project (-> db :parenoia :project)
+          filtered-indexes  (remove false? (map (fn [[path file]]
+                                                  (clojure.string/index-of (z/root-string file) term))
+                                                project))
+          filtered-namespaces (filter
+                                (fn [[path file]]
+                                  (clojure.string/includes? (z/root-string file) term))
+                                project)
+          filtered-projects 
+          (vec (reduce concat
+                (map (fn [[path zloc]]
+                        (let [root-string (z/root-string zloc)
+                              search-indexes (get-search-indexes root-string term)]   
+                         (mapv (fn [search-index]
+                                 (generate-search-result zloc root-string path search-index))
+                               search-indexes)))
                                      
-                    filtered-namespaces)))]
+                     filtered-namespaces)))]
                                                   
                              
-    (println "Searching for " term)
-    (if (= "" term) 
-      (assoc-in db  [:parenoia :search-results] [])
-      (assoc-in db  [:parenoia :search-results] filtered-projects)))))
+     (println "Searching for " term)
+     (assoc-in db  [:parenoia :search-results] (vec (sort-by :namespace filtered-projects)))))))
       
 
 (reg-event-db

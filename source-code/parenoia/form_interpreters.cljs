@@ -363,5 +363,42 @@
        function-name 0 form-interpreter]]]))
 
 
+(defn reader-macro-interpreter  [zloc form-interpreter]
+  (let [reader-macro (z/down zloc)
+        selected? (selected-zloc? zloc)]
+    [:<>
+     [:div {:style (merge
+                     function-container-style
+                     {:display :flex
+                      :align-items :center
+                      :background  (if selected? 
+                                     (style/color [:selection :background-color]) 
+                                     (style/color [:reader-macro :background-color]))})}
+      [:div {:style {:padding "10px"
+                     :color (style/color [:reader-macro :text-color])}}
+           "#"]
+      [function-child-interpreter
+       reader-macro 
+       0 form-interpreter]]]))
+
+(defn deref-interpreter  [zloc form-interpreter]
+  (let [reader-macro (z/down zloc)
+        selected? (selected-zloc? zloc)]
+    [:<>
+     [:div {:style (merge
+                     function-container-style
+                     {:display :flex
+                      :align-items :center
+                      :background  (if selected? 
+                                     (style/color [:selection :background-color]) 
+                                     (style/color [:deref :background-color]))})}
+      [:div {:style {:padding "10px"
+                     :color (style/color [:deref :text-color])}}
+           "@"]
+      [function-child-interpreter
+       reader-macro 
+       0 form-interpreter]]]))
+
+
 
 
