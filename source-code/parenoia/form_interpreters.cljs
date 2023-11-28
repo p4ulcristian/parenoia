@@ -400,5 +400,24 @@
        0 form-interpreter]]]))
 
 
+(defn meta-interpreter  [zloc form-interpreter]
+  (let [reader-macro (z/down zloc)
+        selected? (selected-zloc? zloc)]
+    [:<>
+     [:div {:style (merge
+                     function-container-style
+                     {:display :flex
+                      :align-items :center
+                      :background  (if selected? 
+                                     (style/color [:selection :background-color]) 
+                                     (style/color [:meta :background-color]))})}
+      [:div {:style {:padding "10px"
+                     :color (style/color [:meta :text-color])}}
+           "^"]
+      [function-child-interpreter
+       reader-macro 
+       0 form-interpreter]]]))
+
+
 
 

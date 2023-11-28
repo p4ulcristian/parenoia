@@ -34,7 +34,9 @@
                :deref {:background-color "maroon"
                                 :text-color "white"}
                :reader-macro {:background-color "purple"
-                                :text-color "#AAA"}})
+                                :text-color "#AAA"}
+               :meta  {:background-color "pink"
+                                :text-color "#333"}})
 
 (defn color [path] (get-in colors path))
 

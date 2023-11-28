@@ -49,7 +49,8 @@
       (and (.-shiftKey e) (keyboard/check-key e "Enter"))
       (keyboard/check-key e " ")
       (keyboard/check-key e "Backspace")
-      (keyboard/check-key e "m"))
+      (keyboard/check-key e "m")
+      (keyboard/check-key e "g"))
     (.stopPropagation e)))
 
 (defn autofocus-input--unmount [current-ref zloc]
@@ -402,6 +403,8 @@
         [form-interpreters/reader-macro-interpreter  zloc form-interpreter]
         (form-conditionals/is-deref? zloc) 
         [form-interpreters/deref-interpreter  zloc form-interpreter]
+        (form-conditionals/is-meta? zloc) 
+        [form-interpreters/meta-interpreter  zloc form-interpreter]
          ;; (form-conditionals/is-function? zloc)
          ;; [form-interpreters/form-interpreter-iterator (z/down zloc) form-interpreter :horizontal]
         :else [token zloc selected?])
@@ -729,7 +732,9 @@
      (map 
       (fn [a project-item] ^{:key a}[:div [menu-namespace a project-item]])
       (sort namespaces)
-      (sort (fn [a b] (compare (first a) (first b))) project))])) 
+      (sort (fn [a b] (compare (refactor/get-ns (second a))
+                               (refactor/get-ns (second b))))
+            project))])) 
 
 
 (defn open-project []

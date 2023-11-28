@@ -51,3 +51,8 @@
   (let [tag     (z/tag zloc)
         is-deref? (= tag :deref)]
     is-deref?))
+
+(defn is-meta? [zloc]
+  (let [tag     (z/tag zloc)
+        is-meta? (= tag :meta)]
+    is-meta?))
