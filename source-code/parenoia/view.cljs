@@ -394,38 +394,36 @@
       (cond
         (form-conditionals/is-ns? zloc)
         [form-interpreters/ns-interpreter zloc form-interpreter selected?]
-        ;; (form-conditionals/is-defn? zloc)
-        ;; [form-interpreters/defn-interpreter zloc form-interpreter]
-        ;; (form-conditionals/is-def? zloc)
-        ;; [form-interpreters/def-interpreter zloc form-interpreter]
-        ;; (or
-        ;;   (form-conditionals/is-let-vector? zloc)
-        ;;   (form-conditionals/is-loop-vector? zloc))
-        ;; [form-interpreters/let-vector-interpreter  zloc form-interpreter]
-        ;; (form-conditionals/is-map? zloc)
-        ;; [form-interpreters/map-interpreter  zloc form-interpreter]
-        ;; (form-conditionals/is-cond? zloc) 
-        ;; [form-interpreters/cond-interpreter  zloc form-interpreter]
-        ;; (form-conditionals/is-case? zloc) 
-        ;; [form-interpreters/case-interpreter  zloc form-interpreter]
-        ;; (form-conditionals/is-if? zloc) 
-        ;; [form-interpreters/if-interpreter  zloc form-interpreter]
-        
+        (form-conditionals/is-defn? zloc)
+        [form-interpreters/defn-interpreter zloc form-interpreter selected?]
+        (form-conditionals/is-def? zloc)
+        [form-interpreters/def-interpreter zloc form-interpreter selected?]
+        (or
+          (form-conditionals/is-let-vector? zloc)
+          (form-conditionals/is-loop-vector? zloc))
+        [form-interpreters/let-vector-interpreter  zloc form-interpreter selected?]
+        (form-conditionals/is-map? zloc)
+        [form-interpreters/map-interpreter  zloc form-interpreter selected?]
+        (form-conditionals/is-cond? zloc) 
+        [form-interpreters/cond-interpreter  zloc form-interpreter selected?]
+        (form-conditionals/is-case? zloc) 
+        [form-interpreters/case-interpreter  zloc form-interpreter selected?]
+        (form-conditionals/is-if? zloc) 
+        [form-interpreters/if-interpreter  zloc form-interpreter selected?]
         (or
           (form-conditionals/is-vector? zloc)
           (form-conditionals/is-function? zloc))
         [form-interpreters/function-interpreter  zloc form-interpreter selected?]
-        ;; (form-conditionals/is-reader-macro? zloc) 
-        ;; [form-interpreters/reader-macro-interpreter  zloc form-interpreter]
-        ;; (form-conditionals/is-deref? zloc) 
-        ;; [form-interpreters/deref-interpreter  zloc form-interpreter]
-        ;; (form-conditionals/is-meta? zloc) 
-        ;; [form-interpreters/meta-interpreter  zloc form-interpreter]
-        ;; (form-conditionals/is-anonym-fn? zloc) 
-        ;; [form-interpreters/anonym-fn-interpreter  zloc form-interpreter
-        
-        ;;  (form-conditionals/is-function? zloc)
-        ;;  [form-interpreters/form-interpreter-iterator (z/down zloc) form-interpreter :horizontal]]
+        (form-conditionals/is-reader-macro? zloc) 
+        [form-interpreters/reader-macro-interpreter  zloc form-interpreter selected?]
+        (form-conditionals/is-deref? zloc) 
+        [form-interpreters/deref-interpreter  zloc form-interpreter selected?]
+        (form-conditionals/is-meta? zloc) 
+        [form-interpreters/meta-interpreter  zloc form-interpreter selected?]
+        (form-conditionals/is-anonym-fn? zloc) 
+        [form-interpreters/anonym-fn-interpreter  zloc form-interpreter selected?]
+        ;; (form-conditionals/is-function? zloc)
+        ;; [form-interpreters/form-interpreter-iterator (z/down zloc) form-interpreter :horizontal]
         :else [token zloc selected?])]]))
       ;; (if (and @selected? @editable?)
       

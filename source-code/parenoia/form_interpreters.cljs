@@ -56,8 +56,7 @@
        [map-row-interpreter
         (z/right value) form-interpreter])]))
 
-(defn map-interpreter  [zloc form-interpreter]
-  (let [selected? (selected-zloc? zloc)]
+(defn map-interpreter  [zloc form-interpreter selected?]
    [:div {:class "map"
           :style {;:border-left    "4px double black"
                   ;:border-right   "4px double black"
@@ -74,11 +73,10 @@
                   :grid-template-columns "auto auto"
                   :grid-column-gap "15px"
                   :grid-row-gap    "5px"}}
-    [map-row-interpreter (z/down zloc) form-interpreter]]))
+    [map-row-interpreter (z/down zloc) form-interpreter]])
 
-(defn cond-interpreter  [zloc form-interpreter]
-  (let [selected? (selected-zloc? zloc)
-        cond-symbol (z/down zloc)
+(defn cond-interpreter  [zloc form-interpreter selected?]
+  (let [cond-symbol (z/down zloc)
         next-symbol (z/right cond-symbol)]
    [:div {:class "cond"
           :style {;:border-left    "4px double black"
@@ -102,9 +100,8 @@
      [map-row-interpreter next-symbol form-interpreter]]]))
 
 
-(defn case-interpreter  [zloc form-interpreter]
-  (let [selected? (selected-zloc? zloc)
-        case-symbol (z/down zloc)
+(defn case-interpreter  [zloc form-interpreter selected?]
+  (let [case-symbol (z/down zloc)
         case-condition (z/right case-symbol)
         next-symbol (z/right case-condition)]
    [:div {:class "case"
@@ -132,9 +129,8 @@
      [map-row-interpreter next-symbol form-interpreter]]]))
 
 
-(defn if-interpreter  [zloc form-interpreter]
-  (let [selected? (selected-zloc? zloc)
-        if-symbol    (z/down zloc)
+(defn if-interpreter  [zloc form-interpreter selected?]
+  (let [if-symbol    (z/down zloc)
         if-condition (z/right if-symbol)
         if-true (z/right if-condition)
         if-false (z/right if-true)
@@ -195,11 +191,10 @@
  [:div {:style {:font-size "24px"}}
   content])
 
-(defn defn-interpreter [zloc form-interpreter]
+(defn defn-interpreter [zloc form-interpreter selected?]
   (let [defn-symbol     (z/down zloc)
         function-name   (z/right defn-symbol)
-        parameter-list  (z/right function-name)
-        selected?       (selected-zloc? zloc)]
+        parameter-list  (z/right function-name)]
     [:div {:style {:border-radius  "10px"
                    :background (if selected?
                                     (style/color [:selection :background-color])
@@ -234,10 +229,9 @@
       [form-interpreter-iterator (z/right ns-name) form-interpreter]]]))
 
 
-(defn def-interpreter [zloc form-interpreter]
+(defn def-interpreter [zloc form-interpreter selected?]
   (let [def-symbol       (z/down zloc)
-        def-name         (z/right def-symbol)
-        selected?       (selected-zloc? zloc)]
+        def-name         (z/right def-symbol)]
     [:div {:style {:border-radius  "10px"
               
                    :padding "10px"
@@ -264,9 +258,8 @@
        [let-vector-row-interpreter
         (z/right value) form-interpreter])]))
 
-(defn let-vector-interpreter  [zloc form-interpreter]
-  (let [selected? (selected-zloc? zloc)]
-   [:div {:style {:border-radius  "10px"
+(defn let-vector-interpreter  [zloc form-interpreter selected?]
+  [:div {:style {:border-radius  "10px"
                   :padding "5px"
                   :display :grid
                   :align-items :grid
@@ -278,7 +271,7 @@
                   :grid-template-columns "auto auto"
                   :grid-column-gap "15px"
                   :grid-row-gap    "5px"}}
-    [let-vector-row-interpreter (z/down zloc) form-interpreter]]))
+    [let-vector-row-interpreter (z/down zloc) form-interpreter]])
 
 (def vertical-align-style
   {:display :flex
@@ -462,9 +455,8 @@
        function-name 0 form-interpreter]]]))
 
 
-(defn reader-macro-interpreter  [zloc form-interpreter]
-  (let [reader-macro (z/down zloc)
-        selected? (selected-zloc? zloc)]
+(defn reader-macro-interpreter  [zloc form-interpreter selected?]
+  (let [reader-macro (z/down zloc)]
     [:<>
      [:div {:style (merge
                      function-container-style
@@ -480,9 +472,8 @@
        reader-macro 
        0 form-interpreter]]]))
 
-(defn deref-interpreter  [zloc form-interpreter]
-  (let [reader-macro (z/down zloc)
-        selected? (selected-zloc? zloc)]
+(defn deref-interpreter  [zloc form-interpreter selected?]
+  (let [reader-macro (z/down zloc)]
     [:<>
      [:div {:style (merge
                      function-container-style
@@ -499,9 +490,8 @@
        0 form-interpreter]]]))
 
 
-(defn meta-interpreter  [zloc form-interpreter]
-  (let [reader-macro (z/down zloc)
-        selected? (selected-zloc? zloc)]
+(defn meta-interpreter  [zloc form-interpreter selected?]
+  (let [reader-macro (z/down zloc)]
     [:<>
      [:div {:style (merge
                      function-container-style
@@ -518,9 +508,8 @@
         reader-macro 
         0 form-interpreter]]]]))
 
-(defn anonym-fn-interpreter  [zloc form-interpreter]
-  (let [reader-macro (z/down zloc)
-        selected? (selected-zloc? zloc)]
+(defn anonym-fn-interpreter  [zloc form-interpreter selected?]
+  (let [reader-macro (z/down zloc)]
     [:<>
      [:div {:style (merge
                      function-container-style
