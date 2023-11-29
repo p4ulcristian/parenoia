@@ -364,11 +364,9 @@
         (fn []))
       #js [selected?]))
 
-(defn form-interpreter-inner [zloc selected? form-interpreter]
+(defn form-interpreter-inner [zloc selected? editable? form-interpreter]
   (let [ref (react/useRef)
         this-pos     (has-position? zloc)]
-        ;editable?     (subscribe [:db/get [:parenoia :editable?]])]
-
     (form-interpreter-effect zloc selected? ref)
     [:div {:style {:display :flex
                    :justify-content :flex-start 
@@ -381,9 +379,7 @@
        :style {:position :relative
                :box-sizing :border-box
                :border-radius "10px"
-               :pointer-events (if zloc "auto" "none")}
-               
-                 
+               :pointer-events (if zloc "auto" "none")}        
        :on-click (fn [e]
                    (.stopPropagation e)
                    (dispatch [:db/set [:parenoia :editable?] false])
@@ -424,19 +420,24 @@
         [form-interpreters/anonym-fn-interpreter  zloc form-interpreter selected?]
         ;; (form-conditionals/is-function? zloc)
         ;; [form-interpreters/form-interpreter-iterator (z/down zloc) form-interpreter :horizontal]
-        :else [token zloc selected?])]]))
-      ;; (if (and @selected? @editable?)
+        :else [token zloc selected?])
+     
+      (if (and selected? editable?)
       
-      ;;  [overlay-wrapper-beta
-      ;;     ref (fn [e]) [autofocus-input zloc] {:min-height "200px"
-      ;;                                          :min-width "200px"
-      ;;                                          :overflow :auto
-      ;;                                          :z-index 10000}])]]))
+       [overlay-wrapper-beta
+          ref (fn [e]) 
+          [autofocus-input zloc] 
+          {:min-height "200px"
+            :min-width "200px"
+            :overflow :auto
+            :z-index 10000}])]]))
        
 
 (defn form-interpreter [zloc]
- (let [selected? (subscribe [:parenoia/selected? zloc])]
-  [form-interpreter-inner zloc @selected? form-interpreter]))
+ (let [selected? (subscribe [:parenoia/selected? zloc])
+       editable?     (subscribe [:parenoia/editable? zloc])]
+  [form-interpreter-inner zloc @selected? @editable?
+    form-interpreter]))
 
 
 (defn sticky-function-header [zloc index ns-name]

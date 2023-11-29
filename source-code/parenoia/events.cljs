@@ -43,6 +43,14 @@
  (fn [db [_ zloc]]
    (= zloc (get-in db [:parenoia :selected-zloc]))))
 
+(reg-sub
+ :parenoia/editable?
+ (fn [db [_ zloc]]
+   (and 
+    (get-in db [:parenoia :editable?])
+    (= zloc (get-in db [:parenoia :selected-zloc])))))
+
+
 (reg-event-db
  :db/merge
  (fn [db [_ path value-to-merge]]
