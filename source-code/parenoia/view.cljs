@@ -350,22 +350,22 @@
         this-pos     (has-position? zloc)]
         ;editable?     (subscribe [:db/get [:parenoia :editable?]])]
 
-    ;; (react/useEffect
-    ;;   (fn []
-    ;;     (if @selected?
-    ;;       (do
-    ;;         (dispatch [:parenoia/get-variable-info zloc])
-    ;;         ;(dispatch [:parenoia/get-completion zloc])
-    ;;         (dispatch [:parenoia/get-form-info zloc])
-    ;;         (dispatch [:parenoia/get-kondo-lints zloc])
-    ;;         (dispatch [:parenoia/get-definition zloc])
-    ;;         (.scrollIntoView
-    ;;           (.-current ref)
-    ;;           #js {:behavior "smooth"
-    ;;                :block "center"})))
-    ;;                ;:inline "center"})))
-    ;;     (fn []))
-    ;;   #js [@selected?])
+    (react/useEffect
+      (fn []
+        (if selected?
+          (do
+            (dispatch [:parenoia/get-variable-info zloc])
+            ;(dispatch [:parenoia/get-completion zloc])
+            (dispatch [:parenoia/get-form-info zloc])
+            (dispatch [:parenoia/get-kondo-lints zloc])
+            (dispatch [:parenoia/get-definition zloc])
+            (.scrollIntoView
+              (.-current ref)
+              #js {:behavior "smooth"
+                   :block "center"})))
+                   ;:inline "center"})))
+        (fn []))
+      #js [selected?])
     [:div {:style {:display :flex
                    :justify-content :flex-start 
                    :align-items :flex-start
@@ -383,14 +383,10 @@
        :on-click (fn [e]
                    (.stopPropagation e)
                    (dispatch [:db/set [:parenoia :editable?] false])
-                   
                    (js/window.setTimeout
                      (fn [] (dispatch [:db/set [:parenoia :selected-zloc] zloc]))
                      50))}
-
-      ;;  ;(str (new-line-before-last? (z/left* zloc)))
-      ;;  ;(z/tag (z/right* (z/skip-whitespace zloc)))
-      ;; [lint this-pos zloc ref]
+      [lint this-pos zloc ref]
       (cond
         ;; (form-conditionals/is-ns? zloc)
         ;; [form-interpreters/ns-interpreter zloc form-interpreter]
@@ -404,8 +400,6 @@
         ;; [form-interpreters/let-vector-interpreter  zloc form-interpreter]
         ;; (form-conditionals/is-map? zloc)
         ;; [form-interpreters/map-interpreter  zloc form-interpreter]
-        ;;  ;(form-conditionals/is-vector? zloc)  
-        ;;  ;[form-interpreters/vector-interpreter  zloc form-interpreter]
         ;; (form-conditionals/is-cond? zloc) 
         ;; [form-interpreters/cond-interpreter  zloc form-interpreter]
         ;; (form-conditionals/is-case? zloc) 
@@ -440,9 +434,7 @@
 
 (defn form-interpreter [zloc]
  (let [selected? (subscribe [:parenoia/selected? zloc])]
-  [:div 
-   {:style {:padding "20px"}}
-   [form-interpreter-inner zloc @selected? form-interpreter]]))
+  [form-interpreter-inner zloc @selected? form-interpreter]))
 
 
 (defn sticky-function-header [zloc index ns-name]

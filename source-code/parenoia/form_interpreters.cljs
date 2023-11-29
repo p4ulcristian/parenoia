@@ -426,16 +426,16 @@
      :grid-template-columns grid-template-columns
      :grid-template-areas areas-str}))
 
-(defn function-child-interpreter [zloc index form-interpreter selected?]
+(defn function-child-interpreter [zloc index form-interpreter]
   [:<>
    [:div {:style {:grid-area (number-to-letter index)
                   :display :flex
                   :justify-content :flex-start
                   :border-radius "10px"
                   :align-items :center}}
-    [form-interpreter zloc selected?]]
+    [form-interpreter zloc]]
    (if-not (z/rightmost? zloc)
-     [function-child-interpreter (z/right zloc) (inc index) form-interpreter selected?])])
+     [function-child-interpreter (z/right zloc) (inc index) form-interpreter])])
 
 (defn function-interpreter  [zloc form-interpreter selected?]
   (let [function-name (z/down zloc)
@@ -460,7 +460,7 @@
                      (function-grid-style areas-vec))}
 
       [function-child-interpreter
-       function-name 0 form-interpreter selected?]]]))
+       function-name 0 form-interpreter]]]))
 
 
 (defn reader-macro-interpreter  [zloc form-interpreter]
