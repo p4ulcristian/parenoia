@@ -6,6 +6,7 @@
             [re-frame.core :refer [dispatch subscribe]]
             [rewrite-clj.parser :as zparser]
             [rewrite-clj.zip :as z]
+            [parenoia.rewrite :as rewrite]
             ["@webscopeio/react-textarea-autocomplete" :default ReactTextareaAutocomplete]))
 
 (def autofocus-input-value (atom nil))
@@ -88,6 +89,26 @@
  [:div {:style {:color :white}}
    "hello"])
 
+(defn get-fn-name [zloc]
+ (when (z/down zloc)
+  (z/string (z/right (z/down zloc)))))
+
+(defn filter-results [results token]
+ (vec 
+  (filter 
+   (fn [result] (clojure.string/starts-with? result token))
+   results)))
+
+(defn get-all-autocomplete-results [token]
+ (let [zlocs (map second @(subscribe [:db/get [:parenoia :project]]))]
+  (filter-results
+   (remove nil?
+    (reduce concat
+      (mapv 
+       (fn [zloc] (mapv get-fn-name (rewrite/get-forms-from-file zloc)))
+       zlocs)))
+   token)))   
+
 (defn view [zloc]
   (let [[ref set-ref] (react/useState nil)
         og-string  (z/string zloc)
@@ -124,7 +145,7 @@
                 :padding "10px"
                 :border-radius "10px"
                 :white-space "pre-wrap"}
-        :trigger {":" {:dataProvider (fn [token] #js ["hello" "there"])
+        :trigger {":" {:dataProvider (fn [token] (clj->js (get-all-autocomplete-results token)))
                        :component autocomplete-item
                        :output (fn [item trigger] (str item))}}}]]]))            
       ;; [:textarea {:style {:position :absolute
