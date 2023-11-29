@@ -15,12 +15,12 @@
         cljs-ajax/cljs-ajax                             {:mvn/version "0.8.4"}
 
         ;Data storing and moving
-        re-frame/re-frame                               {:mvn/version "1.2.0"}
+        re-frame/re-frame                               {:mvn/version "1.4.0"}
         akiroz.re-frame/storage                         {:mvn/version "0.1.4"}
 
         ;HTML and React tools
         hiccup/hiccup                                   {:mvn/version "1.0.5"}
-        reagent/reagent                                 {:mvn/version "1.1.1"}
+        reagent/reagent                                 {:mvn/version "1.2.0"}
         reagent-utils/reagent-utils                     {:mvn/version "0.3.4"}
         pez/clerk                                       {:mvn/version "1.0.0"}
         venantius/accountant                            {:mvn/version "0.2.5"}
