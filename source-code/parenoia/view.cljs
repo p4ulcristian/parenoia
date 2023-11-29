@@ -774,10 +774,13 @@
           (keyboard/remove-listener current-ref block-some-keyboard-events))))
      #js [])
   [:div 
-   {:style {:display :flex 
-            :justify-content :center 
+   {:style {
             :text-align :center 
-            :padding-bottom "10px"}}
+            :padding-bottom "10px"
+            :display :flex 
+            :flex-direction :column
+            :justify-content :center 
+            :align-items :center}}
    [:input {:ref ref
             :style {:text-align :center 
                     :padding "5px"
@@ -785,8 +788,15 @@
                     :border-radius "5px"}
             :value path        
             :on-change (fn [a] (set-path (-> a .-target .-value)))
-            :on-blur (fn [a] (dispatch [:parenoia/set-project-path! (-> a .-target .-value)]))
-            :placeholder "Project path"}]]))
+            :placeholder "Project path"}]
+   [:div {:on-click (fn [a] (dispatch [:parenoia/set-project-path! path]))
+           :style {:margin "20px"
+                    :width "200px"
+                    :padding "10px"
+                    :border-radius "10px"
+                    :background "orange"
+                    :cursor "pointer"}}
+         "Set project path"]]))
 
 
 (defn menu-inner []
@@ -795,26 +805,34 @@
    [menu-namespaces]])
 
 (defn menu []
+   (react/useEffect 
+    (fn [] 
+       (println "mizu")
+       (dispatch [:db/set [:parenoia :menu?] true]) 
+       (fn []))
+    #js [])
   (let [menu? @(subscribe [:db/get [:parenoia :menu?]])]
      
-     [:div.fade-animation 
-       {:style {:display (if menu? "block" "none")
-                :position :fixed 
-                :z-index 10000
-                :transform "translateX(-50%)"
-                :padding "20px"
-                :border-radius "10px"
-                :border "10px solid black"
-                :color "#333"
-                :height "80vh"
-                :width "80vw"
-                :overflow-y "auto"
-                :top 100 
-                :left "50%"
-                :background "radial-gradient(circle, rgba(245,201,49,1) 0%, rgba(191,165,76,1) 100%)"}}
-       [menu-inner]]))   
+     [:div (str menu?)
+      [:div.fade-animation 
+        {:style {:display (if menu? "block" "none")
+                 :position :fixed 
+                 :z-index 10000
+                 :transform "translateX(-50%)"
+                 :padding "20px"
+                 :border-radius "10px"
+                 :border "10px solid black"
+                 :color "#333"
+                 :height "80vh"
+                 :width "80vw"
+                 :overflow-y "auto"
+                 :top 100 
+                 :left "50%"
+                 :background "radial-gradient(circle, rgba(245,201,49,1) 0%, rgba(191,165,76,1) 100%)"}}
+        [menu-inner]]]))   
 
 (defn view []
+ 
   [:div {:class "parenoia-background"
          :style {
                  :color "#EEE"
