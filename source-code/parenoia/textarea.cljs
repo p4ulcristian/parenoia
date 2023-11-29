@@ -61,9 +61,12 @@
     [autofocus-input-wrapper
      [:<>
       [:textarea {:style {:position :absolute
-                          :background "white"
+                          
                           :border-radius 10
                           :left 0
+                          :white-space "pre-wrap"
+                          :background "#333"
+                          :color :white
                           :top 0
                            ;:transform "translateY(-100%)"
                           :min-width 100

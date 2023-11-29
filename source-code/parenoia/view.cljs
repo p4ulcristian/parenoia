@@ -625,15 +625,76 @@
 
 
 
-(defn ns-part [index part]
- [:div 
-   {:style {:padding "10px 15px"
-            :border-radius "30px"
-            :color "#eee"
-            :background (str "rgba(100,100,100," (- 1 (* 2 (/ index 10))) ")")}}
-   part])
+(defn ns-part [index part color]
+ (let [css-name (str "a" (random-uuid))
+       css-id (str "." css-name)]
+  [:div {:style {:display :flex
+                 :align-items :center}}
+                  
+                 
+   [:div 
+     {:style {:padding "10px 15px"
+              ;:border-radius "10px"
+              :padding-left (if (< 0 index) 
+                               "40px" "10px")
+              :margin-left (if (< 0 index) 
+                               "-80px")
+              :background color
+              :color "white"}}
+     [:div.menu-namespace 
+       {:style {:background "#333"
+                :color "#DDD"
+                :padding "10px"
+                :border-radius "10px"
+                :border "1px solid white"}}
+       part]]
+   [:style (str css-id ", "css-id":before, "css-id":after { width: 90px; height: 90px;}
+"css-id" {
+	overflow: hidden;
+	position: relative;
+	border-radius: 20%;
+	transform: translateY(25%) translateX(-20%) rotate(0deg) skewY(30deg) scaleX(.866);
+	cursor: pointer;
+	pointer-events: none;
+} 
+"css-id":before, "css-id":after {
+	position: absolute;
+	background: "color";
+	pointer-events: auto;
+	content: '';
+}
+"css-id":before {
+	border-radius: 20% 20% 20% 53%;
+	transform: scaleX(1.155) skewY(-30deg) rotate(-30deg) translateY(-42.3%) 
+			skewX(30deg) scaleY(.866) translateX(-24%);
+}
+"css-id":after {
+	border-radius: 20% 20% 53% 20%;
+	transform: scaleX(1.155) skewY(-30deg) rotate(-30deg) translateY(-42.3%) 
+			skewX(-30deg) scaleY(.866) translateX(24%);
+}")]
+   [:div {:class css-name}]]))
+   
 
-(defn menu-namespace [namespace project-item]
+(defn get-all-namespace-parts [namespaces]
+ (set (reduce concat
+       (map 
+         (fn [namespace] (map-indexed (fn [i a]
+                                        [i a]) 
+                                      (clojure.string/split namespace #"\.")))
+         namespaces))))
+
+(defn generate-color []
+ (str "rgb(" (rand-int 256) ", " (rand-int 256) ", " (rand-int 256)  ")"))
+
+(defn generate-colors [namespaces]
+ (reduce merge
+  (map 
+   (fn [part] {part (generate-color)})
+   (get-all-namespace-parts namespaces))))
+
+
+(defn menu-namespace [namespace project-item generated-colors]
  (let [selected? (= (first project-item)
                     @(subscribe [:db/get [:parenoia :selected :file-path]]))]
   [:div 
@@ -646,21 +707,30 @@
              :display :flex
              :border "1px solid black"
              :cursor :pointer
+             :z-index 1000
+            ;;  :flex-direction :row-reverse
+            ;;  :justify-content :flex-end
              :background (if selected? :turquoise :none)}}
+   
    (map-indexed 
-     (fn [i a] ^{:key a}[ns-part i a])
+     (fn [i a] ^{:key a}[ns-part i a (get generated-colors [i a])])
      (clojure.string/split namespace #"\."))]))
+
+
+
+
 
 (defn menu-namespaces []
  (let [project @(subscribe [:db/get [:parenoia :project]])
-       namespaces (map refactor/get-ns (map second project))]
+       namespaces (map refactor/get-ns (map second project))
+       generated-colors (generate-colors namespaces)]
+      
    [:div {:style {:display :flex 
                   :flex-direction :column 
                   :gap "10px"
                   :justify-content :flex-start}}
-     ;(str (sort-by first project))
      (map 
-      (fn [a project-item] ^{:key a}[:div [menu-namespace a project-item]])
+      (fn [a project-item] ^{:key a}[:div [menu-namespace a project-item generated-colors]])
       (sort namespaces)
       (sort (fn [a b] (compare (refactor/get-ns (second a))
                                (refactor/get-ns (second b))))
