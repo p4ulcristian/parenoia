@@ -763,7 +763,8 @@
 
 
 (defn open-project []
- (let [ref (react/useRef)]
+ (let [ref (react/useRef)
+       [path set-path] (react/useState "/Users/paulcristian/projects/zgen/wizard")]
   (react/useEffect
      (fn []
        (let [current-ref (.-current ref)]
@@ -779,7 +780,10 @@
    [:input {:ref ref
             :style {:text-align :center 
                     :padding "5px"
+                    :width "100%"
                     :border-radius "5px"}
+            :value path        
+            :on-change (fn [a] (set-path (-> a .-target .-value)))
             :on-blur (fn [a] (dispatch [:parenoia/set-project-path! (-> a .-target .-value)]))
             :placeholder "Project path"}]]))
 
@@ -817,7 +821,6 @@
                  :width "100vw"}}
    [title]
    [menu]
-   
    [namespace-graph/view]
    [namespace-container]
    [pins]
