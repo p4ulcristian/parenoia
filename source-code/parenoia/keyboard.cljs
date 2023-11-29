@@ -390,6 +390,7 @@
       (and (.-shiftKey e) (check-key e "Enter"))
       (check-key e " ")
       (check-key e "Backspace")
+      (check-key e "Tab")
       (check-key e "m")
       (check-key e "g")
       (check-key e "q")

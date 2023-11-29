@@ -331,9 +331,8 @@
        [overlay-wrapper-beta
           ref (fn [e]) 
           [textarea/view zloc] 
-          {:min-height "200px"
-            :min-width "200px"
-            :overflow :auto
+          {
+           ; :overflow :hidden
             :z-index 10000}])]]))
        
 
@@ -781,8 +780,8 @@
 (defn menu []
    (react/useEffect 
     (fn [] 
-       (println "mizu")
        (dispatch [:db/set [:parenoia :menu?] true]) 
+       (dispatch [:db/set [:parenoia :editable?] false]) 
        (fn []))
     #js [])
   (let [menu? @(subscribe [:db/get [:parenoia :menu?]])]
