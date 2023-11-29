@@ -216,10 +216,9 @@
                      :margin-bottom "5px"}}]
       [form-interpreter-iterator (z/right parameter-list) form-interpreter]]]))
 
-(defn ns-interpreter [zloc form-interpreter]
+(defn ns-interpreter [zloc form-interpreter selected?]
   (let [ns-symbol       (z/down zloc)
-        ns-name         (z/right ns-symbol)
-        selected?       (selected-zloc? zloc)]
+        ns-name         (z/right ns-symbol)] 
     [:div {:style {:border-radius  "10px"
                    :padding "10px"
                    :background (if selected?

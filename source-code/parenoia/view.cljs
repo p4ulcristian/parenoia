@@ -343,14 +343,8 @@
       false)))
 
 
-
-
-(defn form-interpreter-inner [zloc selected? form-interpreter]
-  (let [ref (react/useRef)
-        this-pos     (has-position? zloc)]
-        ;editable?     (subscribe [:db/get [:parenoia :editable?]])]
-
-    (react/useEffect
+(defn form-interpreter-effect [ zloc selected? ref]
+ (react/useEffect
       (fn []
         (if selected?
           (do
@@ -359,13 +353,23 @@
             (dispatch [:parenoia/get-form-info zloc])
             (dispatch [:parenoia/get-kondo-lints zloc])
             (dispatch [:parenoia/get-definition zloc])
-            (.scrollIntoView
-              (.-current ref)
-              #js {:behavior "smooth"
-                   :block "center"})))
-                   ;:inline "center"})))
+            (let [el (.getElementById js/document "parenoia-body")
+                  rect (.getBoundingClientRect (.-current ref))
+                  scroll-top (.-scrollTop el)
+                  top (.-top rect)
+                  new-top (- (+ scroll-top top) (/ (.-innerHeight js/window) 2))]
+             (.scrollTo el
+               #js {:behavior "smooth"
+                    :top new-top}))))
         (fn []))
-      #js [selected?])
+      #js [selected?]))
+
+(defn form-interpreter-inner [zloc selected? form-interpreter]
+  (let [ref (react/useRef)
+        this-pos     (has-position? zloc)]
+        ;editable?     (subscribe [:db/get [:parenoia :editable?]])]
+
+    (form-interpreter-effect zloc selected? ref)
     [:div {:style {:display :flex
                    :justify-content :flex-start 
                    :align-items :flex-start
@@ -388,8 +392,8 @@
                      50))}
       [lint this-pos zloc ref]
       (cond
-        ;; (form-conditionals/is-ns? zloc)
-        ;; [form-interpreters/ns-interpreter zloc form-interpreter]
+        (form-conditionals/is-ns? zloc)
+        [form-interpreters/ns-interpreter zloc form-interpreter selected?]
         ;; (form-conditionals/is-defn? zloc)
         ;; [form-interpreters/defn-interpreter zloc form-interpreter]
         ;; (form-conditionals/is-def? zloc)
