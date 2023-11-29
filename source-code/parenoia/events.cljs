@@ -37,11 +37,15 @@
  (fn [db [_ path]]
    (get-in db path)))
 
+(defn has-position? [zloc]
+  (try (z/position zloc)
+    (catch js/Error e (random-uuid))))
 
 (reg-sub
  :parenoia/selected?
  (fn [db [_ zloc]]
-   (= zloc (get-in db [:parenoia :selected-zloc]))))
+   (= (has-position? zloc) 
+      (has-position? (get-in db [:parenoia :selected-zloc])))))
 
 (reg-sub
  :parenoia/editable?
