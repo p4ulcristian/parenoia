@@ -1,8 +1,8 @@
 (ns parenoia.namespace-graph
-  (:require ["cytoscape" :as cytoscape]
+  (:require 
             ["react" :as react]
             ["react-graph-vis" :default Graph]
-            ["vis" :as vis]
+            
             [parenoia.refactor :as refactor]
             [re-frame.core :refer [dispatch subscribe]]))
 
