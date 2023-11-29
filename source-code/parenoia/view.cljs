@@ -301,37 +301,37 @@
     (and is-first? is-in-list?)))
 
 (defn token [zloc selected?]
-  (let [selected-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
-        selected-pos  (has-position? selected-zloc)
-        selected-string  (z/string selected-zloc)
-        this-pos     (has-position? zloc)
-        ref               (react/useRef)
-        same-as-selected? (and (not selected?) (= (z/string zloc) selected-string))
-        unused-binding?   (is-unused-binding? this-pos)]
+  ;; (let [selected-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
+  ;;       selected-pos  (has-position? selected-zloc)
+  ;;       selected-string  (z/string selected-zloc)
+  ;;       this-pos     (has-position? zloc)
+  ;;       ref               (react/useRef)
+  ;;       same-as-selected? (and (not selected?) (= (z/string zloc) selected-string))
+  ;;       unused-binding?   (is-unused-binding? this-pos)]
 
     [:div {:style {:box-shadow style/box-shadow
                    :border-radius "10px"
                    :padding "5px 10px"
                    :white-space :nowrap
                    :border (str "2px solid " (cond 
-                                               same-as-selected?     "magenta"
-                                               (first-in-list? zloc) "lightgreen" 
+                                              ;;  same-as-selected?     "magenta"
+                                              ;;  (first-in-list? zloc) "lightgreen" 
                                                :else "transparent"))
                    :color (cond 
                             selected? (style/color [:selection :text-color])
                             ;same-as-selected? (style/color [:same-as-selection :text-color])
-                            unused-binding?   (style/color [:unused-binding :text-color])
+                            ;; unused-binding?   (style/color [:unused-binding :text-color])
                             :else (decide-token-text-color zloc))
                    :background (cond  
                                  selected?         (style/color [:selection :background-color])
                                  ;same-as-selected? (style/color [:same-as-selection :background-color])
                         
-                                 unused-binding?   (style/color [:unused-binding :background-color])
+                                ;;  unused-binding?   (style/color [:unused-binding :background-color])
                                  :else (decide-token-color zloc))}}
-     [:div {:ref ref} 
+     [:div
       (if (= nil (z/tag zloc))
           [:br]
-          (z/string zloc))]]))
+          (z/string zloc))]])
      
           
 
@@ -342,29 +342,30 @@
       (new-line-before-last? (z/left* zloc))
       false)))
 
-(defn form-interpreter [zloc]
-  (let [ref (react/useRef)
-        this-pos     (has-position? zloc)
-        selected? (form-interpreters/selected-zloc? zloc)
-        editable?     @(subscribe [:db/get [:parenoia :editable?]])]
 
-    (react/useEffect
-      (fn []
-        (if selected?
-          (do
-            (dispatch [:parenoia/get-variable-info zloc])
-            ;(dispatch [:parenoia/get-completion zloc])
-            (dispatch [:parenoia/get-form-info zloc])
-            (dispatch [:parenoia/get-kondo-lints zloc])
-            (dispatch [:parenoia/get-definition zloc])
-            (.scrollIntoView
-              (.-current ref)
-              #js {:behavior "smooth"
-                   :block "center"})))
-                   ;:inline "center"})))
-        (fn []))
-      #js [selected?])
-    ^{:key (str this-pos (z/string zloc))}
+
+
+(defn form-interpreter-inner [zloc selected? form-interpreter]
+  (let [ref (react/useRef)
+        this-pos     (has-position? zloc)]
+        ;editable?     (subscribe [:db/get [:parenoia :editable?]])]
+
+    ;; (react/useEffect
+    ;;   (fn []
+    ;;     (if @selected?
+    ;;       (do
+    ;;         (dispatch [:parenoia/get-variable-info zloc])
+    ;;         ;(dispatch [:parenoia/get-completion zloc])
+    ;;         (dispatch [:parenoia/get-form-info zloc])
+    ;;         (dispatch [:parenoia/get-kondo-lints zloc])
+    ;;         (dispatch [:parenoia/get-definition zloc])
+    ;;         (.scrollIntoView
+    ;;           (.-current ref)
+    ;;           #js {:behavior "smooth"
+    ;;                :block "center"})))
+    ;;                ;:inline "center"})))
+    ;;     (fn []))
+    ;;   #js [@selected?])
     [:div {:style {:display :flex
                    :justify-content :flex-start 
                    :align-items :flex-start
@@ -372,7 +373,7 @@
                    
      [:div.form-interpreter
       {:class (when selected? "selected")
-        :ref ref
+       :ref ref
        :style {:position :relative
                :box-sizing :border-box
                :border-radius "10px"
@@ -387,55 +388,62 @@
                      (fn [] (dispatch [:db/set [:parenoia :selected-zloc] zloc]))
                      50))}
 
-       ;(str (new-line-before-last? (z/left* zloc)))
-       ;(z/tag (z/right* (z/skip-whitespace zloc)))
-      [lint this-pos zloc ref]
+      ;;  ;(str (new-line-before-last? (z/left* zloc)))
+      ;;  ;(z/tag (z/right* (z/skip-whitespace zloc)))
+      ;; [lint this-pos zloc ref]
       (cond
-        (form-conditionals/is-ns? zloc)
-        [form-interpreters/ns-interpreter zloc form-interpreter]
-        (form-conditionals/is-defn? zloc)
-        [form-interpreters/defn-interpreter zloc form-interpreter]
-        (form-conditionals/is-def? zloc)
-        [form-interpreters/def-interpreter zloc form-interpreter]
-        (or
-          (form-conditionals/is-let-vector? zloc)
-          (form-conditionals/is-loop-vector? zloc))
-        [form-interpreters/let-vector-interpreter  zloc form-interpreter]
-        (form-conditionals/is-map? zloc)
-        [form-interpreters/map-interpreter  zloc form-interpreter]
-         ;(form-conditionals/is-vector? zloc)  
-         ;[form-interpreters/vector-interpreter  zloc form-interpreter]
-        (form-conditionals/is-cond? zloc) 
-        [form-interpreters/cond-interpreter  zloc form-interpreter]
-        (form-conditionals/is-case? zloc) 
-        [form-interpreters/case-interpreter  zloc form-interpreter]
-        (form-conditionals/is-if? zloc) 
-        [form-interpreters/if-interpreter  zloc form-interpreter]
+        ;; (form-conditionals/is-ns? zloc)
+        ;; [form-interpreters/ns-interpreter zloc form-interpreter]
+        ;; (form-conditionals/is-defn? zloc)
+        ;; [form-interpreters/defn-interpreter zloc form-interpreter]
+        ;; (form-conditionals/is-def? zloc)
+        ;; [form-interpreters/def-interpreter zloc form-interpreter]
+        ;; (or
+        ;;   (form-conditionals/is-let-vector? zloc)
+        ;;   (form-conditionals/is-loop-vector? zloc))
+        ;; [form-interpreters/let-vector-interpreter  zloc form-interpreter]
+        ;; (form-conditionals/is-map? zloc)
+        ;; [form-interpreters/map-interpreter  zloc form-interpreter]
+        ;;  ;(form-conditionals/is-vector? zloc)  
+        ;;  ;[form-interpreters/vector-interpreter  zloc form-interpreter]
+        ;; (form-conditionals/is-cond? zloc) 
+        ;; [form-interpreters/cond-interpreter  zloc form-interpreter]
+        ;; (form-conditionals/is-case? zloc) 
+        ;; [form-interpreters/case-interpreter  zloc form-interpreter]
+        ;; (form-conditionals/is-if? zloc) 
+        ;; [form-interpreters/if-interpreter  zloc form-interpreter]
         
         (or
           (form-conditionals/is-vector? zloc)
           (form-conditionals/is-function? zloc))
-        [form-interpreters/function-interpreter  zloc form-interpreter]
-        (form-conditionals/is-reader-macro? zloc) 
-        [form-interpreters/reader-macro-interpreter  zloc form-interpreter]
-        (form-conditionals/is-deref? zloc) 
-        [form-interpreters/deref-interpreter  zloc form-interpreter]
-        (form-conditionals/is-meta? zloc) 
-        [form-interpreters/meta-interpreter  zloc form-interpreter]
-        (form-conditionals/is-anonym-fn? zloc) 
-        [form-interpreters/anonym-fn-interpreter  zloc form-interpreter]
+        [form-interpreters/function-interpreter  zloc form-interpreter selected?]
+        ;; (form-conditionals/is-reader-macro? zloc) 
+        ;; [form-interpreters/reader-macro-interpreter  zloc form-interpreter]
+        ;; (form-conditionals/is-deref? zloc) 
+        ;; [form-interpreters/deref-interpreter  zloc form-interpreter]
+        ;; (form-conditionals/is-meta? zloc) 
+        ;; [form-interpreters/meta-interpreter  zloc form-interpreter]
+        ;; (form-conditionals/is-anonym-fn? zloc) 
+        ;; [form-interpreters/anonym-fn-interpreter  zloc form-interpreter
         
-         ;; (form-conditionals/is-function? zloc)
-         ;; [form-interpreters/form-interpreter-iterator (z/down zloc) form-interpreter :horizontal]
-        :else [token zloc selected?])
-      (if (and selected? editable?)
+        ;;  (form-conditionals/is-function? zloc)
+        ;;  [form-interpreters/form-interpreter-iterator (z/down zloc) form-interpreter :horizontal]]
+        :else [token zloc selected?])]]))
+      ;; (if (and @selected? @editable?)
       
-       [overlay-wrapper-beta
-          ref (fn [e]) [autofocus-input zloc] {:min-height "200px"
-                                               :min-width "200px"
-                                               :overflow :auto
-                                               :z-index 10000}])]]))
+      ;;  [overlay-wrapper-beta
+      ;;     ref (fn [e]) [autofocus-input zloc] {:min-height "200px"
+      ;;                                          :min-width "200px"
+      ;;                                          :overflow :auto
+      ;;                                          :z-index 10000}])]]))
        
+
+(defn form-interpreter [zloc]
+ (let [selected? (subscribe [:parenoia/selected? zloc])]
+  [:div 
+   {:style {:padding "20px"}}
+   [form-interpreter-inner zloc @selected? form-interpreter]]))
+
 
 (defn sticky-function-header [zloc index ns-name]
   [:div {:style {:position :sticky

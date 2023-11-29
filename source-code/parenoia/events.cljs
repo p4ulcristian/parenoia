@@ -37,6 +37,12 @@
  (fn [db [_ path]]
    (get-in db path)))
 
+
+(reg-sub
+ :parenoia/selected?
+ (fn [db [_ zloc]]
+   (= zloc (get-in db [:parenoia :selected-zloc]))))
+
 (reg-event-db
  :db/merge
  (fn [db [_ path value-to-merge]]
