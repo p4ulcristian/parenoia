@@ -4,6 +4,8 @@
             [rewrite-clj.paredit :as paredit]
             [rewrite-clj.zip :as z]))
 
+
+
 (defn has-position? [zloc]
   (try (z/position zloc)
     (catch js/Error e false)))
@@ -377,4 +379,25 @@
           (remove-listener js/document on-shift-a)
           (remove-listener js/document on-shift-d)))
       #js [])))
+
+(defn block-some-keyboard-events [^js e]
+  (if
+    (or 
+      (check-key e "ArrowLeft")
+      (check-key e "ArrowRight")
+      (check-key e "ArrowDown")
+      (check-key e "ArrowUp")
+      (and (.-shiftKey e) (check-key e "Enter"))
+      (check-key e " ")
+      (check-key e "Backspace")
+      (check-key e "m")
+      (check-key e "g")
+      (check-key e "q")
+      (check-key e "w")
+      (check-key e "e")
+      (check-key e "r")
+      (check-key e "a")
+      (check-key e "s")
+      (check-key e "d"))
+    (.stopPropagation e)))
 

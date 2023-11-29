@@ -1,5 +1,5 @@
 (ns parenoia.view
-  (:require ["parinfer" :as parinfer]
+  (:require 
             ["react" :as react]
             ["react-dom" :as react-dom]
             [reagent.core :as reagent]
@@ -18,6 +18,7 @@
             [reagent.core :refer [atom]]
             [rewrite-clj.node :as znode]
             [rewrite-clj.parser :as zparser]
+            [parenoia.textarea :as textarea]
             [rewrite-clj.zip :as z]))
 
 (defn load-effect []
@@ -35,103 +36,6 @@
   (clojure.string/join
     " || "
     (clojure.string/split  namespace #"\.")))
-
-(def autofocus-input-value (atom nil))
-
-
-(defn block-some-keyboard-events [^js e]
-  (if
-    (or 
-      (keyboard/check-key e "ArrowLeft")
-      (keyboard/check-key e "ArrowRight")
-      (keyboard/check-key e "ArrowDown")
-      (keyboard/check-key e "ArrowUp")
-      (and (.-shiftKey e) (keyboard/check-key e "Enter"))
-      (keyboard/check-key e " ")
-      (keyboard/check-key e "Backspace")
-      (keyboard/check-key e "m")
-      (keyboard/check-key e "g")
-      (keyboard/check-key e "q")
-      (keyboard/check-key e "w")
-      (keyboard/check-key e "e")
-      (keyboard/check-key e "r")
-      (keyboard/check-key e "a")
-      (keyboard/check-key e "s")
-      (keyboard/check-key e "d"))
-    (.stopPropagation e)))
-
-(defn autofocus-input--unmount [current-ref zloc]
-  (fn []
-    (let [og-string (z/string zloc)
-          edited-string (try (zparser/parse-string
-                               (.-text (parinfer/smartMode @autofocus-input-value)))
-                          (catch js/Error e "veryspecific-&error"))
-          error? (= edited-string "veryspecific-&error")
-          same?  (= og-string @autofocus-input-value)
-          edited-zloc (z/edit zloc (fn [e]  edited-string))]
-
-      (when-not (or same? error?)
-        (do
-          (keyboard/modify-file
-            (z/of-node (z/root edited-zloc)
-              {:track-position? true}))
-          (keyboard/set-zloc edited-zloc)
-          (keyboard/remove-listener current-ref block-some-keyboard-events))))))
-
-(defn autofocus-input--effect [ref zloc]
-  (react/useEffect
-    (fn []
-      (let [current-ref (.-current ref)]
-        (do
-          (reset! autofocus-input-value (z/string zloc))
-          (keyboard/add-listener current-ref block-some-keyboard-events)
-          (.setTimeout js/window #(.select current-ref) 50))
-        (autofocus-input--unmount current-ref zloc)))
-        
-    #js []))
-
-(defn autofocus-input-wrapper [content]
-  [:div
-   {:style {:position :absolute
-            :top 0
-            :left "50%"
-            :min-width "100%"
-            :height "100%"
-            :min-height "200px"
-            :transform "translateX(-50%)"
-            :color "#333"}}
-   content])
-
-(defn autofocus-input [zloc]
-  (let [ref (react/useRef)
-        og-string  (z/string zloc)
-        on-change (fn [^js event] (let [value (-> event .-target .-value)]
-                                    (reset! autofocus-input-value value)))]
-
-    (autofocus-input--effect ref zloc)
-    [autofocus-input-wrapper
-     [:<>
-      [:textarea {:style {:position :absolute
-                           :background "white"
-                           :border-radius 10
-                           :left 0
-                           :top 0
-                           ;:transform "translateY(-100%)"
-                           :min-width 100
-                           :box-sizing "border-box"
-                           :height "100%"
-                           :width "100%"
-                           
-                           :padding "5px"
-                           :z-index 1000}
-                         
- 
-                   :ref ref
-                    :value @autofocus-input-value
-                    ;:autofocus true
-                     :on-click #(.stopPropagation %)
-                  
-                    :on-change  on-change}]]]))
        
 
 (defn decide-token-color [zloc]
@@ -426,7 +330,7 @@
       
        [overlay-wrapper-beta
           ref (fn [e]) 
-          [autofocus-input zloc] 
+          [textarea/view zloc] 
           {:min-height "200px"
             :min-width "200px"
             :overflow :auto
@@ -564,9 +468,9 @@
   (react/useEffect 
       (fn []
          (let [current-ref (.-current ref)]
-          (keyboard/add-listener current-ref block-some-keyboard-events)
+          (keyboard/add-listener current-ref keyboard/block-some-keyboard-events)
           (fn []
-            (keyboard/remove-listener current-ref block-some-keyboard-events))))
+            (keyboard/remove-listener current-ref keyboard/block-some-keyboard-events))))
       #js []) 
   [:div {:ref ref
          :style {:padding "5px 10px"
@@ -769,9 +673,9 @@
   (react/useEffect
      (fn []
        (let [current-ref (.-current ref)]
-         (keyboard/add-listener current-ref block-some-keyboard-events)
+         (keyboard/add-listener current-ref keyboard/block-some-keyboard-events)
          (fn [] 
-          (keyboard/remove-listener current-ref block-some-keyboard-events))))
+          (keyboard/remove-listener current-ref keyboard/block-some-keyboard-events))))
      #js [])
   [:div 
    {:style {
