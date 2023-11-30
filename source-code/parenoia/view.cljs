@@ -8,6 +8,7 @@
    [parenoia.form-conditionals :as form-conditionals]
    [parenoia.form-interpreters  :as form-interpreters]
    [parenoia.keyboard :as keyboard]
+   [parenoia.menu :as menu]
    [parenoia.namespace-graph :as namespace-graph]
    [parenoia.refactor :as refactor]
    [parenoia.refactor-ui :as refactor-ui]
@@ -786,33 +787,6 @@
    [open-project]
    [menu-namespaces]])
 
-(defn menu []
-  (react/useEffect
-    (fn []
-      (dispatch [:db/set [:parenoia :menu?] true])
-      (dispatch [:db/set [:parenoia :editable?] false])
-      (fn []))
-    #js [])
-  (let [menu? @(subscribe [:db/get [:parenoia :menu?]])]
-
-    [:div (str menu?)
-     [:div.fade-animation
-      {:style {:display (if menu? "block" "none")
-               :position :fixed
-               :z-index 10000
-               :transform "translateX(-50%)"
-               :padding "20px"
-               :border-radius "10px"
-               :border "10px solid black"
-               :color "#333"
-               :height "80vh"
-               :width "80vw"
-               :overflow-y "auto"
-               :top 100
-               :left "50%"
-               :background "radial-gradient(circle, rgba(245,201,49,1) 0%, rgba(191,165,76,1) 100%)"}}
-      [menu-inner]]]))
-
 (defn view []
 
   [:div {:class "parenoia-background"
@@ -820,9 +794,9 @@
                  :height "100vh"
                  :width "100vw"}}
    [title]
-   [menu]
+   [menu/view]
    [namespace-graph/view]
    [namespace-container]
-   ;[refactor-ui/view]
+   [refactor-ui/view]
    [pins]
    [global-search]])

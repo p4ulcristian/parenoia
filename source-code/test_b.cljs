@@ -1,9 +1,7 @@
 (ns test-b)
 
-
-(defn b []
- (str "b"))
+(defn c []
+  (str "b"))
 
 (defn a []
- (let [b sda]
-  (str b)))
+  (c))

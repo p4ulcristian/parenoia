@@ -156,6 +156,8 @@
 (defn get-definition [path position]
   (let [[row col] position]
     (clojure-lsp.api/analyze-project-and-deps! {:project-root (io/file @config/project-path)})
+    (println "declarations:" (lsp-queries/find-declaration-from-cursor @db* (path->uri path) row col))
+    (println "implementations:" (lsp-queries/find-implementations-from-cursor @db* (path->uri path) row col))
     (let [the-def (try (lsp-queries/find-definition-from-cursor @db* (path->uri path) row col)
                     (catch Error e nil))]
       (str {:uri (:uri the-def)

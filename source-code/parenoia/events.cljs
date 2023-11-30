@@ -52,7 +52,8 @@
                              (and
                                (= row (first position))
                                (= col (second position))
-                               (or (= :unused-binding type)
+                               (or 
+                                 (= :unused-binding type)
                                  (= :unused-referred-var type)
                                  (= :unused-namespace type))))
                      lints)]
@@ -247,7 +248,6 @@
       ;; :response-format    :text
       ;; :format    :text
          :handler          (fn [e]
-                             (println "Valasz" e)
                              (dispatch [:db/set [:parenoia :variable-info] (read-string e)]))
          :error-handler    (fn [e] (.log js/console e))}))
 

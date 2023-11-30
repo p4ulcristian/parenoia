@@ -9,7 +9,7 @@
        {:keys [from to name]}  variable-info
        selected-zloc (deref (subscribe [:db/get [:parenoia :selected-zloc]]))]
    [:div {:style {:position :fixed
-                  :top 0
+                  :bottom 0
                   :right 0
                   :background "#444"
                   :width 400
@@ -18,7 +18,9 @@
                   
                    
     [:div "From: " (str from)]
-    ;[:div (str @(subscribe [:db/get [:parenoia :selected :file-path]]))]
+    [:div "Lints: " 
+      (str @(subscribe [:db/get [:parenoia :kondo-lints]]))]
+      
     [:div "To: " (str to)]
     [:div "Name: " (str name)]
     [:div "Bucket: " (:bucket variable-info)]
