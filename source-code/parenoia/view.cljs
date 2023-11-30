@@ -184,6 +184,24 @@
         is-in-list? (z/list? (z/up zloc))]
     (and is-first? is-in-list?)))
 
+
+(defn go-to-definition-button []
+ (let [this-def @(subscribe [:db/get [:parenoia :definition]])]
+  (when (:uri this-def)
+   
+   [:div {:style {:position :absolute 
+                  :top 0 
+                  :right 0
+                  :background :none
+                  :transform "translate(50%, -50%)"}
+          :on-click (fn [e] 
+                      (.stopPropagation e)
+                      (dispatch [:parenoia/set-selected-file-by-uri 
+                                 (:uri this-def)
+                                 (:row this-def)
+                                 (:col this-def)]))} 
+        [:i {:class "fa-regular fa-circle-up"}]])))
+
 (defn token-inner [zloc selected? unused-binding?]
   [:div {:style {:box-shadow style/box-shadow
                  :border-radius "10px"
@@ -191,6 +209,7 @@
                  :padding-right "10px"
                  :padding-top    "5px"
                  :padding-bottom "5px"
+                 :position :relative
                  :white-space :nowrap
                  :border-left (str "3px solid " (cond
                                                    ;;  same-as-selected?     "magenta"
@@ -208,9 +227,11 @@
                                unused-binding?   (style/color [:unused-binding :background-color])
                                :else (decide-token-color zloc))}}
    [:div
+    (when selected? [go-to-definition-button])
     (if (= nil (z/tag zloc))
       [:br]
       (z/string zloc))]])
+      
 
 (defn token [zloc selected?]
   (let [unused-binding?   (subscribe [:parenoia/unused-binding? zloc])]
@@ -806,4 +827,3 @@
    [refactor-ui/view]
    [pins]
    [global-search]])
-   ;[refactor-ui/view]])

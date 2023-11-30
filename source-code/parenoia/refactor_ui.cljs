@@ -23,11 +23,7 @@
     [:div "Name: " (str name)]
     [:div "Bucket: " (:bucket variable-info)]
     [:div "Definition: " (str @(subscribe [:db/get [:parenoia :definition]]))]
-    [:button {:on-click #(dispatch [:parenoia/set-selected-file-by-uri 
-                                     (:uri @(subscribe [:db/get [:parenoia :definition]]))
-                                     (:row @(subscribe [:db/get [:parenoia :definition]]))
-                                     (:col @(subscribe [:db/get [:parenoia :definition]]))])} 
-      "Go to definition"]
+    
     [:div "Completion: " (str @(subscribe [:db/get [:parenoia :completion]]))]
     [:div "Form info: " (clojure.string/join ","
                          (map :name @(subscribe [:db/get [:parenoia :form-info]])))]]))

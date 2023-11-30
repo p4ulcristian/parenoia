@@ -218,6 +218,7 @@
     (let [path (uri->path uri)
           zloc (get-in db [:parenoia :project path])
           new-zloc (z/find-last-by-pos zloc [row col])]
+      (println "hehe: " uri row col)
       (-> db
         (assoc-in [:parenoia :selected :file-path] path)
         (assoc-in [:parenoia :selected-zloc]       new-zloc)))))

@@ -158,7 +158,7 @@
     (clojure-lsp.api/analyze-project-and-deps! {:project-root (io/file @config/project-path)})
     (let [the-def (try (lsp-queries/find-definition-from-cursor @db* (path->uri path) row col)
                     (catch Error e nil))]
-      (println "Mi a fasz van" row col)
+      (println "Mi a fasz van" the-def)
       (str {:uri (:uri the-def)
             :col (:col the-def)
             :row (:row the-def)}))))
