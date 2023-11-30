@@ -47,7 +47,6 @@
                                             (string-wrap 
                                              (refactor/get-completion
                                               file-path position))))}}]
-       ["/reanalyze-project" {:post {:handler (fn [req] (string-wrap (str (clojure-lsp/analyze-project-only! {}))))}}]
        ["/get-definition" {:post {:handler (fn [req] 
                                             (let [body (:params req)
                                                   {:keys [file-path position]} body]
@@ -76,8 +75,10 @@
        ["/set-project-path" {:post {:handler (fn [req]
                                               (let [body (:params req)
                                                     {:keys [path]} body]
+                                                (clojure-lsp.api/dump {:project-root (io/file @config/project-path)})
                                                 (string-wrap 
-                                                 (str (reset! config/project-path path)))))}}]                                 
+                                                 (str 
+                                                  (reset! config/project-path path)))))}}]                                 
        ["/refactor"   {:get  {:handler  (fn [req]  (string-wrap (refactor/move-form 'test-a/a 'test-b/a)))}}]   
        ["/references" {:get  {:handler  (fn [req]  (string-wrap (str (refactor/get-references 'test-a/a))))}}]                                                                                                                               
        ["/file"  {:post {:handler  (fn [req]  

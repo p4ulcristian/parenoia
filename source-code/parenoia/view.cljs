@@ -729,7 +729,7 @@
 
 (defn open-project []
   (let [ref (react/useRef)
-        [path set-path] (react/useState "/Users/paulcristian/projects/zgen/wizard")]
+        [path set-path] (react/useState "/Users/paulcristian/Projects/zgen/wizard")]
     (react/useEffect
       (fn []
         (let [current-ref (.-current ref)]
