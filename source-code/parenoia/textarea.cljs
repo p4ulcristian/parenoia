@@ -68,17 +68,19 @@
 ;;         />
 
 
-(defn autocomplete-item-inner [data]
+(defn autocomplete-item-inner [^js data]
   (let [ref (react/useRef)
-        selected? (.-selected ^js data)
-        entity (.-entity ^js data)]
+        selected? (.-selected data)
+        entity (.-entity  data)
+        function (.-function entity)
+        namespace (.-namespace entity)]
    [:div.autocomplete-item
      {:ref ref
       :style {:background (if selected? "turquoise" "#333")
               :padding "10px"
               :border-radius "5px"
               :color      (if selected? "#333" "#FFF")}}     
-     (str entity)])) 
+     (str function)])) 
       
 
 (defn autocomplete-item [data]
@@ -87,7 +89,7 @@
 (defn autocomplete-loading [data]
 
  [:div {:style {:color :white}}
-   "hello"])
+   (str (js->clj  data))])
 
 (defn get-fn-name [zloc]
  (when (z/down zloc)
@@ -96,18 +98,31 @@
 (defn filter-results [results token]
  (vec 
   (filter 
-   (fn [result] (clojure.string/starts-with? result token))
+   (fn [result] 
+    (or 
+     (clojure.string/starts-with? (:function result) token)
+     (clojure.string/starts-with? (:function result) (str ":" token))))
    results)))
 
+
 (defn get-all-autocomplete-results [token]
- (let [zlocs (map second @(subscribe [:db/get [:parenoia :project]]))]
+ (let [zloc  @(subscribe [:db/get [:parenoia :selected-zloc]])
+       zlocs (map second @(subscribe [:db/get [:parenoia :project]]))]
   (filter-results
-   (remove nil?
-    (reduce concat
-      (mapv 
-       (fn [zloc] (mapv get-fn-name (rewrite/get-forms-from-file zloc)))
-       zlocs)))
-   token)))   
+   (reduce concat 
+    (map (fn [file-zloc] 
+            (let [forms   (rewrite/get-forms-from-file file-zloc)
+                  ns-name (rewrite/get-namespace-from-file file-zloc)]
+             (remove nil? 
+              (map (fn [form-zloc]
+                    (let [fn-name (get-fn-name form-zloc)]
+                     (when (and fn-name ns-name)
+                       {:function  fn-name
+                        :namespace ns-name})))
+                   forms)))) 
+        zlocs))
+   token)))  
+                       
 
 (defn view [zloc]
   (let [[ref set-ref] (react/useState nil)
@@ -139,15 +154,16 @@
         :style {:height "100%"
                 :width "100%"
                 :box-sizing "border-box"
-               
+                
                 :background "#333"
                 :color :white
                 :padding "10px"
                 :border-radius "10px"
                 :white-space "pre-wrap"}
-        :trigger {":" {:dataProvider (fn [token] (clj->js (get-all-autocomplete-results token)))
+        :trigger {":" {:dataProvider (fn [token] 
+                                        (clj->js (get-all-autocomplete-results token)))
                        :component autocomplete-item
-                       :output (fn [item trigger] (str item))}}}]]]))            
+                       :output (fn [item trigger] (str (.-function ^js item)))}}}]]]))            
       ;; [:textarea {:style {:position :absolute
                           
       ;;                     :border-radius 10
