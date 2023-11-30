@@ -2,7 +2,6 @@
   (:require 
             ["react" :as react]
             ["react-dom" :as react-dom]
-            [reagent.core :as reagent]
             [cljs.reader :as reader]
             [clojure.string :as clojure.string]
             [parenoia.events]
@@ -15,7 +14,7 @@
             [parenoia.rewrite :as rewrite]
             [parenoia.style :as style]
             [re-frame.core :refer [dispatch subscribe]]
-            [reagent.core :refer [atom]]
+            [reagent.core :refer [atom] :as reagent]
             [rewrite-clj.node :as znode]
             [rewrite-clj.parser :as zparser]
             [parenoia.textarea :as textarea]
@@ -229,32 +228,42 @@
       (new-line-before-last? (z/left* zloc))
       false)))
 
+(def timeout (atom nil))
 
-(defn form-interpreter-effect [ zloc selected? ref]
+(defn get-info-about-zloc [zloc]
+ (dispatch [:parenoia/get-variable-info zloc])
+ (dispatch [:parenoia/get-form-info zloc])
+ (dispatch [:parenoia/get-kondo-lints zloc])
+ (dispatch [:parenoia/get-definition zloc]))
+
+(defn form-interpreter-effect [ zloc selected? ref timeout set-timeout]
  (react/useEffect
-      (fn []
-        (if selected?
-          (do
-            (dispatch [:parenoia/get-variable-info zloc])
-            ;(dispatch [:parenoia/get-completion zloc])
-            (dispatch [:parenoia/get-form-info zloc])
-            (dispatch [:parenoia/get-kondo-lints zloc])
-            (dispatch [:parenoia/get-definition zloc])
-            (let [el (.getElementById js/document "parenoia-body")
-                  rect (.getBoundingClientRect (.-current ref))
-                  scroll-top (.-scrollTop el)
-                  top (.-top rect)
-                  new-top (- (+ scroll-top top) (/ (.-innerHeight js/window) 2))]
-             (.scrollTo el
-               #js {:behavior "smooth"
-                    :top new-top}))))
-        (fn []))
-      #js [selected?]))
+       (fn []
+         (if selected?
+           (do
+             (get-info-about-zloc zloc)
+             (let [el (.getElementById js/document "parenoia-body")
+                   rect (.getBoundingClientRect (.-current ref))
+                   scroll-top (.-scrollTop el)
+                   top (.-top rect)
+                   new-top (- (+ scroll-top top) (/ (.-innerHeight js/window) 2))]
+               (set-timeout (.setTimeout js/window 
+                              (fn [] (.scrollTo el
+                                        #js {:behavior "smooth"
+                                              :top   new-top}))
+                              100))))
+          (if timeout
+               (do 
+                (.clearTimeout js/window timeout)
+                (set-timeout nil))))                         
+         (fn []))
+       #js [selected?]))
 
 (defn form-interpreter-inner [zloc selected? editable? form-interpreter]
   (let [ref (react/useRef)
-        this-pos     (has-position? zloc)]
-    (form-interpreter-effect zloc selected? ref)
+        this-pos     (has-position? zloc)
+        [timeout set-timeout] (react/useState)]
+    (form-interpreter-effect zloc selected? ref timeout set-timeout)
     [:div {:style {:display :flex
                    :justify-content :flex-start 
                    :align-items :flex-start
