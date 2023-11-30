@@ -9,16 +9,15 @@
             [parenoia.rewrite :as rewrite]
             ["@webscopeio/react-textarea-autocomplete" :default ReactTextareaAutocomplete]))
 
-(def autofocus-input-value (atom nil))
 
 (defn autofocus-input--unmount [current-ref zloc]
   (fn []
     (let [og-string (z/string zloc)
           edited-string (try (zparser/parse-string
-                               (.-text (parinfer/smartMode @autofocus-input-value)))
+                               (.-text (parinfer/smartMode (.-value ^js current-ref))))
                           (catch js/Error e "veryspecific-&error"))
           error? (= edited-string "veryspecific-&error")
-          same?  (= og-string @autofocus-input-value)
+          same?  (= og-string (.-value ^js current-ref))
           edited-zloc (z/edit zloc (fn [e]  edited-string))]
 
       (when-not (or same? error?)
@@ -34,16 +33,12 @@
     (fn []
       (let [current-ref ref]
        (when ref 
-       
-          (do
-            (reset! autofocus-input-value (z/string zloc))
-            (keyboard/add-listener current-ref keyboard/block-some-keyboard-events)
-            (.setTimeout js/window #(.select current-ref) 50)))
+          (set! (.-value ref) (z/string zloc))
+          (keyboard/add-listener current-ref keyboard/block-some-keyboard-events)
+          (.setTimeout js/window #(.select current-ref) 50))
        (if ref 
         (autofocus-input--unmount current-ref zloc)
         (fn []))))
-       
-
     #js [ref]))
 
 (defn autofocus-input-wrapper [content]
@@ -143,11 +138,7 @@
                        
 
 (defn view [zloc]
-  (let [[ref set-ref] (react/useState nil)
-        og-string  (z/string zloc)
-        on-change (fn [^js event] (let [value (-> event .-target .-value)]
-                                    (reset! autofocus-input-value value)))]
-
+  (let [[ref set-ref] (react/useState nil)]
     (autofocus-input--effect ref zloc)
     [autofocus-input-wrapper
      [:<>
@@ -161,11 +152,7 @@
                     :color :white
                     :backdrop-filter "3px"
                      :list-style-type :none
-                     :position :fixed}
-                     
-                     
-      
-                    
+                     :position :fixed}      
         :containerStyle {:min-width 100
                          :background "transparent"
                           :box-sizing "border-box"
