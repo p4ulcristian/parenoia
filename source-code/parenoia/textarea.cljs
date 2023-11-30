@@ -22,9 +22,7 @@
 
       (when-not (or same? error?)
         (do
-          (keyboard/modify-file
-            (z/of-node (z/root edited-zloc)
-              {:track-position? true}))
+          (keyboard/modify-file edited-zloc)
           (keyboard/set-zloc edited-zloc)
           (keyboard/remove-listener current-ref keyboard/block-some-keyboard-events))))))
 

@@ -184,58 +184,41 @@
 
 (defn find-top-form [zloc]
  (find-top-form-recursion nil zloc))
-
-(defn is-unused-binding? [position]
- (when-let [lints @(subscribe [:db/get [:parenoia :kondo-lints]])]
-     (when-let [[this-row this-col] position]
-        (let [this-lints (filter (fn [{:keys [col row type]}]
-                                   (and 
-                                    (= col this-col)
-                                    (= row this-row)
-                                    (or (= :unused-binding type)
-                                        (= :unused-referred-var type)
-                                        (= :unused-namespace type))))
-                           lints)]
-           (not (empty? this-lints))))))     
-
+   
 
 (defn first-in-list? [zloc]
   (let [is-first? (z/leftmost? zloc)
         is-in-list? (z/list? (z/up zloc))]
     (and is-first? is-in-list?)))
 
-(defn token [zloc selected?]
-  ;; (let [selected-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
-  ;;       selected-pos  (has-position? selected-zloc)
-  ;;       selected-string  (z/string selected-zloc)
-  ;;       this-pos     (has-position? zloc)
-  ;;       ref               (react/useRef)
-  ;;       same-as-selected? (and (not selected?) (= (z/string zloc) selected-string))
-  ;;       unused-binding?   (is-unused-binding? this-pos)]
-
-    [:div {:style {:box-shadow style/box-shadow
+(defn token-inner [zloc selected? unused-binding?]
+ [:div {:style {:box-shadow style/box-shadow
                    :border-radius "10px"
                    :padding "5px 10px"
                    :white-space :nowrap
-                   :border (str "2px solid " (cond 
+                   :border (str "3px solid " (cond 
                                               ;;  same-as-selected?     "magenta"
-                                              ;;  (first-in-list? zloc) "lightgreen" 
+                                               (first-in-list? zloc) "lightgreen" 
                                                :else "transparent"))
                    :color (cond 
                             selected? (style/color [:selection :text-color])
                             ;same-as-selected? (style/color [:same-as-selection :text-color])
-                            ;; unused-binding?   (style/color [:unused-binding :text-color])
+                            unused-binding?   (style/color [:unused-binding :text-color])
                             :else (decide-token-text-color zloc))
                    :background (cond  
                                  selected?         (style/color [:selection :background-color])
                                  ;same-as-selected? (style/color [:same-as-selection :background-color])
                         
-                                ;;  unused-binding?   (style/color [:unused-binding :background-color])
+                                 unused-binding?   (style/color [:unused-binding :background-color])
                                  :else (decide-token-color zloc))}}
      [:div
       (if (= nil (z/tag zloc))
           [:br]
           (z/string zloc))]])
+
+(defn token [zloc selected?]
+ (let [unused-binding?   (subscribe [:parenoia/unused-binding? zloc])]
+    [token-inner zloc selected? @unused-binding?]))
      
           
 
@@ -325,15 +308,12 @@
         ;; (form-conditionals/is-function? zloc)
         ;; [form-interpreters/form-interpreter-iterator (z/down zloc) form-interpreter :horizontal]
         :else [token zloc selected?])
-     
       (if (and selected? editable?)
       
        [overlay-wrapper-beta
           ref (fn [e]) 
           [textarea/view zloc] 
-          {
-           ; :overflow :hidden
-            :z-index 10000}])]]))
+          {:z-index 10000}])]]))
        
 
 (defn form-interpreter [zloc]

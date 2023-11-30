@@ -39,20 +39,46 @@
 
 (defn has-position? [zloc]
   (try (z/position zloc)
-    (catch js/Error e (random-uuid))))
+    (catch js/Error e nil)))
+
+
+(defn selected-zloc? [zloc-one zloc-two]
+  (= (has-position? zloc-one) 
+     (has-position? zloc-two)))
+
+(defn is-unused-binding? [lints position]
+ (let [this-lints (filter (fn [{:keys [col row type]}]
+                             (and 
+                              (= row (first position))
+                              (= col (second position))
+                              (or (= :unused-binding type)
+                                  (= :unused-referred-var type)
+                                  (= :unused-namespace type))))
+                          lints)]
+    (not (empty? this-lints))))  
+
+(reg-sub 
+ :parenoia/unused-binding? 
+ (fn [db [_ zloc]]
+   (let [lints (get-in db [:parenoia :kondo-lints])
+         position (has-position? zloc)]
+      (if position 
+       (is-unused-binding? lints position)
+       false))))
 
 (reg-sub
  :parenoia/selected?
  (fn [db [_ zloc]]
-   (= (has-position? zloc) 
-      (has-position? (get-in db [:parenoia :selected-zloc])))))
+   (selected-zloc? zloc 
+       (get-in db [:parenoia :selected-zloc]))))
 
 (reg-sub
  :parenoia/editable?
  (fn [db [_ zloc]]
    (and 
     (get-in db [:parenoia :editable?])
-    (= zloc (get-in db [:parenoia :selected-zloc])))))
+    (selected-zloc? zloc 
+       (get-in db [:parenoia :selected-zloc])))))
 
 
 (reg-event-db
