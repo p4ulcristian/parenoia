@@ -691,7 +691,7 @@
              :padding "5px"
              :gap "10px"
              :display :flex
-             :border "1px solid black"
+             :border-bottom "1px solid black"
              :cursor :pointer
              :z-index 1000
             ;;  :flex-direction :row-reverse
@@ -704,10 +704,35 @@
 
 
 
-
+(defn namespace-search [search-term set-search-term]
+ (let [ref (react/useRef)]
+  (react/useEffect
+      (fn []
+        (let [current-ref (.-current ref)]
+          (keyboard/add-listener current-ref keyboard/block-some-keyboard-events)
+          (fn [] 
+           (keyboard/remove-listener current-ref keyboard/block-some-keyboard-events))))
+      #js [])
+  [:div 
+    {:style {:display :flex 
+             :justify-content :center}}
+    [:input {:ref ref
+             :value search-term 
+             :placeholder "namespace"
+             :style {:padding "10px"
+                     :width "200px"
+                     :border-radius "5px"
+                     :text-align :center}
+             :on-change (fn [e] (set-search-term (-> e .-target .-value)))}]]))
 
 (defn menu-namespaces []
- (let [project @(subscribe [:db/get [:parenoia :project]])
+ (let [[search-term set-search-term] (react/useState "")
+       project (filter 
+                 (fn [[path file-zloc]]
+                   (clojure.string/includes? 
+                    (str (refactor/get-ns file-zloc))
+                    search-term))
+                 @(subscribe [:db/get [:parenoia :project]]))
        namespaces (map refactor/get-ns (map second project))
        generated-colors (generate-colors namespaces)]
       
@@ -715,6 +740,7 @@
                   :flex-direction :column 
                   :gap "10px"
                   :justify-content :flex-start}}
+     [namespace-search search-term set-search-term]
      (map 
       (fn [a project-item] ^{:key a}[:div [menu-namespace a project-item generated-colors]])
       (sort namespaces)
@@ -756,7 +782,7 @@
                     :border-radius "10px"
                     :background "orange"
                     :cursor "pointer"}}
-         "Set project path"]]))
+         "set project path"]]))
 
 
 (defn menu-inner []

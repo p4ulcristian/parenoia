@@ -78,6 +78,7 @@
       (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
         (do
           (.preventDefault event)
+          (dispatch [:db/set [:parenoia :editable?] true])
           (modify-file (z/left (z/insert-left current-zloc 'x))))))))
 
 (defn on-s-fn []
@@ -86,6 +87,7 @@
       (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
         (do
           (.preventDefault event)
+          (dispatch [:db/set [:parenoia :editable?] true])
           (modify-file (z/left (z/insert-left (z/down current-zloc) 'x))))))))
 
 (defn on-d-fn []
@@ -94,6 +96,7 @@
       (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
         (do
           (.preventDefault event)
+          (dispatch [:db/set [:parenoia :editable?] true])
           (modify-file (z/right (z/insert-right current-zloc 'x))))))))
 
 (defn on-shift-a-fn []
@@ -102,6 +105,7 @@
       (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
         (do
           (.preventDefault event)
+          (dispatch [:db/set [:parenoia :editable?] true])
           (modify-file
             (z/left (z/insert-newline-left (z/insert-left current-zloc 'x)))))))))
 
@@ -111,6 +115,7 @@
       (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
         (do
           (.preventDefault event)
+          (dispatch [:db/set [:parenoia :editable?] true])
           (modify-file
             (z/right (z/insert-newline-right (z/insert-right current-zloc 'x)))))))))
 
