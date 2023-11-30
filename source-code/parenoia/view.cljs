@@ -267,6 +267,7 @@
         this-pos     (has-position? zloc)
         [timeout set-timeout] (react/useState)]
     (form-interpreter-effect zloc selected? ref timeout set-timeout)
+    ^{:key (str this-pos (z/string zloc))}
     [:div {:style {:display :flex
                    :justify-content :flex-start 
                    :align-items :flex-start

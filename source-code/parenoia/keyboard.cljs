@@ -4,8 +4,6 @@
             [rewrite-clj.paredit :as paredit]
             [rewrite-clj.zip :as z]))
 
-
-
 (defn has-position? [zloc]
   (try (z/position zloc)
     (catch js/Error e false)))
@@ -382,7 +380,7 @@
 
 (defn block-some-keyboard-events [^js e]
   (if
-    (or 
+    (or
       (check-key e "ArrowLeft")
       (check-key e "ArrowRight")
       (check-key e "ArrowDown")
