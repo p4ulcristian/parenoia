@@ -193,12 +193,15 @@
 (defn token-inner [zloc selected? unused-binding?]
  [:div {:style {:box-shadow style/box-shadow
                    :border-radius "10px"
-                   :padding "5px 10px"
+                   :padding-left "8px"
+                   :padding-right "10px"
+                   :padding-top    "5px"
+                   :padding-bottom "5px"
                    :white-space :nowrap
-                   :border (str "3px solid " (cond 
-                                              ;;  same-as-selected?     "magenta"
-                                               (first-in-list? zloc) "lightgreen" 
-                                               :else "transparent"))
+                   :border-left (str "3px solid " (cond 
+                                                   ;;  same-as-selected?     "magenta"
+                                                    (first-in-list? zloc) "magenta" 
+                                                    :else "transparent"))
                    :color (cond 
                             selected? (style/color [:selection :text-color])
                             ;same-as-selected? (style/color [:same-as-selection :text-color])
@@ -602,15 +605,9 @@
                    :right 0
                    :top 0
                    :z-index 10}}
-     
-     
      ^{:key (str selected-file)} 
      [one-namespace selected-file-path selected-file]
      [:div {:style {:height "80vh"}}]]))
-     ;[namespace-graph/view]]))
-
-     ;[namespaces  @(subscribe [:db/get [:parenoia :project]])]]))
-
 
 
 (defn ns-part [index part color]
