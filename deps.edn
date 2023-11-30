@@ -11,6 +11,7 @@
         babashka/process                                {:mvn/version "0.4.13"}
         cider/cider-nrepl                               {:mvn/version "0.21.1"}
         rewrite-clj/rewrite-clj                         {:mvn/version "1.1.47"}
+        ;rewrite-clj/rewrite-clj {:local/root "/Users/paulcristian/projects/zgen/rewrite-clj"}
         ;HTTP/WSS
         cljs-ajax/cljs-ajax                             {:mvn/version "0.8.4"}
 
