@@ -78,9 +78,25 @@
      {:ref ref
       :style {:background (if selected? "turquoise" "#333")
               :padding "10px"
+              :position :relative
               :border-radius "5px"
+              :white-space :nowrap
+              :width "fit-content"
               :color      (if selected? "#333" "#FFF")}}     
-     (str function)])) 
+     [:div (str function)]
+     [:div {:style {:position :absolute 
+                    :top "50%"
+                    :font-size "12px"
+                    :font-weight "bold"
+                    :background "rgb(255, 191, 0)"
+                    :border-radius "5px"
+                     :right 0
+                     :color :black
+                     :padding "5px"
+                     :width :fit-content
+                     :transform "translate(110%, -50%)"}}
+        (str namespace)]]))   
+      
       
 
 (defn autocomplete-item [data]
@@ -96,32 +112,34 @@
   (z/string (z/right (z/down zloc)))))
 
 (defn filter-results [results token]
- (vec 
-  (filter 
-   (fn [result] 
-    (or 
-     (clojure.string/starts-with? (:function result) token)
-     (clojure.string/starts-with? (:function result) (str ":" token))))
-   results)))
+ (take 20 
+  (vec 
+   (doall 
+    (filter 
+     (fn [result] 
+      (or (clojure.string/includes? (:function result) (str token))
+          (clojure.string/includes? (:function result) (str ":" token))))
+       ;(clojure.string/includes? (:function result) (str ":" token))))
+     results)))))
 
 
 (defn get-all-autocomplete-results [token]
  (let [zloc  @(subscribe [:db/get [:parenoia :selected-zloc]])
        zlocs (map second @(subscribe [:db/get [:parenoia :project]]))]
-  (filter-results
-   (reduce concat 
-    (map (fn [file-zloc] 
-            (let [forms   (rewrite/get-forms-from-file file-zloc)
-                  ns-name (rewrite/get-namespace-from-file file-zloc)]
-             (remove nil? 
-              (map (fn [form-zloc]
-                    (let [fn-name (get-fn-name form-zloc)]
-                     (when (and fn-name ns-name)
-                       {:function  fn-name
-                        :namespace ns-name})))
-                   forms)))) 
-        zlocs))
-   token)))  
+  (sort-by :function (filter-results
+                      (reduce concat 
+                       (map (fn [file-zloc] 
+                               (let [forms   (rewrite/get-forms-from-file file-zloc)
+                                     ns-name (rewrite/get-namespace-from-file file-zloc)]
+                                (remove nil? 
+                                 (map (fn [form-zloc]
+                                       (let [fn-name (get-fn-name form-zloc)]
+                                        (when (and fn-name ns-name)
+                                          {:function  fn-name
+                                           :namespace ns-name})))
+                                      forms)))) 
+                           zlocs))
+                      token))))  
                        
 
 (defn view [zloc]
@@ -141,8 +159,11 @@
         ;:renderToBody true
         :listStyle {:z-index 1000
                     :color :white
+                    :backdrop-filter "3px"
                      :list-style-type :none
                      :position :fixed}
+                     
+                     
       
                     
         :containerStyle {:min-width 100
@@ -160,7 +181,7 @@
                 :padding "10px"
                 :border-radius "10px"
                 :white-space "pre-wrap"}
-        :trigger {":" {:dataProvider (fn [token] 
+        :trigger {";" {:dataProvider (fn [token] 
                                         (clj->js (get-all-autocomplete-results token)))
                        :component autocomplete-item
                        :output (fn [item trigger] (str (.-function ^js item)))}}}]]]))            
