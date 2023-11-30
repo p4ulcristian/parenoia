@@ -251,6 +251,7 @@
             (.-metaKey event)
             (not (.-shiftKey event)))
       (do
+        (dispatch [:db/set [:parenoia :editable?] false])
         (.preventDefault event)
         (println "ctrl-z")
         (dispatch [:parenoia/undo])))))
@@ -261,6 +262,7 @@
             (.-metaKey event)
             (.-shiftKey event))
       (do
+        (dispatch [:db/set [:parenoia :editable?] false])
         (.preventDefault event)
         (println "ctrl-shift-z")
         (dispatch [:parenoia/redo])))))

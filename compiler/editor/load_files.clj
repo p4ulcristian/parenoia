@@ -15,7 +15,9 @@
 
 (defn get-all-clojure-files []
   (vec (filter
-        (fn [file] (= "cljs" (last (clojure.string/split file #"\."))))
+        (fn [file] (or 
+                    (= "clj" (last (clojure.string/split file #"\.")))
+                    (= "cljs" (last (clojure.string/split file #"\.")))))
         (get-all-files))))
 
 (defn project-structure []

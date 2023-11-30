@@ -1,22 +1,22 @@
 (ns parenoia.form-interpreters
-  (:require [parenoia.rewrite :as rewrite]
+  (:require [clojure.string :as string]
+            [parenoia.rewrite :as rewrite]
             [parenoia.style :as style]
-            [rewrite-clj.zip :as z]
             [re-frame.core :refer [subscribe]]
-            [clojure.string :as string]))
+            [rewrite-clj.zip :as z]))
 
 (defn number-to-letter [index]
   (string/lower-case (str (char (+ 65 index)))))
 
 (defn letter-to-number [letter]
   (- (.charCodeAt (string/upper-case letter) 0)
-     65))
+    65))
 
 (defn selected-zloc? [zloc]
- (let [this-pos (try (z/position zloc) (catch js/Error e "a"))
-       selected-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
-       selected-pos (try (z/position selected-zloc) (catch js/Error e "b"))]
-  (= this-pos selected-pos)))
+  (let [this-pos (try (z/position zloc) (catch js/Error e "a"))
+        selected-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
+        selected-pos (try (z/position selected-zloc) (catch js/Error e "b"))]
+    (= this-pos selected-pos)))
 
 (defn get-all-function-parameters-tag-recursion [types zloc]
   (let [new-tags (vec (conj types (z/tag zloc)))]
@@ -57,77 +57,75 @@
         (z/right value) form-interpreter])]))
 
 (defn map-interpreter  [zloc form-interpreter selected?]
-   [:div {:class "map"
-          :style {;:border-left    "4px double black"
+  [:div {:class "map"
+         :style {;:border-left    "4px double black"
                   ;:border-right   "4px double black"
-                  :border-radius  "10px"
-                  :background  (if selected? 
-                                 (style/color [:selection :background-color]) 
-                                 (style/color [:map :background-color]))
-                  :color       (style/color [:map :text-color])
+                 :border-radius  "10px"
+                 :background  (if selected?
+                                (style/color [:selection :background-color])
+                                (style/color [:map :background-color]))
+                 :color       (style/color [:map :text-color])
 
-                  :box-shadow style/box-shadow
-                  :padding "5px"
-                  :display :grid
-                  :width "fit-content"
-                  :grid-template-columns "auto auto"
-                  :grid-column-gap "15px"
-                  :grid-row-gap    "5px"}}
-    [map-row-interpreter (z/down zloc) form-interpreter]])
+                 :box-shadow style/box-shadow
+                 :padding "5px"
+                 :display :grid
+                 :width "fit-content"
+                 :grid-template-columns "auto auto"
+                 :grid-column-gap "15px"
+                 :grid-row-gap    "5px"}}
+   [map-row-interpreter (z/down zloc) form-interpreter]])
 
 (defn cond-interpreter  [zloc form-interpreter selected?]
   (let [cond-symbol (z/down zloc)
         next-symbol (z/right cond-symbol)]
-   [:div {:class "cond"
-          :style {;:border-left    "4px double black"
+    [:div {:class "cond"
+           :style {;:border-left    "4px double black"
                   ;:border-right   "4px double black"
-                  :border-radius  "10px"
-                  :background  (if selected? 
-                                 (style/color [:selection :background-color]) 
-                                 (style/color [:function :background-color]))
-                  :color       (style/color [:function :text-color])
+                   :border-radius  "10px"
+                   :background  (if selected?
+                                  (style/color [:selection :background-color])
+                                  (style/color [:function :background-color]))
+                   :color       (style/color [:function :text-color])
 
-                  :box-shadow style/box-shadow
-                  :width "fit-content"
-                  :padding "5px"}}
-                  
-    [:div {:style {:font-size "22px"}}
-     [form-interpreter cond-symbol]]
-    [:div {:style {:display :grid
+                   :box-shadow style/box-shadow
+                   :width "fit-content"
+                   :padding "5px"}}
+
+     [:div {:style {:font-size "22px"}}
+      [form-interpreter cond-symbol]]
+     [:div {:style {:display :grid
                     :grid-template-columns "auto auto"
                     :grid-column-gap "15px"
                     :grid-row-gap    "5px"}}
-     [map-row-interpreter next-symbol form-interpreter]]]))
-
+      [map-row-interpreter next-symbol form-interpreter]]]))
 
 (defn case-interpreter  [zloc form-interpreter selected?]
   (let [case-symbol (z/down zloc)
         case-condition (z/right case-symbol)
         next-symbol (z/right case-condition)]
-   [:div {:class "case"
-          :style {;:border-left    "4px double black"
+    [:div {:class "case"
+           :style {;:border-left    "4px double black"
                   ;:border-right   "4px double black"
-                  :border-radius  "10px"
-                  :background  (if selected? 
-                                 (style/color [:selection :background-color]) 
-                                 (style/color [:function :background-color]))
-                  :color       (style/color [:function :text-color])
+                   :border-radius  "10px"
+                   :background  (if selected?
+                                  (style/color [:selection :background-color])
+                                  (style/color [:function :background-color]))
+                   :color       (style/color [:function :text-color])
 
-                  :box-shadow style/box-shadow
-                  :width "fit-content"
-                  :padding "5px"}}
-                  
-    [:div {:style {:font-size "22px" 
-                   :display :flex
-                   :padding-bottom "20px"}}
-     [form-interpreter case-symbol]
-     [form-interpreter case-condition]]
-    [:div {:style {:display :grid
+                   :box-shadow style/box-shadow
+                   :width "fit-content"
+                   :padding "5px"}}
+
+     [:div {:style {:font-size "22px"
+                    :display :flex
+                    :padding-bottom "20px"}}
+      [form-interpreter case-symbol]
+      [form-interpreter case-condition]]
+     [:div {:style {:display :grid
                     :grid-template-columns "auto auto"
                     :grid-column-gap "15px"
                     :grid-row-gap    "5px"}}
-     [map-row-interpreter next-symbol form-interpreter]]]))
-
+      [map-row-interpreter next-symbol form-interpreter]]]))
 
 (defn if-interpreter  [zloc form-interpreter selected?]
   (let [if-symbol    (z/down zloc)
@@ -135,44 +133,43 @@
         if-true (z/right if-condition)
         if-false (z/right if-true)
         next-symbol (z/right if-false)]
-   [:div {:class "if"
-          :style {;:border-left    "4px double black"
+    [:div {:class "if"
+           :style {;:border-left    "4px double black"
                   ;:border-right   "4px double black"
-                  :border-radius  "10px"
-                  :background  (if selected? 
-                                 (style/color [:selection :background-color]) 
-                                 (style/color [:function :background-color]))
-                  :color       (style/color [:function :text-color])
+                   :border-radius  "10px"
+                   :background  (if selected?
+                                  (style/color [:selection :background-color])
+                                  (style/color [:function :background-color]))
+                   :color       (style/color [:function :text-color])
 
-                  :box-shadow style/box-shadow
-                  :width "fit-content"
-                  :padding "5px"}}
-    [:div {:style {:display :flex}}             
-     [:div {:style {:font-size "22px"
-                    :margin-bottom "10px"
-                    :margin-right "10px"}} 
-      [form-interpreter if-symbol]]
-     [:div
-      [:div 
-         {:style {:background "#FFA500"
-                   :padding "5px"
-                   :margin-bottom "10px"
-                   :border-radius "10px"}}
-                
-         [form-interpreter if-condition]]
-      [:div 
+                   :box-shadow style/box-shadow
+                   :width "fit-content"
+                   :padding "5px"}}
+     [:div {:style {:display :flex}}
+      [:div {:style {:font-size "22px"
+                     :margin-bottom "10px"
+                     :margin-right "10px"}}
+       [form-interpreter if-symbol]]
+      [:div
+       [:div
+        {:style {:background "#FFA500"
+                 :padding "5px"
+                 :margin-bottom "10px"
+                 :border-radius "10px"}}
+
+        [form-interpreter if-condition]]
+       [:div
         {:style {:background "#66FF66"
-                   :border-radius "10px"
-                   :padding "5px"
-                   :margin-bottom "10px"}}
+                 :border-radius "10px"
+                 :padding "5px"
+                 :margin-bottom "10px"}}
         [form-interpreter if-true]]
-      [:div 
+       [:div
         {:style {:background "crimson"
                  :padding "5px"
                  :border-radius "10px"}}
         [form-interpreter if-false]]]]
-    (when next-symbol [form-interpreter next-symbol])]))
-
+     (when next-symbol [form-interpreter next-symbol])]))
 
 (defn vector-interpreter  [zloc form-interpreter]
   [:div.vector {:style {:border-left    "1px solid black"
@@ -188,8 +185,8 @@
    [form-interpreter-iterator (z/down zloc) form-interpreter :horizontal]])
 
 (defn bigger-font-size [content]
- [:div {:style {:font-size "24px"}}
-  content])
+  [:div {:style {:font-size "24px"}}
+   content])
 
 (defn defn-interpreter [zloc form-interpreter selected?]
   (let [defn-symbol     (z/down zloc)
@@ -197,15 +194,15 @@
         parameter-list  (z/right function-name)]
     [:div {:style {:border-radius  "10px"
                    :background (if selected?
-                                    (style/color [:selection :background-color])
-                                    (style/color [:defn  :background-color]))
+                                 (style/color [:selection :background-color])
+                                 (style/color [:defn  :background-color]))
 
                    :padding "10px"}}
-     [:div  {:style {:display :flex 
+     [:div  {:style {:display :flex
                      :align-items :center}}
-       [form-interpreter defn-symbol]
-       [bigger-font-size [form-interpreter function-name]]
-       [form-interpreter parameter-list]]
+      [form-interpreter defn-symbol]
+      [bigger-font-size [form-interpreter function-name]]
+      [form-interpreter parameter-list]]
      [:div
       [:div {:style {:display :flex
                      :margin-bottom "5px"}}]
@@ -213,35 +210,34 @@
 
 (defn ns-interpreter [zloc form-interpreter selected?]
   (let [ns-symbol       (z/down zloc)
-        ns-name         (z/right ns-symbol)] 
+        ns-name         (z/right ns-symbol)]
     [:div {:style {:border-radius  "10px"
                    :padding "10px"
                    :background (if selected?
-                                    (style/color [:selection :background-color])
-                                    (style/color [:defn  :background-color]))}}
-     [:div  {:style {:display :flex 
+                                 (style/color [:selection :background-color])
+                                 (style/color [:defn  :background-color]))}}
+     [:div  {:style {:display :flex
                      :align-items :center}}
-       [form-interpreter ns-symbol]
-       [bigger-font-size [form-interpreter ns-name]]]
+      [form-interpreter ns-symbol]
+      [bigger-font-size [form-interpreter ns-name]]]
      [:div
       [:div {:style {:display :flex
                      :margin-bottom "5px"}}]
       [form-interpreter-iterator (z/right ns-name) form-interpreter]]]))
 
-
 (defn def-interpreter [zloc form-interpreter selected?]
   (let [def-symbol       (z/down zloc)
         def-name         (z/right def-symbol)]
     [:div {:style {:border-radius  "10px"
-              
+
                    :padding "10px"
                    :background (if selected?
-                                    (style/color [:selection :background-color])
-                                    (style/color [:defn  :background-color]))}}
-     [:div  {:style {:display :flex 
+                                 (style/color [:selection :background-color])
+                                 (style/color [:defn  :background-color]))}}
+     [:div  {:style {:display :flex
                      :align-items :center}}
-       [form-interpreter def-symbol]
-       [bigger-font-size [form-interpreter def-name]]]
+      [form-interpreter def-symbol]
+      [bigger-font-size [form-interpreter def-name]]]
      [:div
       [:div {:style {:display :flex
                      :margin-bottom "5px"}}]
@@ -260,18 +256,18 @@
 
 (defn let-vector-interpreter  [zloc form-interpreter selected?]
   [:div {:style {:border-radius  "10px"
-                  :padding "5px"
-                  :display :grid
-                  :align-items :grid
-                  :background  (if selected? 
-                                  (style/color [:selection :background-color]) 
-                                  (style/color [:vector :background-color]))
-                  :color (style/color [:let-vector :color])
-                  :box-shadow style/box-shadow
-                  :grid-template-columns "auto auto"
-                  :grid-column-gap "15px"
-                  :grid-row-gap    "5px"}}
-    [let-vector-row-interpreter (z/down zloc) form-interpreter]])
+                 :padding "5px"
+                 :display :grid
+                 :align-items :grid
+                 :background  (if selected?
+                                (style/color [:selection :background-color])
+                                (style/color [:vector :background-color]))
+                 :color (style/color [:let-vector :color])
+                 :box-shadow style/box-shadow
+                 :grid-template-columns "auto auto"
+                 :grid-column-gap "15px"
+                 :grid-row-gap    "5px"}}
+   [let-vector-row-interpreter (z/down zloc) form-interpreter]])
 
 (def vertical-align-style
   {:display :flex
@@ -442,18 +438,16 @@
    ;(str (gather-tokens-and-separators function-name []))
      [:div {:style (merge
                      function-container-style
-                     {:background  (if selected? 
-                                     (style/color [:selection :background-color]) 
+                     {:background  (if selected?
+                                     (style/color [:selection :background-color])
                                      (if (z/vector? zloc)
                                        (style/color [:vector :background-color])
                                        (style/color [:function :background-color])))}
-                     
-                     
+
                      (function-grid-style areas-vec))}
 
       [function-child-interpreter
        function-name 0 form-interpreter]]]))
-
 
 (defn reader-macro-interpreter  [zloc form-interpreter selected?]
   (let [reader-macro (z/down zloc)]
@@ -462,14 +456,14 @@
                      function-container-style
                      {:display :flex
                       :align-items :center
-                      :background  (if selected? 
-                                     (style/color [:selection :background-color]) 
+                      :background  (if selected?
+                                     (style/color [:selection :background-color])
                                      (style/color [:reader-macro :background-color]))})}
       [:div {:style {:padding "10px"
                      :color (style/color [:reader-macro :text-color])}}
-           "#"]
+       "#"]
       [function-child-interpreter
-       reader-macro 
+       reader-macro
        0 form-interpreter]]]))
 
 (defn deref-interpreter  [zloc form-interpreter selected?]
@@ -479,16 +473,15 @@
                      function-container-style
                      {:display :flex
                       :align-items :center
-                      :background  (if selected? 
-                                     (style/color [:selection :background-color]) 
+                      :background  (if selected?
+                                     (style/color [:selection :background-color])
                                      (style/color [:function :background-color]))})}
       [:div {:style {:padding "10px"
                      :color (style/color [:function :text-color])}}
-           "@"]
+       "@"]
       [function-child-interpreter
-       reader-macro 
+       reader-macro
        0 form-interpreter]]]))
-
 
 (defn meta-interpreter  [zloc form-interpreter selected?]
   (let [reader-macro (z/down zloc)]
@@ -496,16 +489,16 @@
      [:div {:style (merge
                      function-container-style
                      {:display :flex
-                      :align-items :center
-                      :background  (if selected? 
-                                     (style/color [:selection :background-color]) 
+                      :align-items :flex-start
+                      :background  (if selected?
+                                     (style/color [:selection :background-color])
                                      (style/color [:meta :background-color]))})}
       [:div {:style {:padding "10px"
                      :color (style/color [:meta :text-color])}}
-           "^"]
-      [:div {:style {:display :flex}}
+       [:div "^"]]
+      [:div
        [function-child-interpreter
-        reader-macro 
+        reader-macro
         0 form-interpreter]]]]))
 
 (defn anonym-fn-interpreter  [zloc form-interpreter selected?]
@@ -515,15 +508,15 @@
                      function-container-style
                      {:display :flex
                       :align-items :center
-                      :background  (if selected? 
-                                     (style/color [:selection :background-color]) 
+                      :background  (if selected?
+                                     (style/color [:selection :background-color])
                                      (style/color [:function :background-color]))})}
       [:div {:style {:padding "10px"
                      :color (style/color [:function :text-color])}}
-           "#"]
+       "#"]
       [:div {:style {:display :flex}}
        [function-child-interpreter
-        reader-macro 
+        reader-macro
         0 form-interpreter]]]]))
 
 
