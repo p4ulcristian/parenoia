@@ -42,10 +42,6 @@
 (defn selected-zloc? [zloc-one zloc-two]
   (let [pos-one (has-position? zloc-one)
         pos-two (has-position? zloc-two)]
-    (if (and
-          (not= nil pos-one)
-          (not= nil pos-two)
-          (= pos-one pos-two)) (println "hello" pos-one pos-two (z/string zloc-one) (z/string zloc-two)))
     (and
       (not= nil pos-one)
       (not= nil pos-two)
@@ -128,7 +124,6 @@
   (fn [db [_ path pos]]
     (let [file-zloc (get-in db [:parenoia :project path])
           selected-zloc (z/find-last-by-pos file-zloc pos)]
-      (println path pos)
       (.setTimeout js/window #(dispatch [:db/set [:parenoia :selected-zloc]  selected-zloc])
         150)
       (-> db
@@ -218,7 +213,6 @@
     (let [path (uri->path uri)
           zloc (get-in db [:parenoia :project path])
           new-zloc (z/find-last-by-pos zloc [row col])]
-      (println "hehe: " uri row col)
       (-> db
         (assoc-in [:parenoia :selected :file-path] path)
         (assoc-in [:parenoia :selected-zloc]       new-zloc)))))
@@ -329,7 +323,7 @@
                              (dispatch [:db/set [:parenoia :definition] (read-string e)]))
          :error-handler    (fn [e] (.log js/console e))}))
 
-    db))
+    (assoc-in db [:parenoia :definition] nil)))
 
 (reg-event-db
   :parenoia/rename!
