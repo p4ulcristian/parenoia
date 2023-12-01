@@ -91,6 +91,11 @@
       (get-in db [:parenoia :selected-zloc]))))
 
 (reg-sub
+  :parenoia/selected-position
+  (fn [db [_ zloc]]
+    (has-position? (get-in db [:parenoia :selected-zloc]))))
+
+(reg-sub
   :parenoia/editable?
   (fn [db [_ zloc]]
     (and
@@ -139,6 +144,7 @@
   :parenoia/go-to!
   []
   (fn [db [_ path pos]]
+  
     (let [file-zloc (get-in db [:parenoia :project path])
           selected-zloc (z/find-last-by-pos file-zloc pos)]
       (.setTimeout js/window #(dispatch [:db/set [:parenoia :selected-zloc]  selected-zloc])
@@ -305,7 +311,7 @@
           file      (z/root-string (get-in db [:parenoia :project file-name]))]
       (POST "/completion"
         {:params {:file-path file-name
-                  :position (let [[r c] (z/position zloc)] [r (inc c)])}
+                  :position (let [[r c] (z/position zloc)] [r c])}
          :handler          (fn [e]
                              (dispatch [:db/set [:parenoia :completion] (read-string e)]))
          :error-handler    (fn [e] (.log js/console e))}))
@@ -319,7 +325,7 @@
           file      (z/root-string (get-in db [:parenoia :project file-name]))]
       (POST "/kondo-lints"
         {:params {:file-path file-name
-                  :position (let [[r c] (z/position zloc)] [r (inc c)])}
+                  :position (let [[r c] (z/position zloc)] [r c])}
          :handler          (fn [e]
                              (dispatch [:db/set [:parenoia :kondo-lints] (read-string e)]))
          :error-handler    (fn [e] (.log js/console e))}))

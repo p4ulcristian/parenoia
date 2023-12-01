@@ -3,6 +3,7 @@
             [clojure-lsp.db :as lsp-db]
             [clojure-lsp.feature.move-form :as move-form]
             [clojure-lsp.internal-api :as internal-api]
+            [clojure-lsp.internal-api :as internal-api :refer [db*]]
             [clojure-lsp.queries :as lsp-queries]
             [clojure.core.async :as async]
             [clojure.java.io :as io]
@@ -16,7 +17,6 @@
             [org.httpkit.server :as http]
             [reitit.ring                  :as reitit-ring]
             [rewrite-clj.zip :as z]
-            [clojure-lsp.internal-api :as internal-api :refer [db*]]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.reload :refer [wrap-reload]]
@@ -31,7 +31,7 @@
   (request-wrap 200 "text/html" content))
 
 (defn string-wrap [content]
-  (request-wrap 200 "text/plain" content))
+  (request-wrap 200 "text/plain" content)) (str request-wrap)
 
 ;(refactor/move-form 'test-a/a 'test-b/a)
 
@@ -55,7 +55,7 @@
        ["/get-references" {:post {:handler (fn [req]
                                              (let [body (:params req)
                                                    {:keys [file-path position]} body]
-                                               (string-wrap (refactor/get-references file-path position))))}}]                                       
+                                               (string-wrap (refactor/get-references file-path position))))}}]
        ["/kondo-lints" {:post {:handler (fn [req]
                                           (let [body (:params req)
                                                 {:keys [file-path position]} body]

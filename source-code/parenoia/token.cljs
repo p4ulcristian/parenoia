@@ -29,41 +29,56 @@
         is-in-list? (z/list? (z/up zloc))]
     (and is-first? is-in-list?)))
 
+(defn uri->path [uri]
+  (apply str (drop 7 uri)))
+
+
+(defn mindfuck-zloc-equality? [pos-one pos-two])
 
 
 (defn one-reference [the-ref]
- (let [{:keys [uri row col from alias name]} the-ref]
-  [:div {:style {:padding "5px"
-                 :on-click 
-                 (fn [e]
-                   (.stopPropagation e)
-                   (dispatch [:parenoia/set-selected-file-by-uri
-                              uri
-                              row
-                              col]))}}
-        (str (if from
-               (str from "/" name)
-               (str name))
-             [row col])]))
+ (let [selected-zloc (subscribe [:db/get [:parenoia :selected-zloc]])
+       selected-position (subscribe [:parenoia/selected-position])
+       {:keys [uri row col from alias name]} the-ref
+       
+       reference-zloc  (z/find-last-by-pos @(subscribe [:db/get [:parenoia :project (uri->path uri)]])
+                                           [row col])
+       reference-is-first-parameter? (boolean (z/down reference-zloc))
+       reference-pos (if reference-is-first-parameter? 
+                      (z/position (z/down reference-zloc))
+                      [row col])
+       same-as-selected? false] 
+  (println "Hello peti: " reference-is-first-parameter?)
+  (when-not same-as-selected?
+   [:div {:style {:padding "5px"}
+          :on-click (fn [e]
+                     (.stopPropagation e)
+                     (dispatch [:parenoia/go-to! (uri->path uri) reference-pos]))}
+      (if from 
+           (str from "/" name)
+           (str name))
+      [:div (str [row col] " - " @selected-position)]])))     
 
 (defn go-to-references-button [the-refs]
    [:div 
-       (map one-reference the-refs)])
+       (map  (fn [a] 
+              ^{:key (str (random-uuid))}[one-reference a])
+             the-refs)])
 
 (defn go-to-definition-button [the-def]
-    (let [{:keys [uri row col name namespace]} the-def]
+    (let [{:keys [uri row col name namespace bucket]} the-def]
      
        [:div {:style {:padding "5px"}
               :on-click 
               (fn [e]
                 (.stopPropagation e)
-                (dispatch [:parenoia/set-selected-file-by-uri
-                           uri
-                           row
-                           col]))}
+                (dispatch [:parenoia/go-to! 
+                                (uri->path uri) 
+                                [row col]]))}
         (if namespace 
           (str namespace "/" name)
-          (str name))]))
+          (str name))
+        [:div(str bucket)]]))
 
 
 (defn references-button [open? set-open?]

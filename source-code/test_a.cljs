@@ -1,8 +1,8 @@
 (ns test-a
   (:require [cljs.reader :refer [read-string]]))
 
-(defn hello2 []
-  (let [x 4]
-    (+ x x)))
+(def x 45) (defn hello [a]
+             (let [x 4]
+               (+ x x))) (defn hello2 [] (x hello))
 
 
