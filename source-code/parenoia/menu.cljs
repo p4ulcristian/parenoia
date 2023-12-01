@@ -72,27 +72,23 @@
       (fn [part] {part (generate-color)})
       (get-all-namespace-parts namespaces))))
 
-(defn menu-namespace [namespace project-item generated-colors]
-  (let [selected? (= (first project-item)
-                    @(subscribe [:db/get [:parenoia :selected :file-path]]))]
-    [:div
-     {:on-click (fn [e]
-                  (dispatch [:parenoia/go-to! (first project-item) (z/position (second project-item))]))
+(defn menu-namespace [this-path this-ns generated-colors]
+  (let [selected? (subscribe [:parenoia/selected-path? this-path])]
+   [:div
+    {:on-click (fn [e]
+                 (dispatch [:parenoia/go-to! this-path [1 1]]))
 
-      :style {:font-weight "bold"
-              :padding "5px"
-              :gap "10px"
-              :display :flex
-              :border-bottom "1px solid black"
-              :cursor :pointer
-              :z-index 1000
-            ;;  :flex-direction :row-reverse
-            ;;  :justify-content :flex-end
-              :background (if selected? :turquoise :none)}}
-
-     (map-indexed
+     :style {:font-weight "bold"
+             :padding "5px"
+             :gap "10px"
+             :display :flex
+             :border-bottom "1px solid black"
+             :cursor :pointer
+             :z-index 1000
+             :background (if @selected? :turquoise :none)}}
+    (map-indexed
        (fn [i a] ^{:key a} [ns-part i a (get generated-colors [i a])])
-       (clojure.string/split namespace #"\."))]))
+       (clojure.string/split this-ns #"\."))]))
 
 (defn namespace-search [search-term set-search-term]
   (let [ref (react/useRef)]
@@ -115,28 +111,22 @@
                       :text-align :center}
               :on-change (fn [e] (set-search-term (-> e .-target .-value)))}]]))
 
-(defn menu-namespaces []
-  (let [[search-term set-search-term] (react/useState "")
-        project (filter
-                  (fn [[path file-zloc]]
-                    (clojure.string/includes?
-                      (str (refactor/get-ns file-zloc))
-                      search-term))
-                  @(subscribe [:db/get [:parenoia :project]]))
-        namespaces (map refactor/get-ns (map second project))
-        generated-colors (generate-colors namespaces)]
+(defn menu-namespaces-inner [search-term set-search-term paths-and-namespaces]
+    (let [generated-colors (generate-colors (map second paths-and-namespaces))]
+     [:div {:style {:display :flex
+                    :flex-direction :column
+                    :gap "10px"
+                    :justify-content :flex-start}}
+      [namespace-search search-term set-search-term]
+      (map
+        (fn [[this-path this-ns]] ^{:key this-path} [:div [menu-namespace this-path this-ns generated-colors]])
+        paths-and-namespaces)]))
 
-    [:div {:style {:display :flex
-                   :flex-direction :column
-                   :gap "10px"
-                   :justify-content :flex-start}}
-     [namespace-search search-term set-search-term]
-     (map
-       (fn [a project-item] ^{:key a} [:div [menu-namespace a project-item generated-colors]])
-       (sort namespaces)
-       (sort (fn [a b] (compare (refactor/get-ns (second a))
-                         (refactor/get-ns (second b))))
-         project))]))
+(defn menu-namespaces []
+ (let [[search-term set-search-term] (react/useState "")
+        paths-and-namespaces (subscribe [:parenoia/filter-project-by-namespaces search-term])]
+     [menu-namespaces-inner search-term set-search-term @paths-and-namespaces]))
+  
 
 (defn open-project []
   (let [ref (react/useRef)

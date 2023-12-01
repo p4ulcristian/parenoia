@@ -59,6 +59,25 @@
                      lints)]
     (not (empty? this-lints))))
 
+(reg-sub 
+ :parenoia/filter-project-by-namespaces 
+ (fn [db [_ search-term]]
+   (let [project (get-in db [:parenoia :project])
+         project-only-ns (map (fn [[path zloc]] [path (str (refactor/get-ns zloc))]) 
+                              project)]
+     (filter
+       (fn [[path ns-name]]
+         (clojure.string/includes? ns-name search-term))
+       project-only-ns))))
+
+(reg-sub 
+ :parenoia/selected-path? 
+ (fn [db [_ path]]
+  (let [selected-path (get-in db [:parenoia :selected :file-path])]
+   (= path selected-path)))) 
+     
+
+
 (reg-sub
   :parenoia/unused-binding?
   (fn [db [_ zloc]]
