@@ -46,5 +46,6 @@
                     :left x
                     :background :none
                     :height height
-                    :width width}}
+                    :width width
+                    :pointer-events :none}}
       content]]))

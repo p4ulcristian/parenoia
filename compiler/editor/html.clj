@@ -4,8 +4,8 @@
 (defn head []
   [:head
    [:title "Parenoia"]
-   (include-css "css/normalize.css")
-   (include-css "css/parenoia.css")])
+   (include-css "/css/normalize.css")
+   (include-css "/css/parenoia.css")])
 
 (defn page []
   (html5

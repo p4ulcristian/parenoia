@@ -22,28 +22,40 @@
                  :white-space :nowrap}}
    (str (:type lint))])
 
+(defn spider [color open? set-open?]
+ [:div {:on-mouse-enter #(set-open? true)
+        :on-mouse-leave #(set-open? false)
+        :style {:display :flex 
+                :justify-content :center 
+                :align-items :center 
+                :height 30 
+                :width 30 
+                :border "1px solid white"
+                :border-radius "50%"
+                :background "#333"
+                :color color
+                :transform (if open? "scale(1)" "scale(0.7)")}}
+  [:i {:style {:font-size "14px"}
+       :class "fa-solid fa-bug"}]])
+
 (defn info-circle [ref this-lints zloc]
-  (let [[open? set-open?] (react/useState false)]
+  (let [[open? set-open?] (react/useState false)
+        first-lint-color (lint-background (:level (first this-lints)))]
     [overlays/overlay-wrapper
      ref
-     [:div {:on-mouse-enter #(set-open? true)
-            :on-mouse-leave #(set-open? false)
-            :style {:border (if open? 
-                              "1px solid transparent" "1px solid black")
-                    :z-index (if open? 10000 5000)
-                    :transform (if open? "translate(-3px, -80%)" 
-                                         "translate(-3px, -3px)")
-                    :height (if open? "fit-content" "10px")
-                    :width (if open? "fit-content" "10px")
+     [:div {:style {:z-index (if open? 10000 5000)
+                    :pointer-events :auto
+                    :height (if open? "fit-content" "0")
+                    :width (if open? "fit-content" "0")
+                    :transform "translate(-15px, -15px)"
                     :border-radius (if open? "10px" "50%")
-                    :background (if  
-                                 open?
-                                 "none"
-                                 (lint-background (:level (first this-lints))))}}
-      (when open?
+                    :color (if open? "black" first-lint-color)}}
+      (if-not open?
+        [spider first-lint-color open?  set-open?]
         [:div {:style {:display :flex 
-                        :flex-direction :column
+                        :flex-direction :row
                         :gap "3px"}}
+         [spider first-lint-color open? set-open?]
          (map
            (fn [this-lint] [one-lint this-lint])
            this-lints)])]]))

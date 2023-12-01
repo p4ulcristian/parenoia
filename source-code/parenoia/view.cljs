@@ -1,8 +1,6 @@
 (ns parenoia.view
   (:require
    ["react" :as react]
-   ["react-dom" :as react-dom]
-   [cljs.reader :as reader]
    [clojure.string :as clojure.string]
    [parenoia.events]
    [parenoia.form-conditionals :as form-conditionals]
@@ -12,7 +10,6 @@
    [parenoia.menu :as menu]
    [parenoia.namespace-graph :as namespace-graph]
    [parenoia.overlays :as overlays]
-   [parenoia.refactor :as refactor]
    [parenoia.refactor-ui :as refactor-ui]
    [parenoia.rewrite :as rewrite]
    [parenoia.style :as style]
@@ -20,7 +17,6 @@
    [parenoia.token :as token]
    [re-frame.core :refer [dispatch subscribe]]
    [reagent.core :refer [atom] :as reagent]
-   [rewrite-clj.parser :as zparser]
    [rewrite-clj.zip :as z]))
 
 (defn load-effect []
@@ -398,6 +394,10 @@
 
        pins-data)]))
 
+(defn placeholder-div []
+  [:div {:style {:height "80vh"
+                 :background "linear-gradient(180deg, rgba(51,51,51,1) 21%, rgba(42,42,42,1) 44%, rgba(68,68,68,1) 66%, rgba(0,0,0,1) 91%)"}}])
+
 (defn namespace-container []
   (let [ref (react/useRef)
         current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
@@ -416,7 +416,7 @@
                    :z-index 10}}
      ^{:key (str selected-file)}
      [one-namespace selected-file-path selected-file]
-     [:div {:style {:height "80vh"}}]]))
+     [placeholder-div]]))
 
 (defn view []
 
