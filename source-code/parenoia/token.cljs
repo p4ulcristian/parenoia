@@ -22,18 +22,6 @@
         :else (style/color [:string? :text-color])))))
 
 
-
-
-
-(defn find-top-form-recursion [last-zloc zloc]
-  (let [up-loc (z/up zloc)]
-    (cond
-      (nil? up-loc) last-zloc
-      :else (recur zloc up-loc))))
-
-(defn find-top-form [zloc]
-  (find-top-form-recursion nil zloc))
-
 (defn first-in-list? [zloc]
   (let [is-first? (z/leftmost? zloc)
         is-in-list? (z/list? (z/up zloc))]
