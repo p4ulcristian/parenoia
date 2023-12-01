@@ -22,7 +22,7 @@
                  :white-space :nowrap}}
    (str (:type lint))])
 
-(defn spider [color open? set-open?]
+(defn bug-button [color open? set-open?]
  [:div {:on-mouse-enter #(set-open? true)
         :on-mouse-leave #(set-open? false)
         :style {:display :flex 
@@ -38,7 +38,7 @@
   [:i {:style {:font-size "14px"}
        :class "fa-solid fa-bug"}]])
 
-(defn info-circle [ref this-lints zloc]
+(defn lint-overlay [ref this-lints]
   (let [[open? set-open?] (react/useState false)
         first-lint-color (lint-background (:level (first this-lints)))]
     [overlays/overlay-wrapper
@@ -51,14 +51,14 @@
                     :border-radius (if open? "10px" "50%")
                     :color (if open? "black" first-lint-color)}}
       (if-not open?
-        [spider first-lint-color open?  set-open?]
-        [:div {:style {:display :flex 
-                        :flex-direction :row
+        [bug-button first-lint-color open?  set-open?]
+        [:div {:style {:display :grid 
+                       :grid-template-columns "auto auto"
                         :gap "3px"}}
-         [spider first-lint-color open? set-open?]
-         (map
-           (fn [this-lint] [one-lint this-lint])
-           this-lints)])]]))
+         [bug-button first-lint-color open? set-open?]
+         [:div (map
+                 (fn [this-lint] [one-lint this-lint])
+                 this-lints)]])]]))
      
 
 (defn view [position zloc ref]
@@ -77,4 +77,4 @@
                     :right 0
                     :transform "translate(100%, -100%)"
                     :background :white}}
-           [info-circle ref this-lints zloc]])))))
+           [lint-overlay ref this-lints]])))))

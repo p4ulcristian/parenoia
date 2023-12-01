@@ -160,10 +160,13 @@
     (let [the-defs (try (lsp-queries/find-references-from-cursor @db* (path->uri path) row col false)
                      (catch Error e nil))]
       (str (mapv 
-             (fn [item]     
-              {:uri (:uri item)
-               :col (:col item)
-               :row (:row item)})
+             (fn [{:keys [uri row col name alias from]}]     
+              {:uri   uri
+               :row   row
+               :col   col
+               :name  name
+               :alias alias
+               :from  from})
              the-defs)))))        
 
 (defn get-definition [path position]

@@ -99,7 +99,7 @@
                    (js/window.setTimeout
                      (fn [] (dispatch [:db/set [:parenoia :selected-zloc] zloc]))
                      50))}
-      [lint/view this-pos zloc ref]
+      (when-not selected? [lint/view this-pos zloc ref])
       (cond
         (form-conditionals/is-ns? zloc)
         [form-interpreters/ns-interpreter zloc form-interpreter selected?]

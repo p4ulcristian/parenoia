@@ -2,6 +2,8 @@
   (:require [rewrite-clj.zip :as z]
             [rewrite-clj.node :as znode]
             [parenoia.style :as style]
+            [parenoia.overlays :as overlays]
+            ["react" :as react]
             [re-frame.core :refer [subscribe dispatch]]))
 
 
@@ -45,35 +47,95 @@
                                     (:col this-def)]))}
        [:i {:class "fa-regular fa-circle-up"}]])))
 
-(defn token-inner [zloc selected? unused-binding?]
-  [:div {:style {:box-shadow style/box-shadow
-                 :border-radius "10px"
-                 :padding-left "8px"
-                 :padding-right "10px"
-                 :padding-top    "5px"
-                 :padding-bottom "5px"
-                 :position :relative
-                 :white-space :nowrap
-                 :border-left (str "3px solid " (cond
-                                                   ;;  same-as-selected?     "magenta"
-                                                  (first-in-list? zloc) "magenta"
-                                                  :else "transparent"))
-                 :color (cond
-                          selected? (style/color [:selection :text-color])
-                            ;same-as-selected? (style/color [:same-as-selection :text-color])
-                          unused-binding?   (style/color [:unused-binding :text-color])
-                          :else (decide-token-text-color zloc))
-                 :background (cond
-                               selected?         (style/color [:selection :background-color])
-                                 ;same-as-selected? (style/color [:same-as-selection :background-color])
 
-                               unused-binding?   (style/color [:unused-binding :background-color])
-                               :else (decide-token-color zloc))}}
-   [:div
-    (when selected? [go-to-definition-button])
-    (if (= nil (z/tag zloc))
-      [:br]
-      (z/string zloc))]])
+(defn references-button [color open? set-open?]
+ [:div {:on-mouse-enter #(set-open? true)
+        :on-mouse-leave #(set-open? false)
+        :style {:display :flex 
+                :justify-content :center 
+                :align-items :center 
+                :height 30 
+                :width 30 
+                :border "1px solid white"
+                :border-radius "50%"
+                :background "#333"
+                :color color
+                :transform (if open? "scale(1)" "scale(0.7)")}}
+  [:i {:style {:font-size "14px"}
+       :class "fa-solid fa-circle-nodes"}]])
+
+(defn references-and-definition []
+ (let [the-references     (subscribe [:db/get [:parenoia :references]])
+       the-definition (subscribe [:db/get [:parenoia :definition]])]
+  [:div 
+    {:style {:background :lightblue 
+             :border-radius "10px"
+             :height "fit-content"
+             :padding "10px"}}
+            
+    "References"
+    (str @the-references)]))
+       
+
+
+(defn references-overlay [ref]
+  (let [[open? set-open?] (react/useState false)
+        first-lint-color "lightblue"]
+    [overlays/overlay-wrapper
+     ref
+     [:div {:style {:z-index (if open? 10000 5000)
+                    :pointer-events :auto
+                    :height (if open? "fit-content" "0")
+                    :width (if open? "fit-content" "0")
+                    :transform "translate(calc(100% - 15px), -15px)"
+                    :border-radius (if open? "10px" "50%")
+                    :position :absolute 
+                    :right 0 
+                    :top 0
+                    
+                    :color (if open? "black" first-lint-color)}}
+      (if-not open?
+        [references-button first-lint-color open?  set-open?]
+        [:div {:style {:display :grid 
+                       :grid-template-columns "auto auto"
+                        :gap "3px"}}
+                        
+         [references-button first-lint-color open? set-open?]
+         [references-and-definition]])]]))
+
+
+(defn token-inner [zloc selected? unused-binding?]
+  (let [ref (react/useRef)]
+   [:div {:ref ref
+          :style {:box-shadow style/box-shadow
+                  :border-radius "10px"
+                  :padding-left "8px"
+                  :padding-right "10px"
+                  :padding-top    "5px"
+                  :padding-bottom "5px"
+                  :position :relative
+                  :white-space :nowrap
+                  :border-left (str "3px solid " (cond
+                                                    ;;  same-as-selected?     "magenta"
+                                                   (first-in-list? zloc) "magenta"
+                                                   :else "none"))
+                  :color (cond
+                           selected? (style/color [:selection :text-color])
+                             ;same-as-selected? (style/color [:same-as-selection :text-color])
+                           unused-binding?   (style/color [:unused-binding :text-color])
+                           :else (decide-token-text-color zloc))
+                  :background (cond
+                                selected?         (style/color [:selection :background-color])
+                                  ;same-as-selected? (style/color [:same-as-selection :background-color])
+
+                                unused-binding?   (style/color [:unused-binding :background-color])
+                                :else (decide-token-color zloc))}}
+    (when selected? [references-overlay ref])
+    [:div
+     ;(when selected? [go-to-definition-button])
+     (if (= nil (z/tag zloc))
+       [:br]
+       (z/string zloc))]]))
 
 (defn view [zloc selected?]
   (let [unused-binding?   (subscribe [:parenoia/unused-binding? zloc])]
