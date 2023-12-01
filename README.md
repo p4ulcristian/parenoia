@@ -31,6 +31,8 @@ clj -X:dev
 |`Shift+Enter` | add newline (for breaking code in multiple lines)|
 |`Backspace` | remove selected token / s-expression|
 |`Shift+Backspace` | remove newline before selected token / s-expression|
+|`Tab` | wrap with ()|
+|`Shift+Tab` | unwrap|
 |`m` | menu|
 |`g` | namespace-graph|
 |`;` | if editing token, when typing ";" autocomplete to all function names in project (also reg-event-db if you are a re-frame fan like me)|
@@ -70,7 +72,7 @@ And I decided that I'll make one of my dreams true, making programming visually 
   - clj-kondo lints intergrated (most of them)
   - Parinfer when editing s-expression
   - Namespace graph with vis. To see the dependencies visually.
-  - using clojure-lsp, but not understanding it fully, renaming and go-to works (go-to only to definition, not to usages )
+  - clojure-lsp for token definitions, and references
 
 
 ## Plans for the future.

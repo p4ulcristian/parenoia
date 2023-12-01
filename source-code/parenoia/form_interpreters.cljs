@@ -6,11 +6,13 @@
             [rewrite-clj.zip :as z]))
 
 (defn number-to-letter [index]
-  (string/lower-case (str (char (+ 65 index)))))
-
-(defn letter-to-number [letter]
-  (- (.charCodeAt (string/upper-case letter) 0)
-    65))
+  (let [abc-count 26 
+        to-letter (fn [a] (string/lower-case (str (char (+ 65 a)))))
+        how-many-letters (quot index 26) 
+        letters-vec (map (fn [a] "z") (range how-many-letters)) 
+        last-letter (to-letter (rem index 26)) 
+        all-letters (apply str (conj letters-vec last-letter))]
+    all-letters))
 
 (defn selected-zloc? [zloc]
   (let [this-pos (try (z/position zloc) (catch js/Error e "a"))
@@ -432,10 +434,7 @@
         function-parameters (z/right function-first-parameter)
         areas-vec  (generate-form-areas function-name)]
     [:<>
-   ;(str areas-vec)
-   ;(str (gather-tokens-and-separators function-name []))
-   ;(str (keep-one-new-line-in-a-row (gather-tokens-and-separators function-name [])))
-   ;(str (gather-tokens-and-separators function-name []))
+
      [:div {:style (merge
                      function-container-style
                      {:background  (if selected?
