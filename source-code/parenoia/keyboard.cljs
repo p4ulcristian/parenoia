@@ -56,14 +56,13 @@
           (.preventDefault event)
           (modify-file (paredit/barf-backward current-zloc)))))))
 
-
 (defn barf-test-with-string []
-   (-> "((x) 1)"
-     (z/of-string {:track-position? true})
-     z/down
-     paredit/barf-forward
-     z/root-string))
-    
+  (-> "((x) 1)"
+    (z/of-string {:track-position? true})
+    z/down
+    paredit/barf-forward
+    z/root-string))
+
 (defn on-e-fn []
   (fn [^js event]
     (when (and (without-special-keys event) (check-key event "e"))
@@ -226,7 +225,8 @@
     (when (check-key event "Escape")
       (do
         (.preventDefault event)
-        (dispatch [:db/set [:parenoia :editable?] false])))))
+        (dispatch [:db/set [:parenoia :editable?] false])
+        (dispatch [:db/set [:parenoia :menu?] false])))))
 
 (defn on-backspace-fn []
   (fn [^js event]
