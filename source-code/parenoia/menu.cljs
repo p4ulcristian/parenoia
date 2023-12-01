@@ -1,59 +1,57 @@
 (ns parenoia.menu
   (:require
+   ["randomcolor" :refer [randomColor]]
    ["react" :as react]
    [parenoia.keyboard :as keyboard]
-   [parenoia.refactor :as refactor]
-   [re-frame.core :refer [dispatch subscribe]]
-   [rewrite-clj.zip :as z]))
+   [re-frame.core :refer [dispatch subscribe]]))
 
+(defn generate-random-bright-color [] (randomColor #js {:format        "rgb"
+                                                        :luminosity "light"}))
+(defn triangle-right [color]
+  [:div.triangle
+   {:style {:width 0
+            :height 0
+            :border-top "25px solid transparent"
+            :border-left (str "30px solid " color)
+            :border-bottom "25px solid transparent"
+            :position "absolute"
+            :top 0
+            :right 0
+            :transform "translate(100%, 0)"}}])
+(defn rectangle [color]
+  [:div {:style {:background color
+                 :height "100%"
+                 :width "100%"}}
+   [triangle-right color]])
+(defn ns-background [color] [:div
+                             {:style {;:border-radius "10px"
+                                      :box-sizing :border-box
+                                      :color "white"
+                                      :height "100%"
+                                      :width "100%"
+                                      :position :absolute
+                                      :top 0
+                                      :left 0}}
+                             [rectangle color]])
+(defn ns-part--name [index part]
+  [:div.menu-namespace
+   {:style {:color "#333"
+            :padding "10px"
+            :padding-right "0px"
+            :margin-left (if (= index 0) 0 25)
+            :z-index 1000
+            :position :relative}}
+   [:div {:style {:color
+                  "#333"
+                  :border-radius
+                  "10px"
+                  :padding
+                  "5px 10px"}}
+    part]])
 (defn ns-part [index part color]
-  (let [css-name (str "a" (random-uuid))
-        css-id (str "." css-name)]
-    [:div {:style {:display :flex
-                   :align-items :center}}
-
-     [:div
-      {:style {:padding "10px 15px"
-              ;:border-radius "10px"
-               :padding-left (if (< 0 index)
-                               "40px" "10px")
-               :margin-left (if (< 0 index)
-                              "-80px")
-               :background color
-               :color "white"}}
-      [:div.menu-namespace
-       {:style {:background "#333"
-                :color "#DDD"
-                :padding "10px"
-                :border-radius "10px"
-                :border "1px solid white"}}
-       part]]
-     [:style (str css-id ", " css-id ":before, " css-id ":after { width: 90px; height: 90px;}
-" css-id " {
-	overflow: hidden;
-	position: relative;
-	border-radius: 20%;
-	transform: translateY(25%) translateX(-20%) rotate(0deg) skewY(30deg) scaleX(.866);
-	cursor: pointer;
-	pointer-events: none;
-} 
-" css-id ":before, " css-id ":after {
-	position: absolute;
-	background: " color ";
-	pointer-events: auto;
-	content: '';
-}
-" css-id ":before {
-	border-radius: 20% 20% 20% 53%;
-	transform: scaleX(1.155) skewY(-30deg) rotate(-30deg) translateY(-42.3%) 
-			skewX(30deg) scaleY(.866) translateX(-24%);
-}
-" css-id ":after {
-	border-radius: 20% 20% 53% 20%;
-	transform: scaleX(1.155) skewY(-30deg) rotate(-30deg) translateY(-42.3%) 
-			skewX(-30deg) scaleY(.866) translateX(24%);
-}")]
-     [:div {:class css-name}]]))
+  [:div {:style {:position :relative}}
+   [ns-background color]
+   [ns-part--name index part]])
 
 (defn get-all-namespace-parts [namespaces]
   (set (reduce concat
@@ -63,33 +61,31 @@
                              (clojure.string/split namespace #"\.")))
            namespaces))))
 
-(defn generate-color []
-  (str "rgb(" (rand-int 256) ", " (rand-int 256) ", " (rand-int 256)  ")"))
-
 (defn generate-colors [namespaces]
   (reduce merge
     (map
-      (fn [part] {part (generate-color)})
+      (fn [part] {part (generate-random-bright-color)})
       (get-all-namespace-parts namespaces))))
 
 (defn menu-namespace [this-path this-ns generated-colors]
-  (let [selected? (subscribe [:parenoia/selected-path? this-path])]
+  (let
+    [selected? (subscribe [:parenoia/selected-path? this-path])]
     [:div
      {:on-click (fn [e]
-                  (dispatch [:db/set [:parenoia :menu?] false])
                   (dispatch [:parenoia/go-to! this-path [1 1]]))
 
-      :style {:font-weight "bold"
-              :padding "5px"
-              :gap "10px"
+      :style {:background (if @selected? :turquoise :none)
+              :font-weight "bold"
               :display :flex
-              :border-bottom "1px solid black"
+              :flex-direction :row-reverse
+              :justify-content :flex-end
               :cursor :pointer
               :z-index 1000
-              :background (if @selected? :turquoise :none)}}
-     (map-indexed
-       (fn [i a] ^{:key a} [ns-part i a (get generated-colors [i a])])
-       (clojure.string/split this-ns #"\."))]))
+              :height "50px"}}
+     (reverse
+       (map-indexed
+         (fn [i a] ^{:key a} [ns-part i a (get generated-colors [i a])])
+         (clojure.string/split this-ns #"\.")))]))
 
 (defn namespace-search []
   (let [ref (react/useRef)
@@ -124,8 +120,8 @@
   (let [generated-colors (generate-colors (map second paths-and-namespaces))]
     [:div {:style {:display :flex
                    :flex-direction :column
-                   :gap "10px"
-                   :justify-content :flex-start}}
+                   :justify-content :flex-start
+                   :gap "10px"}}
      [namespace-search]
      (map
        (fn [[this-path this-ns]] ^{:key this-path} [:div [menu-namespace this-path this-ns generated-colors]])
@@ -181,6 +177,7 @@
     (fn []
       ;(dispatch [:db/set [:parenoia :menu?] true])
       (dispatch [:db/set [:parenoia :editable?] false])
+      (dispatch [:db/set [:parenoia :menu :search-term] ""])
       (fn []))
     #js [])
   (let [menu? @(subscribe [:db/get [:parenoia :menu?]])]
