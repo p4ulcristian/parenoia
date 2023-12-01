@@ -13,7 +13,10 @@
   (fn []
     (let [og-string (z/string zloc)
           edited-string (try (zparser/parse-string
-                               (.-text (parinfer/smartMode (.-value ^js current-ref))))
+                               (.-text (parinfer/indentMode (.-value ^js current-ref)
+                                         #js {:forceBalance true
+                                              :openParenChars #js["e" "[","{"]
+                                              :closeParenChars #js ["d" "]","}"]})))
                           (catch js/Error e "veryspecific-&error"))
           error? (= edited-string "veryspecific-&error")
           same?  (= og-string (.-value ^js current-ref))
