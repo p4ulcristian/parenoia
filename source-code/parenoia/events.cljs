@@ -334,7 +334,7 @@
           file      (z/root-string (get-in db [:parenoia :project file-name]))]
       (POST "/get-definition"
         {:params {:file-path file-name
-                  :position (let [[r c] (z/position zloc)] [r (inc c)])}
+                  :position (let [[r c] (z/position zloc)] [r c])}
          :handler          (fn [e]
                              (dispatch [:db/set [:parenoia :definition] (read-string e)]))
          :error-handler    (fn [e] (.log js/console e))}))
@@ -350,7 +350,7 @@
           file      (z/root-string (get-in db [:parenoia :project file-name]))]
       (POST "/get-references"
         {:params {:file-path file-name
-                  :position (let [[r c] (z/position zloc)] [r (inc c)])}
+                  :position (let [[r c] (z/position zloc)] [r c])}
          :handler          (fn [e]
                              (dispatch [:db/set [:parenoia :references] (read-string e)]))
          :error-handler    (fn [e] (.log js/console e))}))

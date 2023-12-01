@@ -29,29 +29,45 @@
         is-in-list? (z/list? (z/up zloc))]
     (and is-first? is-in-list?)))
 
-(defn go-to-definition-button []
-  (let [this-def @(subscribe [:db/get [:parenoia :definition]])]
-    (when (:uri this-def)
-
-      [:div {:style {:position :absolute
-                     :top 0
-                     :right 0
-                     :background :none
-                     :color :red
-                     :transform "translate(50%, -50%)"}
-             :on-click (fn [e]
-                         (.stopPropagation e)
-                         (dispatch [:parenoia/set-selected-file-by-uri
-                                    (:uri this-def)
-                                    (:row this-def)
-                                    (:col this-def)]))}
-       [:i {:class "fa-regular fa-circle-up"}]])))
 
 
-(defn references-button [color open? set-open?]
- [:div {:on-mouse-enter #(set-open? true)
-        :on-mouse-leave #(set-open? false)
-        :style {:display :flex 
+(defn one-reference [the-ref]
+ (let [{:keys [uri row col from alias name]} the-ref]
+  [:div {:style {:padding "5px"
+                 :on-click 
+                 (fn [e]
+                   (.stopPropagation e)
+                   (dispatch [:parenoia/set-selected-file-by-uri
+                              uri
+                              row
+                              col]))}}
+        (str (if from
+               (str from "/" name)
+               (str name))
+             [row col])]))
+
+(defn go-to-references-button [the-refs]
+   [:div 
+       (map one-reference the-refs)])
+
+(defn go-to-definition-button [the-def]
+    (let [{:keys [uri row col name namespace]} the-def]
+     
+       [:div {:style {:padding "5px"}
+              :on-click 
+              (fn [e]
+                (.stopPropagation e)
+                (dispatch [:parenoia/set-selected-file-by-uri
+                           uri
+                           row
+                           col]))}
+        (if namespace 
+          (str namespace "/" name)
+          (str name))]))
+
+
+(defn references-button [open? set-open?]
+ [:div {:style {:display :flex 
                 :justify-content :center 
                 :align-items :center 
                 :height 30 
@@ -59,31 +75,50 @@
                 :border "1px solid white"
                 :border-radius "50%"
                 :background "#333"
-                :color color
+                :color "lightblue"
                 :transform (if open? "scale(1)" "scale(0.7)")}}
   [:i {:style {:font-size "14px"}
        :class "fa-solid fa-circle-nodes"}]])
 
-(defn references-and-definition []
- (let [the-references     (subscribe [:db/get [:parenoia :references]])
-       the-definition (subscribe [:db/get [:parenoia :definition]])]
+
+
+(defn refs-and-def-title [title]
+ [:div 
+   {:style {:border-bottom "1px solid black"
+            :font-weight :bold
+            :padding "10px"}}
+   [:div title]])
+
+
+
+
+(defn references-and-definition [the-definition the-references]
+
   [:div 
     {:style {:background :lightblue 
              :border-radius "10px"
-             :height "fit-content"
-             :padding "10px"}}
-            
-    "References"
-    (str @the-references)]))
+             :width "300px"
+             :color :black
+             :height "fit-content"}}
+             
+    [refs-and-def-title "Definition"]
+    [go-to-definition-button the-definition]  
+    [refs-and-def-title "References"]
+    [go-to-references-button the-references]])
        
 
 
 (defn references-overlay [ref]
   (let [[open? set-open?] (react/useState false)
-        first-lint-color "lightblue"]
+        the-definition     (subscribe [:db/get [:parenoia :definition]])
+        the-references     (subscribe [:db/get [:parenoia :references]])
+        no-findings? (and (not (:uri the-definition)) (empty? @the-references))]
+        
     [overlays/overlay-wrapper
      ref
-     [:div {:style {:z-index (if open? 10000 5000)
+     [:div {:on-mouse-enter #(set-open? true)
+            :on-mouse-leave #(set-open? false)
+            :style {:z-index (if open? 10000 5000)
                     :pointer-events :auto
                     :height (if open? "fit-content" "0")
                     :width (if open? "fit-content" "0")
@@ -91,17 +126,16 @@
                     :border-radius (if open? "10px" "50%")
                     :position :absolute 
                     :right 0 
-                    :top 0
-                    
-                    :color (if open? "black" first-lint-color)}}
+                    :top 0}}
       (if-not open?
-        [references-button first-lint-color open?  set-open?]
+        (when-not no-findings? 
+          [references-button open?  set-open?])
         [:div {:style {:display :grid 
                        :grid-template-columns "auto auto"
                         :gap "3px"}}
                         
-         [references-button first-lint-color open? set-open?]
-         [references-and-definition]])]]))
+         [references-button open? set-open?]
+         [references-and-definition @the-definition @the-references]])]]))
 
 
 (defn token-inner [zloc selected? unused-binding?]
@@ -132,7 +166,6 @@
                                 :else (decide-token-color zloc))}}
     (when selected? [references-overlay ref])
     [:div
-     ;(when selected? [go-to-definition-button])
      (if (= nil (z/tag zloc))
        [:br]
        (z/string zloc))]]))
