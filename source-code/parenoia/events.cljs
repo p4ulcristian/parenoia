@@ -8,15 +8,6 @@
    [re-frame.core :refer [reg-event-db dispatch reg-sub]]
    [rewrite-clj.zip :as z]))
 
-(defn find-top-form-recursion [last-zloc zloc]
-  (let [up-loc (z/up zloc)]
-    (cond
-      (nil? up-loc) last-zloc
-      :else (recur zloc up-loc))))
-
-(defn find-top-form [zloc]
-  (find-top-form-recursion nil zloc))
-
 (reg-event-db
   :db/set
   (fn [db [_ path value]]
@@ -423,7 +414,7 @@
     (let [file-name  (-> db :parenoia :selected :file-path)
           file-zloc  (get-in db [:parenoia :project file-name])
           pins (get-in db [:parenoia :pins] [])
-          top-form (find-top-form zloc)
+          top-form (refactor/find-top-form zloc)
           function-name (z/string (z/right (z/down top-form)))
           namespaced-function-name (str (refactor/get-ns file-zloc) "/" function-name)]
       (assoc-in db [:parenoia :pins] (vec (set (conj pins

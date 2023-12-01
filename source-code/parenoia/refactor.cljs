@@ -2,10 +2,17 @@
                                 [rewrite-clj.zip :as z]))
 
 
+(defn find-top-form-recursion [last-zloc zloc]
+  (let [up-loc (z/up zloc)]
+    (cond
+      (nil? up-loc) last-zloc
+      :else (recur zloc up-loc))))
+
+(defn find-top-form [zloc]
+  (find-top-form-recursion nil zloc))
 
 (defn get-ns [zloc]
   (z/sexpr (z/right (z/down zloc))))
-
 
 (defn go-through-require-vectors [zloc result]
  (if (z/rightmost? zloc)
