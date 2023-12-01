@@ -58,29 +58,18 @@
 
 
 (defn barf-test-with-string []
-  (let [x  "(ns atest) \n\n (defn the-test [x] \n   ((x) 6))"
-        zloc (-> x
-              z/of-string
-              z/right
-              z/down
-              z/right 
-              z/right 
-              z/right
-              z/down)]
-     (println "Test-> before-barf \n\n"   x)
-     (println "Test-> value-at-loc \n\n" (z/string zloc)) 
-     (println "Test-> after-barf \n\n"  (-> zloc paredit/barf-forward z/root-string))))
-                 
-
+   (-> "((x) 1)"
+     (z/of-string {:track-position? true})
+     z/down
+     paredit/barf-forward
+     z/root-string))
+    
 (defn on-e-fn []
   (fn [^js event]
     (when (and (without-special-keys event) (check-key event "e"))
       (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
         (do
           (barf-test-with-string)
-          (println "Prod->before-barf \n\n"  (z/root-string current-zloc))
-          (println "Prod->value-at-loc \n\n" (z/string current-zloc))
-          (println "Prod->after-barf \n\n"  (-> current-zloc paredit/barf-forward z/root-string))
           (.preventDefault event)
           (modify-file (paredit/barf-forward current-zloc)))))))
 
