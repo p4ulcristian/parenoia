@@ -74,24 +74,27 @@
 
 (defn menu-namespace [this-path this-ns generated-colors]
   (let [selected? (subscribe [:parenoia/selected-path? this-path])]
-   [:div
-    {:on-click (fn [e]
-                 (dispatch [:parenoia/go-to! this-path [1 1]]))
+    [:div
+     {:on-click (fn [e]
+                  (dispatch [:db/set [:parenoia :menu?] false])
+                  (dispatch [:parenoia/go-to! this-path [1 1]]))
 
-     :style {:font-weight "bold"
-             :padding "5px"
-             :gap "10px"
-             :display :flex
-             :border-bottom "1px solid black"
-             :cursor :pointer
-             :z-index 1000
-             :background (if @selected? :turquoise :none)}}
-    (map-indexed
+      :style {:font-weight "bold"
+              :padding "5px"
+              :gap "10px"
+              :display :flex
+              :border-bottom "1px solid black"
+              :cursor :pointer
+              :z-index 1000
+              :background (if @selected? :turquoise :none)}}
+     (map-indexed
        (fn [i a] ^{:key a} [ns-part i a (get generated-colors [i a])])
        (clojure.string/split this-ns #"\."))]))
 
-(defn namespace-search [search-term set-search-term]
-  (let [ref (react/useRef)]
+(defn namespace-search []
+  (let [ref (react/useRef)
+        search-term (subscribe [:db/get [:parenoia :menu :search-term]])
+        menu? (subscribe [:db/get [:parenoia :menu?]])]
     (react/useEffect
       (fn []
         (let [current-ref (.-current ref)]
@@ -99,34 +102,39 @@
           (fn []
             (keyboard/remove-listener current-ref keyboard/block-some-keyboard-events))))
       #js [])
+    (react/useEffect
+      (fn [] (when @menu? (.focus (.-current ref)))
+        (fn []))
+
+      #js [@menu?])
     [:div
      {:style {:display :flex
               :justify-content :center}}
      [:input {:ref ref
-              :value search-term
+              :value @search-term
               :placeholder "namespace"
               :style {:padding "10px"
                       :width "200px"
                       :border-radius "5px"
                       :text-align :center}
-              :on-change (fn [e] (set-search-term (-> e .-target .-value)))}]]))
+              :on-change (fn [e] (dispatch [:db/set [:parenoia :menu :search-term] (-> e .-target .-value)]))}]]))
 
-(defn menu-namespaces-inner [search-term set-search-term paths-and-namespaces]
-    (let [generated-colors (generate-colors (map second paths-and-namespaces))]
-     [:div {:style {:display :flex
-                    :flex-direction :column
-                    :gap "10px"
-                    :justify-content :flex-start}}
-      [namespace-search search-term set-search-term]
-      (map
-        (fn [[this-path this-ns]] ^{:key this-path} [:div [menu-namespace this-path this-ns generated-colors]])
-        paths-and-namespaces)]))
+(defn menu-namespaces-inner [paths-and-namespaces]
+  (let [generated-colors (generate-colors (map second paths-and-namespaces))]
+    [:div {:style {:display :flex
+                   :flex-direction :column
+                   :gap "10px"
+                   :justify-content :flex-start}}
+     [namespace-search]
+     (map
+       (fn [[this-path this-ns]] ^{:key this-path} [:div [menu-namespace this-path this-ns generated-colors]])
+       paths-and-namespaces)]))
 
 (defn menu-namespaces []
- (let [[search-term set-search-term] (react/useState "")
-        paths-and-namespaces (subscribe [:parenoia/filter-project-by-namespaces search-term])]
-     [menu-namespaces-inner search-term set-search-term @paths-and-namespaces]))
-  
+  (let [search-term
+        (subscribe [:db/get [:parenoia :menu :search-term]])
+        paths-and-namespaces (subscribe [:parenoia/filter-project-by-namespaces @search-term])]
+    [menu-namespaces-inner @paths-and-namespaces]))
 
 (defn open-project []
   (let [ref (react/useRef)
