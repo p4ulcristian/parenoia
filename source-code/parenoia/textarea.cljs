@@ -42,25 +42,6 @@
           (fn []))))
     #js [ref]))
 
-(defn autofocus-input-wrapper [content]
-  [:div
-   {:style {:position :absolute
-            :top 0
-            :left "50%"
-            :min-width "100%"
-            :height "100%"
-            :min-height "100px"
-            :transform "translateX(-50%)"
-            :color "#333"}}
-   content])
-
-;;  <ReactTextareaAutocomplete
-;;           className="my-textarea"
-;;           loadingComponent={() => <span>Loading</span>}
-;;           trigger={{ ... }}
-;;           ref={(rta) => { this.rta = rta; } }
-;;           onCaretPositionChange={this.onCaretPositionChange}
-;;         />
 
 (defn autocomplete-item-inner [^js data]
   (let [ref (react/useRef)
@@ -111,7 +92,6 @@
           (fn [result]
             (or (clojure.string/includes? (:function result) (str token))
               (clojure.string/includes? (:function result) (str ":" token))))
-       ;(clojure.string/includes? (:function result) (str ":" token))))
           results)))))
 
 (defn get-all-autocomplete-results [token]
@@ -132,60 +112,52 @@
                              zlocs))
                          token))))
 
+
+(defn autofocus-input-wrapper [content]
+  [:div
+   {:style {:position :absolute
+            :top 0
+            :left "50%"
+            :min-width "100%"
+            :height "100%"
+            :min-height "100px"
+            :transform "translateX(-50%)"
+            :color "#333"}}
+   content])
+
 (defn view [zloc]
   (let [[ref set-ref] (react/useState nil)]
     (autofocus-input--effect ref zloc)
     [autofocus-input-wrapper
-     [:<>
-      [:> ReactTextareaAutocomplete
-       {:className "my-textarea"
-        :loadingComponent  (fn [data] (reagent/as-element [autocomplete-loading data]))
-        :innerRef (fn [a] (set-ref a))
-        :movePopupAsYouType true
-        ;:renderToBody true
-        :listStyle {:z-index 1000
-                    :color :white
-                    :backdrop-filter "3px"
-                    :list-style-type :none
-                    :position :fixed}
-        :containerStyle {:min-width 100
-                         :background "transparent"
-                         :box-sizing "border-box"
-                         :height "100%"
-                         :width "100%"}
-        :dropdownStyle {:position :fixed}
-        :style {:height "100%"
-                :width "100%"
-                :box-sizing "border-box"
+     [:> ReactTextareaAutocomplete
+        {:className "my-textarea"
+         :loadingComponent  (fn [data] (reagent/as-element [autocomplete-loading data]))
+         :innerRef (fn [a] (set-ref a))
+         :movePopupAsYouType true
+         ;:renderToBody true
+         :listStyle {:z-index 1000
+                     :color :white
+                     :backdrop-filter "3px"
+                     :list-style-type :none
+                     :position :fixed}
+         :containerStyle {:min-width 100
+                          :background "transparent"
+                          :box-sizing "border-box"
+                          :height "100%"
+                          :width "100%"
+                          :pointer-events :auto
+                          :z-index "10000"}
+         :dropdownStyle {:position :fixed}
+         :style {:height "100%"
+                 :width "100%"
+                 :box-sizing "border-box"
 
-                :background "#333"
-                :color :white
-                :padding "10px"
-                :border-radius "10px"
-                :white-space "pre-wrap"}
-        :trigger {";" {:dataProvider (fn [token]
-                                       (clj->js (get-all-autocomplete-results token)))
-                       :component autocomplete-item
-                       :output (fn [item trigger] (str (.-function ^js item)))}}}]]]))
-      ;; [:textarea {:style {:position :absolute
-
-      ;;                     :border-radius 10
-      ;;                     :left 0
-      ;;                     :white-space "pre-wrap"
-      ;;                     :background "#333"
-      ;;                     :color :white
-      ;;                     :top 0
-      ;;                      ;:transform "translateY(-100%)"
-      ;;                     :min-width 100
-      ;;                     :box-sizing "border-box"
-      ;;                     :height "100%"
-      ;;                     :width "100%"
-
-      ;;                     :padding "5px"
-      ;;                     :z-index 1000}
-      ;;              :ref ref
-      ;;             :value @autofocus-input-value
-      ;;               ;:autofocus true
-      ;;              :on-click #(.stopPropagation %)
-
-      ;;             :on-change  on-change}]]]))
+                 :background "#333"
+                 :color :white
+                 :padding "10px"
+                 :border-radius "10px"
+                 :white-space "pre-wrap"}
+         :trigger {";" {:dataProvider (fn [token]
+                                        (clj->js (get-all-autocomplete-results token)))
+                        :component autocomplete-item
+                        :output (fn [item trigger] (str (.-function ^js item)))}}}]]))

@@ -20,6 +20,7 @@
    [rewrite-clj.parser :as zparser]
    [parenoia.lint :as lint]
    [parenoia.token :as token]
+   [parenoia.overlays :as overlays]
    [rewrite-clj.zip :as z]))
 
 (defn load-effect []
@@ -39,42 +40,7 @@
     (clojure.string/split  namespace #"\.")))
 
 
-(defn overlay-wrapper-beta [ref set-open? content additional-style]
-  (let [[x set-x] (react/useState 0)
-        [y set-y] (react/useState 0)
-        [width set-width] (react/useState 0)
-        [height set-height] (react/useState 0)]
-    (react/useEffect
-      (fn []
-        (let [scroll-top (.-scrollTop (.getElementById js/document "parenoia-body"))
-              scroll-left (.-scrollLeft (.getElementById js/document "parenoia-body"))
-              this-x (.-x (.getBoundingClientRect (.-current ref)))
-              this-y (.-y (.getBoundingClientRect (.-current ref)))
-              this-height (.-height (.getBoundingClientRect (.-current ref)))
-              this-width  (.-width (.getBoundingClientRect (.-current ref)))]
-          (set-x (+ scroll-left this-x))
-          (set-y (+ scroll-top this-y))
-          (set-height this-height)
-          (set-width this-width))
-        (fn []))
-      #js [(.-current ref)])
-    (when (.getElementById js/document "parenoia-body")
-      (react-dom/createPortal
-        (reagent/as-element
-          [:div {:class "overlay-wrapper"
-                 :on-mouse-enter #(set-open? true)
-                 :on-mouse-leave #(set-open? false)
-                 :style (merge {:cursor :pointer
-                                :position :absolute
-                                :top y
-                                :left x
-                                :height height
-                                :width width
-                                :min-width "400px"
-                                :min-height "50px"}
-                          additional-style)}
-           content])
-        (.getElementById js/document "parenoia-body")))))
+
 
 
 
@@ -179,10 +145,10 @@
         :else [token/view zloc selected?])
       (if (and selected? editable?)
 
-        [overlay-wrapper-beta
+        [overlays/overlay-wrapper-beta
          ref (fn [e])
-         [textarea/view zloc]
-         {:z-index 10000}])]]))
+         [textarea/view zloc]])]]))
+         
 
 (defn form-interpreter [zloc]
   (let [selected? (subscribe [:parenoia/selected? zloc])
@@ -469,6 +435,6 @@
    [menu/view]
    [namespace-graph/view]
    [namespace-container]
-   [refactor-ui/view]
+   ;[refactor-ui/view]
    [pins]
    [global-search]])
