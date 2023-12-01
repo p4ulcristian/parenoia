@@ -145,9 +145,8 @@
         :else [token/view zloc selected?])
       (if (and selected? editable?)
 
-        [overlays/overlay-wrapper-beta
-         ref (fn [e])
-         [textarea/view zloc]])]]))
+        [overlays/overlay-wrapper
+         ref [textarea/view zloc]])]]))
          
 
 (defn form-interpreter [zloc]

@@ -3,38 +3,8 @@
             ["react-dom" :as react-dom]
             [re-frame.core :refer [subscribe dispatch]]
             [reagent.core :as reagent :refer [atom]]
-            [rewrite-clj.zip :as z]))
-
-(defn overlay-wrapper [ref set-open? content additional-style]
-  (let [[x set-x] (react/useState 0)
-        [y set-y] (react/useState 0)]
-
-    (react/useEffect
-      (fn []
-        (let [scroll-top (.-scrollTop (.getElementById js/document "parenoia-body"))
-              scroll-left (.-scrollLeft (.getElementById js/document "parenoia-body"))
-              this-x (.-x (.getBoundingClientRect (.-current ref)))
-              this-y (.-y (.getBoundingClientRect (.-current ref)))]
-
-          (set-x (+ scroll-left this-x))
-          (set-y (+ scroll-top this-y)))
-
-        (fn []))
-      #js [(.-current ref)])
-    (when (.getElementById js/document "parenoia-body")
-      (react-dom/createPortal
-        (reagent/as-element
-          [:div {:class "overlay-wrapper"
-                 :on-mouse-enter #(set-open? true)
-                 :on-mouse-leave #(set-open? false)
-                 :style (merge {:cursor :pointer
-                                :position :absolute
-                                :top y
-                                :left x}
-
-                          additional-style)}
-           content])
-        (.getElementById js/document "parenoia-body")))))
+            [rewrite-clj.zip :as z]
+            [parenoia.overlays :as overlays]))
 
 (defn lint-background [level]
   (case level
@@ -52,21 +22,20 @@
 
 (defn info-circle [ref this-lints zloc]
   (let [[open? set-open?] (react/useState false)]
-    [overlay-wrapper
+    [overlays/overlay-wrapper
      ref
-     set-open?
-     [:div
+     [:div {:style {:border "1px solid black"
+                    :z-index (if open? 10000 5000)
+                    :transform "translate(0px, 0px)"
+                    :height (if open? "auto" "10px")
+                    :width (if open? "auto" "10px")
+                    :border-radius (if open? "10px" "50%")
+                    :background (lint-background (:level (first this-lints)))}}
       (when open?
         (map
           (fn [this-lint] [one-lint this-lint])
-          this-lints))]
-     {:border "1px solid black"
-      :z-index (if open? 10000 5000)
-      :transform "translate(0px, 0px)"
-      :height (if open? "auto" "10px")
-      :width (if open? "auto" "10px")
-      :border-radius (if open? "10px" "50%")
-      :background (lint-background (:level (first this-lints)))}]))
+          this-lints))]]))
+     
 
 (defn view [position zloc ref]
   (when-let [lints @(subscribe [:db/get [:parenoia :kondo-lints]])]

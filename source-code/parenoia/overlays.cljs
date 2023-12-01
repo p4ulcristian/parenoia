@@ -7,20 +7,20 @@
 (defn get-element []
  (.getElementById js/document "parenoia-body"))
 
-(defn create-portal [content]
+(defn portal [content]
  (let [element (get-element)]
-  [:div 
+  [:<>
    (when element
-        (react-dom/createPortal
-          (reagent/as-element content)
-          element))]))
+       (react-dom/createPortal
+         (reagent/as-element content)
+         element))]))
 
 
 (defn overlay-effect [ref set-x set-y set-width set-height]
  (react/useEffect
       (fn []
-        (let [element     (get-element)
-              scroll-top  (.-scrollTop   element)
+        (let [element    (get-element)
+              scroll-top (.-scrollTop   element)
               scroll-left (.-scrollLeft element)
               bounding-client-rect (.getBoundingClientRect (.-current ref))
               this-x      (.-x bounding-client-rect)
@@ -36,21 +36,19 @@
 
 
 
-(defn overlay-wrapper-beta [ref content]
+(defn overlay-wrapper [ref content]
   (let [[x set-x] (react/useState 0)
         [y set-y] (react/useState 0)
         [width set-width] (react/useState 0)
         [height set-height] (react/useState 0)]
     (overlay-effect ref set-x set-y set-width set-height)
-    (create-portal
+    [portal
           [:div {:class "overlay-wrapper"
-                  :style {:cursor :pointer
+                 :style {:cursor :pointer
                           :position :absolute
                           :top y
                           :left x
                           :height height
-                          :z-index 10000
-                          :width width
-                          :pointer-events :none}}
-            content])))
+                          :width width}}          
+              content]]))
         
