@@ -15,17 +15,15 @@
                   :width 400
                   :padding 10
                   :z-index 20}}
-                  
-                   
+     
     [:div "From: " (str from)]
-    [:div "Lints: " 
-      (str @(subscribe [:db/get [:parenoia :kondo-lints]]))]
+    ;; [:div "Lints: " 
+    ;;   (str @(subscribe [:db/get [:parenoia :kondo-lints]]))]
       
     [:div "To: " (str to)]
     [:div "Name: " (str name)]
     [:div "Bucket: " (:bucket variable-info)]
+    [:div "References: " (str @(subscribe [:db/get [:parenoia :references]]))]
     [:div "Definition: " (str @(subscribe [:db/get [:parenoia :definition]]))]
-    
-    [:div "Completion: " (str @(subscribe [:db/get [:parenoia :completion]]))]
     [:div "Form info: " (clojure.string/join ","
                          (map :name @(subscribe [:db/get [:parenoia :form-info]])))]]))

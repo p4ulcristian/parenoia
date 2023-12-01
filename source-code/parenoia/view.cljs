@@ -246,11 +246,13 @@
 
 (def timeout (atom nil))
 
-(defn get-info-about-zloc [zloc] (do
-                                   (dispatch [:parenoia/get-variable-info zloc])
-                                   (dispatch [:parenoia/get-form-info zloc])
-                                   (dispatch [:parenoia/get-kondo-lints zloc])
-                                   (dispatch [:parenoia/get-definition zloc])))
+(defn get-info-about-zloc [zloc] 
+  (do
+    (dispatch [:parenoia/get-variable-info zloc])
+    (dispatch [:parenoia/get-form-info zloc])
+    (dispatch [:parenoia/get-kondo-lints zloc])
+    (dispatch [:parenoia/get-definition zloc])
+    (dispatch [:parenoia/get-references zloc])))
 
 (defn form-interpreter-effect [zloc selected? ref timeout set-timeout]
   (react/useEffect

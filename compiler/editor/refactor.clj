@@ -153,11 +153,23 @@
                      :position position}))
         (path->uri path) @db*))))
 
+
+(defn get-references [path position]
+  (let [[row col] position]
+    (clojure-lsp.api/analyze-project-and-deps! {:project-root (io/file @config/project-path)})
+    (let [the-defs (try (lsp-queries/find-references-from-cursor @db* (path->uri path) row col false)
+                     (catch Error e nil))]
+      (println "na de bela: " the-defs)
+      (str (mapv 
+             (fn [item]     
+              {:uri (:uri item)
+               :col (:col item)
+               :row (:row item)})
+             the-defs)))))        
+
 (defn get-definition [path position]
   (let [[row col] position]
     (clojure-lsp.api/analyze-project-and-deps! {:project-root (io/file @config/project-path)})
-    (println "declarations:" (lsp-queries/find-declaration-from-cursor @db* (path->uri path) row col))
-    (println "implementations:" (lsp-queries/find-implementations-from-cursor @db* (path->uri path) row col))
     (let [the-def (try (lsp-queries/find-definition-from-cursor @db* (path->uri path) row col)
                     (catch Error e nil))]
       (str {:uri (:uri the-def)

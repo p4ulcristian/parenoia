@@ -51,6 +51,11 @@
                                              (let [body (:params req)
                                                    {:keys [file-path position]} body]
                                                (string-wrap (refactor/get-definition file-path position))))}}]
+
+       ["/get-references" {:post {:handler (fn [req]
+                                             (let [body (:params req)
+                                                   {:keys [file-path position]} body]
+                                               (string-wrap (refactor/get-references file-path position))))}}]                                       
        ["/kondo-lints" {:post {:handler (fn [req]
                                           (let [body (:params req)
                                                 {:keys [file-path position]} body]

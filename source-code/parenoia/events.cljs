@@ -350,6 +350,22 @@
 
     (assoc-in db [:parenoia :definition] nil)))
 
+
+(reg-event-db
+  :parenoia/get-references
+  []
+  (fn [db [_ zloc]]
+    (let [file-name (-> db :parenoia :selected :file-path)
+          file      (z/root-string (get-in db [:parenoia :project file-name]))]
+      (POST "/get-references"
+        {:params {:file-path file-name
+                  :position (let [[r c] (z/position zloc)] [r (inc c)])}
+         :handler          (fn [e]
+                             (dispatch [:db/set [:parenoia :references] (read-string e)]))
+         :error-handler    (fn [e] (.log js/console e))}))
+
+    (assoc-in db [:parenoia :definition] nil)))
+
 (reg-event-db
   :parenoia/rename!
   []
