@@ -64,11 +64,17 @@
  (fn [db [_ search-term]]
    (let [project (get-in db [:parenoia :project])
          project-only-ns (map (fn [[path zloc]] [path (str (refactor/get-ns zloc))]) 
-                              project)]
+                              project)
+         sorted-project-only-ns (sort (fn [a b] (compare (second a) (second b)))
+                                 project-only-ns)
+         filtered-project-only-ns (filter
+                                    (fn [[path ns-name]]
+                                      (clojure.string/includes? ns-name search-term))
+                                    sorted-project-only-ns)]
      (filter
-       (fn [[path ns-name]]
-         (clojure.string/includes? ns-name search-term))
-       project-only-ns))))
+        (fn [[path ns-name]]
+          (clojure.string/includes? ns-name search-term))
+        filtered-project-only-ns))))
 
 (reg-sub 
  :parenoia/selected-path? 
