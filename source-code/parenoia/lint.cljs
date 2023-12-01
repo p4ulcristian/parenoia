@@ -16,7 +16,7 @@
   [:div {:style {:background (lint-background (:level lint))
                  :padding "5px"
                  :color :black
-                 :opacity 0.3
+                 :border-radius "10px"
                  :pointer-events :none}}
    (str (:type lint))])
 
@@ -24,11 +24,14 @@
   (let [[open? set-open?] (react/useState false)]
     [overlays/overlay-wrapper
      ref
-     [:div {:style {:border "1px solid black"
+     [:div {:on-mouse-enter #(set-open? true)
+            :on-mouse-leave #(set-open? false)
+            :style {:border "1px solid black"
                     :z-index (if open? 10000 5000)
-                    :transform "translate(0px, 0px)"
-                    :height (if open? "auto" "10px")
-                    :width (if open? "auto" "10px")
+                    :transform (if open? "translate(-3px, -90%)" 
+                                         "translate(-3px, -3px)")
+                    :height (if open? "fit-content" "10px")
+                    :width (if open? "fit-content" "10px")
                     :border-radius (if open? "10px" "50%")
                     :background (lint-background (:level (first this-lints)))}}
       (when open?

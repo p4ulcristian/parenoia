@@ -48,6 +48,7 @@
                           :position :absolute
                           :top y
                           :left x
+                          :background :none
                           :height height
                           :width width}}          
               content]]))
