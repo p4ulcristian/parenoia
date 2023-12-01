@@ -31,11 +31,11 @@
   (let [scope (meta (z/node zloc))]
     (str (lsp-queries/find-var-usages-under-form db uri scope))))
 
-(defn get-references [symbol]
+(defn get-references-other [symbol]
   (:references (clojure-lsp/references {:from symbol})))
 
 (defn symbol->position [symbol]
-  (let [first-reference (first (get-references symbol))
+  (let [first-reference (first (get-references-other symbol))
         row (:row first-reference)
         col (:col first-reference)]
     [row col]))
@@ -159,7 +159,6 @@
     (clojure-lsp.api/analyze-project-and-deps! {:project-root (io/file @config/project-path)})
     (let [the-defs (try (lsp-queries/find-references-from-cursor @db* (path->uri path) row col false)
                      (catch Error e nil))]
-      (println "na de bela: " the-defs)
       (str (mapv 
              (fn [item]     
               {:uri (:uri item)
