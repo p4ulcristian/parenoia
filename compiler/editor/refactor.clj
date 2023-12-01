@@ -159,15 +159,14 @@
     (clojure-lsp.api/analyze-project-and-deps! {:project-root (io/file @config/project-path)})
     (let [the-defs (try (lsp-queries/find-references-from-cursor @db* (path->uri path) row col false)
                      (catch Error e nil))]
-      (println "Na ez baba: " the-defs)
-      
       (str (mapv 
-             (fn [{:keys [uri row col name alias from]}]     
+             (fn [{:keys [uri row col name alias from bucket]}]     
               {:uri   uri
                :row   row
                :col   col
                :name  name
                :alias alias
+               :bucket bucket
                :from  from})
              the-defs)))))        
 
@@ -181,8 +180,8 @@
             :row (:row the-def)
             :namespace (:ns the-def)
             :bucket (:bucket the-def)
-            :name (:name the-def)
-          }))))
+            :name (:name the-def)}))))
+          
 
 (defn get-completion [path position]
   (let [[row col] position]

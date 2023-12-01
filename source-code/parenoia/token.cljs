@@ -33,13 +33,28 @@
   (apply str (drop 7 uri)))
 
 
-(defn mindfuck-zloc-equality? [pos-one pos-two])
+
+(defn label-for-bucket [bucket]
+ [:div 
+   {:style {:background "#ffbf00" 
+             :color "#333"
+             :border-radius "5px"
+             :padding "5px 10px"}}  
+   (str bucket)])
+
+
+(defn label-for-function [ns-name fn-name]
+ [:div 
+        (if ns-name 
+         (str ns-name "/" fn-name)
+         (str fn-name))])
+
 
 
 (defn one-reference [the-ref]
  (let [selected-zloc (subscribe [:db/get [:parenoia :selected-zloc]])
        selected-position (subscribe [:parenoia/selected-position])
-       {:keys [uri row col from alias name]} the-ref
+       {:keys [uri row col from alias name bucket]} the-ref
        
        reference-zloc  (z/find-last-by-pos @(subscribe [:db/get [:parenoia :project (uri->path uri)]])
                                            [row col])
@@ -48,16 +63,17 @@
                       (z/position (z/down reference-zloc))
                       [row col])
        same-as-selected? false] 
-  (println "Hello peti: " reference-is-first-parameter?)
   (when-not same-as-selected?
-   [:div {:style {:padding "5px"}
+   [:div {:style {:padding "5px"
+                  :display :grid 
+                  :gap "8px"
+                  :white-space :nowrap
+                  :grid-template-columns "auto auto"}
           :on-click (fn [e]
                      (.stopPropagation e)
                      (dispatch [:parenoia/go-to! (uri->path uri) reference-pos]))}
-      (if from 
-           (str from "/" name)
-           (str name))
-      [:div (str [row col] " - " @selected-position)]])))     
+      [label-for-function from name]
+      [label-for-bucket bucket]])))     
 
 (defn go-to-references-button [the-refs]
    [:div 
@@ -68,17 +84,19 @@
 (defn go-to-definition-button [the-def]
     (let [{:keys [uri row col name namespace bucket]} the-def]
      
-       [:div {:style {:padding "5px"}
+       [:div {:style {:padding "5px"
+                      :display :grid 
+                      :gap "8px"
+                      :white-space :nowrap
+                      :grid-template-columns "auto auto"}
               :on-click 
               (fn [e]
                 (.stopPropagation e)
                 (dispatch [:parenoia/go-to! 
                                 (uri->path uri) 
                                 [row col]]))}
-        (if namespace 
-          (str namespace "/" name)
-          (str name))
-        [:div(str bucket)]]))
+        [label-for-function namespace name]
+        [label-for-bucket bucket]]))
 
 
 (defn references-button [open? set-open?]
@@ -112,7 +130,7 @@
   [:div 
     {:style {:background :lightblue 
              :border-radius "10px"
-             :width "300px"
+             
              :color :black
              :height "fit-content"}}
              
