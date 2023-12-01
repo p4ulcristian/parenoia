@@ -175,8 +175,7 @@
       (fn []))
     #js [])
   (let [menu? @(subscribe [:db/get [:parenoia :menu?]])]
-
-    [:div (str menu?)
+    [:div
      [:div.fade-animation
       {:style {:display (if menu? "block" "none")
                :position :fixed
