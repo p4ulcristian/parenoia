@@ -103,7 +103,8 @@
             (keyboard/remove-listener current-ref keyboard/block-some-keyboard-events))))
       #js [])
     (react/useEffect
-      (fn [] (when @menu? (.focus (.-current ref)))
+      (fn [] (when @menu?
+               (.select (.-current ref)))
         (fn []))
 
       #js [@menu?])
