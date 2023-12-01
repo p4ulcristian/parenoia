@@ -13,7 +13,6 @@
     [:body
      [:div#app "loading"]
      (include-js "https://kit.fontawesome.com/bdf6c8be51.js")
-     (include-js "/external-js/parinfer.js")
      (include-js "/js/libs/node-modules.js")
      (include-js "/js/core.js")
      ]))
