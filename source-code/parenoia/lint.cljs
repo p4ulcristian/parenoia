@@ -14,10 +14,12 @@
 
 (defn one-lint [lint]
   [:div {:style {:background (lint-background (:level lint))
-                 :padding "5px"
+                 :padding "5px 10px"
                  :color :black
+                 :border "1px solid black"
                  :border-radius "10px"
-                 :pointer-events :none}}
+                 :pointer-events :none
+                 :white-space :nowrap}}
    (str (:type lint))])
 
 (defn info-circle [ref this-lints zloc]
@@ -26,18 +28,25 @@
      ref
      [:div {:on-mouse-enter #(set-open? true)
             :on-mouse-leave #(set-open? false)
-            :style {:border "1px solid black"
+            :style {:border (if open? 
+                              "1px solid transparent" "1px solid black")
                     :z-index (if open? 10000 5000)
-                    :transform (if open? "translate(-3px, -90%)" 
+                    :transform (if open? "translate(-3px, -80%)" 
                                          "translate(-3px, -3px)")
                     :height (if open? "fit-content" "10px")
                     :width (if open? "fit-content" "10px")
                     :border-radius (if open? "10px" "50%")
-                    :background (lint-background (:level (first this-lints)))}}
+                    :background (if  
+                                 open?
+                                 "none"
+                                 (lint-background (:level (first this-lints))))}}
       (when open?
-        (map
-          (fn [this-lint] [one-lint this-lint])
-          this-lints))]]))
+        [:div {:style {:display :flex 
+                        :flex-direction :column
+                        :gap "3px"}}
+         (map
+           (fn [this-lint] [one-lint this-lint])
+           this-lints)])]]))
      
 
 (defn view [position zloc ref]

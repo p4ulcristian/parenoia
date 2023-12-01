@@ -8,19 +8,19 @@
    [parenoia.form-conditionals :as form-conditionals]
    [parenoia.form-interpreters  :as form-interpreters]
    [parenoia.keyboard :as keyboard]
+   [parenoia.lint :as lint]
    [parenoia.menu :as menu]
    [parenoia.namespace-graph :as namespace-graph]
+   [parenoia.overlays :as overlays]
    [parenoia.refactor :as refactor]
    [parenoia.refactor-ui :as refactor-ui]
    [parenoia.rewrite :as rewrite]
    [parenoia.style :as style]
    [parenoia.textarea :as textarea]
+   [parenoia.token :as token]
    [re-frame.core :refer [dispatch subscribe]]
    [reagent.core :refer [atom] :as reagent]
    [rewrite-clj.parser :as zparser]
-   [parenoia.lint :as lint]
-   [parenoia.token :as token]
-   [parenoia.overlays :as overlays]
    [rewrite-clj.zip :as z]))
 
 (defn load-effect []
@@ -39,11 +39,6 @@
     " || "
     (clojure.string/split  namespace #"\.")))
 
-
-
-
-
-
 (defn new-line-before-last? [zloc]
   (if (= :newline (z/tag zloc))
     true
@@ -53,7 +48,7 @@
 
 (def timeout (atom nil))
 
-(defn get-info-about-zloc [zloc] 
+(defn get-info-about-zloc [zloc]
   (do
     (dispatch [:parenoia/get-variable-info zloc])
     (dispatch [:parenoia/get-form-info zloc])
@@ -147,7 +142,6 @@
 
         [overlays/overlay-wrapper
          ref [textarea/view zloc]])]]))
-         
 
 (defn form-interpreter [zloc]
   (let [selected? (subscribe [:parenoia/selected? zloc])
