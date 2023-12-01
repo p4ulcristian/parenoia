@@ -13,7 +13,7 @@
   (fn []
     (let [og-string (z/string zloc)
           edited-string (try (zparser/parse-string
-                               (.-text (parinfer/indentMode (.-value ^js current-ref)
+                               (.-text (parinfer/smartMode (.-value ^js current-ref)
                                          #js {:forceBalance true
                                               :openParenChars #js["e" "[","{"]
                                               :closeParenChars #js ["d" "]","}"]})))
