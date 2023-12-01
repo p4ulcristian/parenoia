@@ -35,30 +35,36 @@
                 :background "#333"
                 :color color
                 :transform (if open? "scale(1)" "scale(0.7)")}}
-  [:i {:style {:font-size "14px"}
-       :class "fa-solid fa-bug"}]])
+  [:i {:style {:font-size "16px"}
+       :class "fa-solid fa-radiation"}]])
 
 (defn lint-overlay [ref this-lints]
   (let [[open? set-open?] (react/useState false)
         first-lint-color (lint-background (:level (first this-lints)))]
-    [overlays/overlay-wrapper
-     ref
-     [:div {:style {:z-index (if open? 10000 5000)
-                    :pointer-events :auto
-                    :height (if open? "fit-content" "0")
-                    :width (if open? "fit-content" "0")
-                    :transform "translate(-15px, -15px)"
-                    :border-radius (if open? "10px" "50%")
-                    :color (if open? "black" first-lint-color)}}
-      (if-not open?
-        [bug-button first-lint-color open?  set-open?]
-        [:div {:style {:display :grid 
-                       :grid-template-columns "auto auto"
-                        :gap "3px"}}
-         [bug-button first-lint-color open? set-open?]
-         [:div (map
-                 (fn [this-lint] [one-lint this-lint])
-                 this-lints)]])]]))
+    [:div
+           {:style {:position :absolute
+                    :top 0
+                    :right 0
+                    :transform "translate(100%, -100%)"
+                    :background :white}}
+     [overlays/overlay-wrapper
+      ref
+      [:div {:style {:pointer-events :auto
+                     :height (if open? "fit-content" "0")
+                     :width (if open? "fit-content" "0")
+                     :transform "translate(-15px, -15px)"
+                     :border-radius (if open? "10px" "50%")
+                     :color (if open? "black" first-lint-color)}}
+       (if-not open?
+         [bug-button first-lint-color open?  set-open?]
+         [:div {:style {:display :grid 
+                        :grid-template-columns "auto auto"
+                         :gap "3px"}}
+          [bug-button first-lint-color open? set-open?]
+          [:div (map
+                  (fn [this-lint] [one-lint this-lint])
+                  this-lints)]])]
+      open?]]))
      
 
 (defn view [position zloc ref]
@@ -71,10 +77,5 @@
                          lints)
             empty-lints? (empty? this-lints)]
         (when-not empty-lints?
-          [:div
-           {:style {:position :absolute
-                    :top 0
-                    :right 0
-                    :transform "translate(100%, -100%)"
-                    :background :white}}
-           [lint-overlay ref this-lints]])))))
+          
+           [lint-overlay ref this-lints])))))

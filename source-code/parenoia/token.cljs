@@ -110,8 +110,8 @@
                 :background "#333"
                 :color "lightblue"
                 :transform (if open? "scale(1)" "scale(0.7)")}}
-  [:i {:style {:font-size "14px"}
-       :class "fa-solid fa-circle-nodes"}]])
+  [:i {:style {:font-size "16px"}
+       :class "fa-solid fa-book-journal-whills"}]])
 
 
 
@@ -151,14 +151,13 @@
      ref
      [:div {:on-mouse-enter #(set-open? true)
             :on-mouse-leave #(set-open? false)
-            :style {:z-index (if open? 10000 5000)
-                    :pointer-events :auto
+            :style {:pointer-events :auto
                     :height (if open? "fit-content" "0")
                     :width (if open? "fit-content" "0")
-                    :transform "translate(calc(100% - 15px), -15px)"
+                    :transform "translate( -15px, -15px)"
                     :border-radius (if open? "10px" "50%")
                     :position :absolute 
-                    :right 0 
+                    :left 0 
                     :top 0}}
       (if-not open?
         (when-not no-findings? 
@@ -168,7 +167,8 @@
                         :gap "3px"}}
                         
          [references-button open? set-open?]
-         [references-and-definition @the-definition @the-references]])]]))
+         [references-and-definition @the-definition @the-references]])]
+     open?]))
 
 
 (defn token-inner [zloc selected? unused-binding?]

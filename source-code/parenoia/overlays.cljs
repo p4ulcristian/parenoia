@@ -32,7 +32,7 @@
       (fn []))
     #js [(.-current ref)]))
 
-(defn overlay-wrapper [ref content]
+(defn overlay-wrapper [ref content open?]
   (let [[x set-x] (react/useState 0)
         [y set-y] (react/useState 0)
         [width set-width] (react/useState 0)
@@ -44,6 +44,7 @@
                     :position :absolute
                     :top y
                     :left x
+                    :z-index (if open? 5000 1000)
                     :background :none
                     :height height
                     :width width

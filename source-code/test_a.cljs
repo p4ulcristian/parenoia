@@ -1,5 +1,6 @@
 (ns test-a
-  (:require [cljs.reader :refer [read-string]]))
+  (:require [a.dsa :as dsadsadsa]
+            [cljs.reader :refer [dsa read-string]]))
 
 (def x 45) (defn hello [a]
              (let [x 4]
