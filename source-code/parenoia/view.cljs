@@ -400,11 +400,11 @@
 
 (defn namespace-container []
   (let [ref (react/useRef)
-        current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
+        current-zloc (subscribe [:db/get [:parenoia :selected-zloc]])
         selected-file-path @(subscribe [:db/get [:parenoia :selected :file-path]])
         selected-file @(subscribe [:db/get [:parenoia :project selected-file-path]])]
     (load-effect)
-    (keyboard/effect ref)
+    (keyboard/effect @current-zloc)
     [:div {:ref ref
            :id "parenoia-body"
            :style {:height "100vh"

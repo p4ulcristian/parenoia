@@ -27,8 +27,7 @@
     {:track-position? true}))
 
 (defn modify-file [zloc]
-  (let [file-zloc      (zloc->file zloc)
-        selected-file  @(subscribe [:db/get [:parenoia :selected-file]])]
+  (let [file-zloc      (zloc->file zloc)]
     (dispatch [:parenoia/set-file! file-zloc zloc])))
 
 (defn run-on-key [^js event event-name]
@@ -39,22 +38,18 @@
     (not (.-shiftKey event))
     (not (.-metaKey event))))
 
-(defn on-q-fn []
+(defn on-q-fn [zloc]
   (fn [^js event]
 
     (when (and (without-special-keys event) (check-key event "q"))
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (.preventDefault event)
-          (modify-file (paredit/slurp-backward current-zloc)))))))
+      (.preventDefault event)
+      (modify-file (paredit/slurp-backward zloc)))))
 
-(defn on-w-fn []
+(defn on-w-fn [zloc]
   (fn [^js event]
     (when (and (without-special-keys event) (check-key event "w"))
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (.preventDefault event)
-          (modify-file (paredit/barf-backward current-zloc)))))))
+      (.preventDefault event)
+      (modify-file (paredit/barf-backward zloc)))))
 
 (defn barf-test-with-string []
   (-> "((x) 1)"
@@ -63,156 +58,124 @@
     paredit/barf-forward
     z/root-string))
 
-(defn on-e-fn []
+(defn on-e-fn [zloc]
   (fn [^js event]
     (when (and (without-special-keys event) (check-key event "e"))
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (barf-test-with-string)
-          (.preventDefault event)
-          (modify-file (paredit/barf-forward current-zloc)))))))
+      (barf-test-with-string)
+      (.preventDefault event)
+      (modify-file (paredit/barf-forward zloc)))))
 
-(defn on-r-fn []
+(defn on-r-fn [zloc]
   (fn [^js event]
     (when (and (without-special-keys event) (check-key event "r"))
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (.preventDefault event)
-          (modify-file (paredit/slurp-forward current-zloc)))))))
+      (.preventDefault event)
+      (modify-file (paredit/slurp-forward zloc)))))
 
-(defn on-a-fn []
+(defn on-a-fn [zloc]
   (fn [^js event]
     (when (and (without-special-keys event) (check-key event "a"))
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (.preventDefault event)
-          (dispatch [:db/set [:parenoia :editable?] true])
-          (modify-file (z/left (z/insert-left current-zloc 'x))))))))
+      (.preventDefault event)
+      (dispatch [:db/set [:parenoia :editable?] true])
+      (modify-file (z/left (z/insert-left zloc 'x))))))
 
-(defn on-s-fn []
+(defn on-s-fn [zloc]
   (fn [^js event]
     (when (and (without-special-keys event) (check-key event "s"))
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (.preventDefault event)
-          (dispatch [:db/set [:parenoia :editable?] true])
-          (modify-file (z/left (z/insert-left (z/down current-zloc) 'x))))))))
+      (.preventDefault event)
+      (dispatch [:db/set [:parenoia :editable?] true])
+      (modify-file (z/left (z/insert-left (z/down zloc) 'x))))))
 
-(defn on-d-fn []
+(defn on-d-fn [zloc]
   (fn [^js event]
     (when (and (without-special-keys event) (check-key event "d"))
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (.preventDefault event)
-          (dispatch [:db/set [:parenoia :editable?] true])
-          (modify-file (z/right (z/insert-right current-zloc 'x))))))))
+      (.preventDefault event)
+      (dispatch [:db/set [:parenoia :editable?] true])
+      (modify-file (z/right (z/insert-right zloc 'x))))))
 
-(defn on-shift-a-fn []
+(defn on-shift-a-fn [zloc]
   (fn [^js event]
     (when (and (.-shiftKey event) (check-key event "A"))
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (.preventDefault event)
-          (dispatch [:db/set [:parenoia :editable?] true])
-          (modify-file
-            (z/left (z/insert-newline-left (z/insert-left current-zloc 'x)))))))))
+      (.preventDefault event)
+      (dispatch [:db/set [:parenoia :editable?] true])
+      (modify-file
+        (z/left (z/insert-newline-left (z/insert-left zloc 'x)))))))
 
-(defn on-shift-d-fn []
+(defn on-shift-d-fn [zloc]
   (fn [^js event]
     (when (and (.-shiftKey event) (check-key event "D"))
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (.preventDefault event)
-          (dispatch [:db/set [:parenoia :editable?] true])
-          (modify-file
-            (z/right (z/insert-newline-right (z/insert-right current-zloc 'x)))))))))
+      (.preventDefault event)
+      (dispatch [:db/set [:parenoia :editable?] true])
+      (modify-file
+        (z/right (z/insert-newline-right (z/insert-right zloc 'x)))))))
 
-(defn on-left-fn []
+(defn on-left-fn [zloc]
   (fn [^js event]
     (when (check-key event "ArrowLeft")
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (.preventDefault event)
-          (set-zloc
-            (if (has-position? (z/left current-zloc))
-              (z/left current-zloc)
-              (z/prev current-zloc))))))))
+      (.preventDefault event)
+      (set-zloc
+        (if (has-position? (z/left zloc))
+          (z/left zloc)
+          (z/prev zloc))))))
 
-(defn on-right-fn []
+(defn on-right-fn [zloc]
   (fn [^js event]
     (when (check-key event "ArrowRight")
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (.preventDefault event)
-          (set-zloc
-            (if (has-position? (z/right current-zloc))
-              (z/right current-zloc)
-              (z/next current-zloc))))))))
+      (.preventDefault event)
+      (set-zloc
+        (if (has-position? (z/right zloc))
+          (z/right zloc)
+          (z/next zloc))))))
 
-(defn on-up-fn []
+(defn on-up-fn [zloc]
   (fn [^js event]
     (when (check-key event "ArrowUp")
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (.preventDefault event)
-          (set-zloc
-            (cond (has-position? (z/prev current-zloc))
-              (z/prev current-zloc))))))))
+      (.preventDefault event)
+      (set-zloc
+        (when (has-position? (z/prev zloc))
+          (z/prev zloc))))))
 
-(defn on-down-fn []
+(defn on-down-fn [zloc]
   (fn [^js event]
     (when (check-key event "ArrowDown")
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (.preventDefault event)
-          (set-zloc
-            (cond (has-position? (z/next current-zloc))
-              (z/next current-zloc))))))))
+      (.preventDefault event)
+      (set-zloc
+        (cond (has-position? (z/next zloc))
+          (z/next zloc))))))
 
-(defn on-tab-fn []
+(defn on-tab-fn [zloc]
   (fn [^js event]
     (when (and (check-key event "Tab") (not (.-shiftKey event)))
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (.preventDefault event)
-          (modify-file (paredit/wrap-around current-zloc :list)))))))
+      (.preventDefault event)
+      (modify-file (paredit/wrap-around zloc :list)))))
 
-(defn on-shift-tab-fn []
+(defn on-shift-tab-fn [zloc]
   (fn [^js event]
     (when (and (check-key event "Tab") (.-shiftKey event))
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (.preventDefault event)
-          (modify-file  (paredit/splice (z/up current-zloc))))))))
+      (.preventDefault event)
+      (modify-file  (paredit/splice (z/up zloc))))))
 
-(defn on-space-fn []
+(defn on-space-fn [zloc]
   (fn [^js event]
     (when (and (check-key event " ") (not  (.-shiftKey event)))
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (.preventDefault event)
-          (modify-file (z/right (z/insert-right current-zloc 'x))))))))
+      (.preventDefault event)
+      (modify-file (z/right (z/insert-right zloc 'x))))))
 
-(defn on-shift-space-fn []
+(defn on-shift-space-fn [zloc]
   (fn [^js event]
     (when (and (check-key event " ") (.-shiftKey event))
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (println "shift space")
-          (.preventDefault event)
-          (modify-file
-            (z/right (z/insert-newline-right (z/insert-right current-zloc 'x)))))))))
+      (println "shift space")
+      (.preventDefault event)
+      (modify-file
+        (z/right (z/insert-newline-right (z/insert-right zloc 'x)))))))
 
-(defn on-shift-enter-fn []
+(defn on-shift-enter-fn [zloc]
   (fn [^js event]
     (when (and (check-key event "Enter") (.-shiftKey event))
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (println "Shift enter? ")
-          (.preventDefault event)
-          (modify-file (z/right (z/insert-newline-right current-zloc))))))))
+      (println "Shift enter? ")
+      (.preventDefault event)
+      (modify-file (z/right (z/insert-newline-right zloc))))))
 
-(defn on-enter-fn []
+(defn on-enter-fn [zloc]
   (fn [^js event]
     (when (and (check-key event "Enter") (not (.-shiftKey event)))
       (do
@@ -220,7 +183,7 @@
         (dispatch [:db/set [:parenoia :editable?]
                    (not @(subscribe [:db/get [:parenoia :editable?]]))])))))
 
-(defn on-esc-fn []
+(defn on-esc-fn [zloc]
   (fn [^js event]
     (when (check-key event "Escape")
       (do
@@ -228,25 +191,23 @@
         (dispatch [:db/set [:parenoia :editable?] false])
         (dispatch [:db/set [:parenoia :menu?] false])))))
 
-(defn on-backspace-fn []
+(defn on-backspace-fn [zloc]
   (fn [^js event]
     (when (and (check-key event "Backspace") (not (.-shiftKey event)))
-      (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
-        (do
-          (.preventDefault event)
-          (let [removed-zloc (z/remove current-zloc)
-                to-right (z/right removed-zloc)]
-            (modify-file (if to-right
-                           to-right
-                           removed-zloc))))))))
+      (.preventDefault event)
+      (let [removed-zloc (z/remove zloc)
+            to-right (z/right removed-zloc)]
+        (modify-file (if to-right
+                       to-right
+                       removed-zloc))))))
 
-(defn remove-till-prev-node [zloc]
+(defn remove-till-prev-node [[zloc]]
   (println (z/tag zloc) " - " (z/whitespace-or-comment? zloc))
   (if (z/whitespace-or-comment? zloc)
     (remove-till-prev-node (z/remove* zloc))
     (z/insert-space-right zloc)))
 
-(defn on-shift-backspace-fn []
+(defn on-shift-backspace-fn [zloc]
   (fn [^js event]
     (when (and (check-key event "Backspace") (.-shiftKey event))
       (let [current-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])]
@@ -254,7 +215,7 @@
           (.preventDefault event)
           (modify-file (remove-till-prev-node (z/left* current-zloc))))))))
 
-(defn on-command-z-fn []
+(defn on-command-z-fn [zloc]
   (fn [^js event]
     (when (and (check-key event "z")
             (.-metaKey event)
@@ -265,7 +226,7 @@
         (println "ctrl-z")
         (dispatch [:parenoia/undo])))))
 
-(defn on-command-shift-z-fn []
+(defn on-command-shift-z-fn [zloc]
   (fn [^js event]
     (when (and (check-key event "z")
             (.-metaKey event)
@@ -276,7 +237,7 @@
         (println "ctrl-shift-z")
         (dispatch [:parenoia/redo])))))
 
-(defn on-command-s-fn []
+(defn on-command-s-fn [zloc]
   (fn [^js event]
     (when (and (check-key event "s")
             (.-metaKey event))
@@ -286,7 +247,7 @@
         (println "ctrl-shift-s")
         (dispatch [:parenoia/save!])))))
 
-(defn on-m-fn []
+(defn on-m-fn [zloc]
   (fn [^js event]
     (when (check-key event "m")
 
@@ -295,7 +256,7 @@
         (let [menu? @(subscribe [:db/get [:parenoia :menu?]])]
           (dispatch [:db/set [:parenoia :menu?] (not menu?)]))))))
 
-(defn on-g-fn []
+(defn on-g-fn [zloc]
   (fn [^js event]
     (when (check-key event "g")
       (do
@@ -303,34 +264,34 @@
         (let [project-map? @(subscribe [:db/get [:parenoia :project-map?]])]
           (dispatch [:db/set [:parenoia :project-map?] (not project-map?)]))))))
 
-(defn effect [ref]
-  (let [on-left            (on-left-fn)
-        on-right           (on-right-fn)
-        on-up              (on-up-fn)
-        on-down            (on-down-fn)
-        on-tab             (on-tab-fn)
-        on-shift-tab       (on-shift-tab-fn)
-        on-space           (on-space-fn)
-        on-shift-space     (on-shift-space-fn)
-        on-shift-enter     (on-shift-enter-fn)
-        on-enter           (on-enter-fn)
-        on-backspace       (on-backspace-fn)
-        on-shift-backspace (on-shift-backspace-fn)
-        on-esc             (on-esc-fn)
-        on-command-z       (on-command-z-fn)
-        on-command-shift-z       (on-command-shift-z-fn)
-        on-command-s       (on-command-s-fn)
-        on-m               (on-m-fn)
-        on-g               (on-g-fn)
-        on-q               (on-q-fn)
-        on-w               (on-w-fn)
-        on-e               (on-e-fn)
-        on-r               (on-r-fn)
-        on-a               (on-a-fn)
-        on-s               (on-s-fn)
-        on-d               (on-d-fn)
-        on-shift-a         (on-shift-a-fn)
-        on-shift-d         (on-shift-d-fn)]
+(defn effect [zloc]
+  (let [on-left            (on-left-fn zloc)
+        on-right           (on-right-fn zloc)
+        on-up              (on-up-fn zloc)
+        on-down            (on-down-fn zloc)
+        on-tab             (on-tab-fn zloc)
+        on-shift-tab       (on-shift-tab-fn zloc)
+        on-space           (on-space-fn zloc)
+        on-shift-space     (on-shift-space-fn zloc)
+        on-shift-enter     (on-shift-enter-fn zloc)
+        on-enter           (on-enter-fn zloc)
+        on-backspace       (on-backspace-fn zloc)
+        on-shift-backspace (on-shift-backspace-fn zloc)
+        on-esc             (on-esc-fn zloc)
+        on-command-z       (on-command-z-fn zloc)
+        on-command-shift-z       (on-command-shift-z-fn zloc)
+        on-command-s       (on-command-s-fn zloc)
+        on-m               (on-m-fn zloc)
+        on-g               (on-g-fn zloc)
+        on-q               (on-q-fn zloc)
+        on-w               (on-w-fn zloc)
+        on-e               (on-e-fn zloc)
+        on-r               (on-r-fn zloc)
+        on-a               (on-a-fn zloc)
+        on-s               (on-s-fn zloc)
+        on-d               (on-d-fn zloc)
+        on-shift-a         (on-shift-a-fn zloc)
+        on-shift-d         (on-shift-d-fn zloc)]
     (react/useEffect
       (fn []
         (println "hanyszor")
@@ -392,7 +353,7 @@
           (remove-listener js/document on-d)
           (remove-listener js/document on-shift-a)
           (remove-listener js/document on-shift-d)))
-      #js [])))
+      #js [zloc])))
 
 (defn block-some-keyboard-events [^js e]
   (when (or
