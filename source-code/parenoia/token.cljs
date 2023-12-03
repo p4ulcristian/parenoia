@@ -171,7 +171,7 @@
      open?]))
 
 
-(defn token-inner [zloc selected? unused-binding?]
+(defn token-inner [selected? unused-binding? token-color token-text-color first-in-list? token-string]
   (let [ref (react/useRef)]
    [:div {:ref ref
           :style {:box-shadow style/box-shadow
@@ -184,25 +184,28 @@
                   :white-space :nowrap
                   :border-left (str "3px solid " (cond
                                                     ;;  same-as-selected?     "magenta"
-                                                   (first-in-list? zloc) "magenta"
+                                                   first-in-list? "magenta"
                                                    :else "none"))
                   :color (cond
                            selected? (style/color [:selection :text-color])
                              ;same-as-selected? (style/color [:same-as-selection :text-color])
                            unused-binding?   (style/color [:unused-binding :text-color])
-                           :else (decide-token-text-color zloc))
+                           :else token-text-color)
                   :background (cond
                                 selected?         (style/color [:selection :background-color])
                                   ;same-as-selected? (style/color [:same-as-selection :background-color])
 
                                 unused-binding?   (style/color [:unused-binding :background-color])
-                                :else (decide-token-color zloc))}}
+                                :else token-color)}}
     (when selected? [references-overlay ref])
-    [:div
-     (if (= nil (z/tag zloc))
-       [:br]
-       (z/string zloc))]]))
+    [:div token-string]]))
 
 (defn view [zloc selected?]
-  (let [unused-binding?   (subscribe [:parenoia/unused-binding? zloc])]
-    [token-inner zloc selected? @unused-binding?]))
+  (let [token-color (decide-token-color zloc)
+        token-text-color (decide-token-text-color zloc)
+        token-string  (if (= nil (z/tag zloc))
+                          [:br]
+                          (z/string zloc))
+        first-in-list? (first-in-list? zloc)
+        unused-binding?   (subscribe [:parenoia/unused-binding? zloc])]
+    [token-inner  selected? @unused-binding? token-color token-text-color first-in-list? token-string]))
