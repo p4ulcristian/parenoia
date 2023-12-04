@@ -202,9 +202,22 @@
        [x y] position]
     (and (<= start-x x end-x) (<= start-y y end-y))))  
 
-(defn form-container [zloc index ns-name]
-   (let [[hovered? set-hovered?] (react/useState false)]
-    (if zloc
+(defn example []
+  [:div (str (rand-nth (range 1000)))])
+
+
+
+(defn wrapper-to-not-rerender []
+ [:div [example]])
+
+(defn form-container [zloc index ns-name file-path]
+   (let [[hovered? set-hovered?] (react/useState false)
+         [zloc-at-index set-zloc-at-index] (react/useState nil)]
+    (react/useEffect (fn []
+                       (set-zloc-at-index @(subscribe [:parenoia/get-form-by-index file-path index])) 
+                       (fn []))
+                     #js []) 
+    (if zloc-at-index
      (let [form-position-span (z/position-span zloc)
            selection-position (has-position? @(subscribe [:db/get [:parenoia :selected-zloc]]))]
       [:div
@@ -223,17 +236,17 @@
 
                         :flex-wrap :wrap
                         :margin-top 10}}
-          [block-re-render 
-           [form-interpreter zloc] 
-           (not hovered?)]]]]]))))
+          [:div 
+            [wrapper-to-not-rerender]
+            [form-interpreter zloc-at-index]]]]]]))))
            ;(not (in-position-span? form-position-span selection-position))]]]])))
 
-(defn forms-container [forms ns-name]
+(defn forms-container [forms ns-name file-path]
   (let [style {:display :flex
                :flex-direction :column
                :gap "20px"}
 
-        render-fn (fn [index form] ^{:key index} [form-container form index ns-name])]
+        render-fn (fn [index form] ^{:key index} [form-container form index ns-name file-path])]
     [:div {:style style
            :on-click (fn [e] (.stopPropagation e))}
      (map-indexed render-fn forms)]))
@@ -247,7 +260,7 @@
 
         ns-name (rewrite/get-namespace-from-file zloc)]
     [:div {:style style}
-     [forms-container (rewrite/get-forms-from-file zloc) ns-name]]))
+     [forms-container (rewrite/get-forms-from-file zloc) ns-name file-path]]))
 
 (defn parenoia-icon []
   (let [[open? set-open?] (react/useState false)]
@@ -442,7 +455,7 @@
                    :right 0
                    :top 0
                    :z-index 10}}
-     ^{:key (str selected-file)}
+     ^{:key (str selected-file-path)}
      [one-namespace selected-file-path selected-file]
      [placeholder-div]]))
 

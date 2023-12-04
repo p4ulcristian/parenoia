@@ -52,6 +52,23 @@
                      lints)]
     (not (empty? this-lints))))
 
+
+
+(reg-sub 
+  :parenoia/get-form-by-index
+  (fn [db [_ file-path index]]
+    (let [zloc   (get-in db [:parenoia :project file-path])
+          forms  (rewrite/get-forms-from-file zloc)]
+     (when (< index (count forms))
+      (nth forms index)))))
+  
+
+(reg-sub 
+  :parenoia/get-namespace-form-indexes 
+  (fn [db [_ zloc]]
+    (map-indexed (fn [i a] i) (rewrite/get-forms-from-file zloc))))
+
+
 (reg-sub 
  :parenoia/filter-project-by-namespaces 
  (fn [db [_ search-term]]
