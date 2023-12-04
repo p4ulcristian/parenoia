@@ -17,7 +17,8 @@
    [parenoia.token :as token]
    [re-frame.core :refer [dispatch subscribe]]
    [reagent.core :refer [atom] :as reagent]
-   [rewrite-clj.zip :as z]))
+   [rewrite-clj.zip :as z]
+   [reagent.dom.server :as reagent.dom.server]))
 
 (defn load-effect []
   (react/useEffect
@@ -183,22 +184,34 @@
                    :text-align :right}}
      ns-name]]])
 
-(defn form-container [zloc index ns-name]
-  [:div
-   {:style {:border-radius "10px"
-            :position :relative
-            :overflow-wrap "break-word"}}
-   [sticky-function-header zloc index ns-name]
-   [:div {:style {:padding "40px"}}
-    [:div {:style {:width "100%"
-                   :box-sizing :border-box
-                   :overflow-x :auto}}
-     [:div {:style {:display :flex
-                    :gap "10px"
 
-                    :flex-wrap :wrap
-                    :margin-top 10}}
-      [form-interpreter zloc]]]]])
+
+(defn block-re-render [component block?]
+ [:div.block-re-render
+  (if block? 
+   {:dangerouslySetInnerHTML
+    {:__html (reagent.dom.server/render-to-string
+                    component)}}
+   component)])
+  
+  
+
+(defn form-container [zloc index ns-name]
+   [:div
+    {:style {:border-radius "10px"
+             :position :relative
+             :overflow-wrap "break-word"}}
+    [sticky-function-header zloc index ns-name]
+    [:div {:style {:padding "40px"}}
+     [:div {:style {:width "100%"
+                    :box-sizing :border-box
+                    :overflow-x :auto}}
+      [:div {:style {:display :flex
+                     :gap "10px"
+
+                     :flex-wrap :wrap
+                     :margin-top 10}}
+       [block-re-render [form-interpreter zloc] true]]]]])
 
 (defn forms-container [forms ns-name]
   (let [style {:display :flex
