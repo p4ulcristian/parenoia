@@ -32,11 +32,15 @@
 
 (defn selected-zloc? [zloc-one zloc-two]
   (let [pos-one (has-position? zloc-one)
-        pos-two (has-position? zloc-two)]
+        pos-two (has-position? zloc-two)
+        str-one (z/string zloc-one)
+        str-two
+        (z/string zloc-two)]
     (and
       (not= nil pos-one)
       (not= nil pos-two)
-      (= pos-one pos-two))))
+      (= pos-one pos-two)
+      (= str-one str-two))))
 
 (defn is-unused-binding? [lints position]
   (let [this-lints (filter (fn [{:keys [col row type]}]

@@ -189,6 +189,7 @@
     (when (check-key event "Escape")
       (do
         (.preventDefault event)
+        (dispatch [:db/set [:parenoia :global-search?] false])
         (dispatch [:db/set [:parenoia :editable?] false])
         (dispatch [:db/set [:parenoia :menu?] false])))))
 

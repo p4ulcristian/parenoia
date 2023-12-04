@@ -24,11 +24,32 @@
     {:style {:overflow-x :auto
              :padding "10px"}}
     (str (:content result))]])
+(defn search-input [ref set-term term set-timeout? timeout?]
+  [:input.global-search
+   {:ref ref
+    :style {:border-bottom-left-radius "50px"
+            :border-bottom-right-radius "10px"
+            :border-top-left-radius "10px"
+            :border-top-right-radius "10px"
+            :padding "5px"
+            :text-align :center
+            :font-weight :bold}
+
+    :placeholder "search."
+    :value term
+    :on-change (fn [a]
+                 (set-term (-> a .-target .-value))
+                 (if timeout?
+                   (.clearTimeout js/window timeout?))
+                 (set-timeout?
+                   (.setTimeout js/window
+                     (fn [e]
+                       (set-timeout? nil)
+                       (dispatch [:parenoia/global-search (-> a .-target .-value)]))
+                     500)))}])
 (defn view []
   (let [ref (react/useRef)
         global-search? (subscribe [:db/get [:parenoia :global-search?]])
-        toggle-global-search-fn (fn [] (dispatch [:db/set [:parenoia :global-search?]
-                                                  (not @global-search?)]))
         [term set-term] (react/useState "")
         [timeout? set-timeout?] (react/useState nil)
         results (or @(subscribe [:db/get [:parenoia :search-results]]) [])]
@@ -39,10 +60,15 @@
           (fn []
             (keyboard/remove-listener current-ref keyboard/block-some-keyboard-events))))
       #js [])
+    (react/useEffect
+      (fn [] (when @global-search?
+               (.select (.-current ref)))
+        (fn []))
 
-    [:div {:ref ref
-           :style {:padding "5px 10px"
-                   :display (if @global-search? :flex :none)
+      #js [@global-search?])
+
+    [:div {:style {:padding "5px 10px"
+                   :display :flex
                    :position :fixed
                    :right 0
                    :top 50
@@ -51,27 +77,7 @@
                    :justify-content :center
                    :align-items :flex-end}}
 
-     [:input.global-search
-      {:style {:border-bottom-left-radius "50px"
-               :border-bottom-right-radius "10px"
-               :border-top-left-radius "10px"
-               :border-top-right-radius "10px"
-               :padding "5px"
-               :text-align :center
-               :font-weight :bold}
-
-       :placeholder "search."
-       :value term
-       :on-change (fn [a]
-                    (set-term (-> a .-target .-value))
-                    (if timeout?
-                      (.clearTimeout js/window timeout?))
-                    (set-timeout?
-                      (.setTimeout js/window
-                        (fn [e]
-                          (set-timeout? nil)
-                          (dispatch [:parenoia/global-search (-> a .-target .-value)]))
-                        500)))}]
+     [search-input ref set-term term set-timeout? timeout?]
      (when-not (empty? results)
        [:div
         {:style {:width "400px"
