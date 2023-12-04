@@ -31,6 +31,10 @@
   (try (z/position zloc)
     (catch js/Error e false)))
 
+(defn has-position-span? [zloc]
+  (try (z/position-span zloc)
+    (catch js/Error e false)))
+
 (defn split-namespace [namespace]
   (clojure.string/join
     " || "
@@ -197,22 +201,27 @@
   
   
 
-(defn in-position-span? [position-span position]
- (let [[[start-x start-y] [end-x end-y]] position-span
-       [x y] position]
-    (and (<= start-x x end-x) (<= start-y y end-y))))  
 
 (defn example []
   [:div (str (rand-nth (range 1000)))])
 
-
+(defn is-in-position-span? [zloc]
+  (let [selected-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
+        position-span  (has-position-span? zloc)
+        position (has-position? selected-zloc)]                
+    (when (and position position-span)
+     (let [[[start-x start-y] [end-x end-y]] position-span
+           [x y] position]
+      (and (<= start-x x end-x) (<= start-y y end-y)))))) 
+  
 
 (defn wrapper-to-not-rerender []
  [:div [example]])
 
 (defn form-container [zloc index ns-name file-path]
    (let [[hovered? set-hovered?] (react/useState false)
-         [zloc-at-index set-zloc-at-index] (react/useState nil)]
+         [zloc-at-index set-zloc-at-index] (react/useState nil)
+         in-position-span? (is-in-position-span? zloc)]
     (react/useEffect (fn []
                        (set-zloc-at-index @(subscribe [:parenoia/get-form-by-index file-path index])) 
                        (fn []))
@@ -238,7 +247,9 @@
                         :margin-top 10}}
           [:div 
             [wrapper-to-not-rerender]
-            [form-interpreter zloc-at-index]]]]]]))))
+            [form-interpreter (if in-position-span? 
+                                zloc
+                                zloc-at-index)]]]]]]))))
            ;(not (in-position-span? form-position-span selection-position))]]]])))
 
 (defn forms-container [forms ns-name file-path]
