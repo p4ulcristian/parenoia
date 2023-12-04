@@ -4,10 +4,7 @@
 
 
 (defn write-file [file-name content]
-  (spit file-name (fmt/reformat-string content 
-                    {:split-keypairs-over-multiple-lines? true
-                     :sort-ns-references? true
-                     :indents {#".*" [[:inner 0]]}})))
+  (spit file-name content))
 
 (defn read-file [file-name]
   (slurp file-name))
