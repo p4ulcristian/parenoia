@@ -10,7 +10,8 @@
         thheller/shadow-cljs                            {:mvn/version "2.25.3"}
         babashka/process                                {:mvn/version "0.4.13"}
         cider/cider-nrepl                               {:mvn/version "0.21.1"}
-        rewrite-clj/rewrite-clj                         {:mvn/version "1.1.47"}
+        rewrite-clj/rewrite-clj                         {:git/url "https://github.com/clj-commons/rewrite-clj"
+                                                         :sha "c69a318fae53df940534192ca180759f2948489e"}
         ;rewrite-clj/rewrite-clj {:local/root "/Users/paulcristian/projects/zgen/rewrite-clj"}
         ;HTTP/WSS
         cljs-ajax/cljs-ajax                             {:mvn/version "0.8.4"}
