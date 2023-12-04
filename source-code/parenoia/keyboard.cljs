@@ -1,10 +1,9 @@
 (ns parenoia.keyboard
   (:require ["react" :as react]
+            [parenoia.utils :as utils]
             [re-frame.core :refer [dispatch subscribe]]
             [rewrite-clj.paredit :as paredit]
-            [rewrite-clj.zip :as z]
-            [parenoia.utils :as utils]))
-          
+            [rewrite-clj.zip :as z]))
 
 (defn has-position? [zloc]
   (try (z/position zloc)
@@ -198,10 +197,10 @@
     (when (and (check-key event "Backspace") (not (.-shiftKey event)))
       (.preventDefault event)
       (let [removed-zloc (z/remove zloc)
-            to-right (z/right removed-zloc)]
-        
-        (modify-file (if to-right
-                       to-right
+            to-down (z/down removed-zloc)]
+
+        (modify-file (if to-down
+                       to-down
                        removed-zloc))))))
 
 (defn remove-till-prev-node [[zloc]]
@@ -266,9 +265,7 @@
         (.preventDefault event)
         (let [the-def   @(subscribe [:db/get [:parenoia :definition]])
               {:keys [uri row col]} the-def]
-          (when (utils/file-uri? uri) 
-            (dispatch [:parenoia/go-to! (utils/uri->path uri) [row col]])))))))
-
+          (when uri (dispatch [:parenoia/go-to! (utils/uri->path uri) [row col]])))))))
 
 (defn on-g-fn [zloc]
   (fn [^js event]
@@ -309,7 +306,6 @@
         on-shift-d         (on-shift-d-fn zloc)]
     (react/useEffect
       (fn []
-        (println "hanyszor")
         ;(.log js/console (.-current ref))
         (add-listener js/document on-left)
         (add-listener js/document on-right)

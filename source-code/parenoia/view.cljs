@@ -211,9 +211,9 @@
         [zloc-at-index set-zloc-at-index] (react/useState nil)
         in-position-span? (is-in-position-span? zloc)]
     (react/useEffect (fn []
-                       (set-zloc-at-index @(subscribe [:parenoia/get-form-by-index file-path index]))
+                       (set-zloc-at-index zloc)
                        (fn []))
-      #js [in-position-span?])
+      #js [in-position-span? (z/string zloc)])
     (if zloc-at-index
       (let [form-position-span (z/position-span zloc)
             selection-position (has-position? @(subscribe [:db/get [:parenoia :selected-zloc]]))]

@@ -6,9 +6,7 @@
    [parenoia.rewrite :as rewrite]
    [parenoia.undo :refer [undoable]]
    [re-frame.core :refer [reg-event-db dispatch reg-sub]]
-   [rewrite-clj.zip :as z]
-   [editscript.core :as e]))
-
+   [rewrite-clj.zip :as z]))
 
 (reg-event-db
   :db/set
@@ -45,54 +43,48 @@
                              (and
                                (= row (first position))
                                (= col (second position))
-                               (or 
+                               (or
                                  (= :unused-binding type)
                                  (= :unused-referred-var type)
                                  (= :unused-namespace type))))
                      lints)]
     (not (empty? this-lints))))
 
-
-
-(reg-sub 
+(reg-sub
   :parenoia/get-form-by-index
   (fn [db [_ file-path index]]
     (let [zloc   (get-in db [:parenoia :project file-path])
           forms  (rewrite/get-forms-from-file zloc)]
-     (when (< index (count forms))
-      (nth forms index)))))
-  
+      (when (< index (count forms))
+        (nth forms index)))))
 
-(reg-sub 
-  :parenoia/get-namespace-form-indexes 
+(reg-sub
+  :parenoia/get-namespace-form-indexes
   (fn [db [_ zloc]]
     (map-indexed (fn [i a] i) (rewrite/get-forms-from-file zloc))))
 
-
-(reg-sub 
- :parenoia/filter-project-by-namespaces 
- (fn [db [_ search-term]]
-   (let [project (get-in db [:parenoia :project])
-         project-only-ns (map (fn [[path zloc]] [path (str (refactor/get-ns zloc))]) 
-                              project)
-         sorted-project-only-ns (sort (fn [a b] (compare (second a) (second b)))
-                                 project-only-ns)
-         filtered-project-only-ns (filter
-                                    (fn [[path ns-name]]
-                                      (clojure.string/includes? ns-name search-term))
-                                    sorted-project-only-ns)]
-     (filter
+(reg-sub
+  :parenoia/filter-project-by-namespaces
+  (fn [db [_ search-term]]
+    (let [project (get-in db [:parenoia :project])
+          project-only-ns (map (fn [[path zloc]] [path (str (refactor/get-ns zloc))])
+                            project)
+          sorted-project-only-ns (sort (fn [a b] (compare (second a) (second b)))
+                                   project-only-ns)
+          filtered-project-only-ns (filter
+                                     (fn [[path ns-name]]
+                                       (clojure.string/includes? ns-name search-term))
+                                     sorted-project-only-ns)]
+      (filter
         (fn [[path ns-name]]
           (clojure.string/includes? ns-name search-term))
         filtered-project-only-ns))))
 
-(reg-sub 
- :parenoia/selected-path? 
- (fn [db [_ path]]
-  (let [selected-path (get-in db [:parenoia :selected :file-path])]
-   (= path selected-path)))) 
-     
-
+(reg-sub
+  :parenoia/selected-path?
+  (fn [db [_ path]]
+    (let [selected-path (get-in db [:parenoia :selected :file-path])]
+      (= path selected-path))))
 
 (reg-sub
   :parenoia/unused-binding?
@@ -163,7 +155,7 @@
   :parenoia/go-to!
   []
   (fn [db [_ path pos]]
-  
+
     (let [file-zloc (get-in db [:parenoia :project path])
           selected-zloc (z/find-last-by-pos file-zloc pos)]
       (.setTimeout js/window #(dispatch [:db/set [:parenoia :selected-zloc]  selected-zloc])
@@ -365,7 +357,6 @@
          :error-handler    (fn [e] (.log js/console e))}))
 
     (assoc-in db [:parenoia :definition] nil)))
-
 
 (reg-event-db
   :parenoia/get-references
