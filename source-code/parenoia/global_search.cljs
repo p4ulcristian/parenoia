@@ -2,6 +2,30 @@
   (:require ["react" :as react]
             [parenoia.keyboard :as keyboard]
             [re-frame.core :refer [dispatch subscribe]]))
+
+
+
+(defn result-namespace [result]
+  [:div
+   {:style
+    {:background "#FFBF00"
+     :padding "10px"
+     :border-bottom-left-radius "10px"
+     :border-bottom-right-radius "10px"
+     :font-weight :bold
+     :color "#333"}}
+   (:namespace result)])
+
+
+
+(defn result-context [result]
+  [:pre
+   {:style {:overflow-x :auto
+            :padding "10px"}}
+   (str (:content result))])
+
+
+
 (defn one-result [result]
   [:div
    {:on-click #(dispatch [:parenoia/go-to!
@@ -11,19 +35,14 @@
             :cursor :pointer
             :margin-bottom "20px"}}
 
-   [:div
-    {:style
-     {:background "#FFBF00"
-      :padding "10px"
-      :border-bottom-left-radius "10px"
-      :border-bottom-right-radius "10px"
-      :font-weight :bold
-      :color "#333"}}
-    (:namespace result)]
+   [result-namespace result]
    [:pre
     {:style {:overflow-x :auto
              :padding "10px"}}
     (str (:content result))]])
+
+
+
 (defn search-input [ref set-term term set-timeout? timeout?]
   [:input.global-search
    {:ref ref
@@ -47,6 +66,9 @@
                        (set-timeout? nil)
                        (dispatch [:parenoia/global-search (-> a .-target .-value)]))
                      500)))}])
+
+
+
 (defn view []
   (let [ref (react/useRef)
         global-search? (subscribe [:db/get [:parenoia :global-search?]])
@@ -68,7 +90,7 @@
       #js [@global-search?])
 
     [:div {:style {:padding "5px 10px"
-                   :display :flex
+                   :display (if @global-search? :flex :none)
                    :position :fixed
                    :right 0
                    :top 50

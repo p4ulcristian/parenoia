@@ -165,7 +165,8 @@
       (.setTimeout js/window #(dispatch [:db/set [:parenoia :selected-zloc]  selected-zloc])
         150)
       (-> db
-        (assoc-in [:parenoia :selected :file-path] path)))))
+        (assoc-in [:parenoia :selected :file-path] path)
+        (assoc-in [:parenoia :editable?] false)))))
 
 (defn get-text-context [text index]
   (let [context-radius 200

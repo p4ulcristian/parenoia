@@ -244,7 +244,7 @@
                :flex-direction :column
                :gap "20px"}
 
-        render-fn (fn [index form] ^{:key (str index (z/string form))} [form-container form index ns-name file-path])]
+        render-fn (fn [index form] ^{:key index} [form-container form index ns-name file-path])]
     [:div {:style style
            :on-click (fn [e] (.stopPropagation e))}
      (map-indexed render-fn forms)]))
