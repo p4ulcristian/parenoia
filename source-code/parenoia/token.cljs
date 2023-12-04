@@ -7,13 +7,17 @@
             [rewrite-clj.node :as znode]
             [rewrite-clj.zip :as z]))
 
+
+
 (defn decide-token-color [zloc]
   (let [token-node (try (z/node zloc) (catch js/Error e nil))]
-    (if token-node
+    (when token-node
       (cond
         (znode/keyword-node? token-node) (style/color [:keyword? :background-color])
         (znode/symbol-node? token-node)         (style/color [:symbol? :background-color])
         :else (style/color [:string? :background-color])))))
+
+
 
 (defn decide-token-text-color [zloc]
   (let [token-node (try (z/node zloc) (catch js/Error e nil))]
@@ -23,10 +27,14 @@
         (znode/symbol-node? token-node)         (style/color [:symbol? :text-color])
         :else (style/color [:string? :text-color])))))
 
+
+
 (defn first-in-list? [zloc]
   (let [is-first? (z/leftmost? zloc)
         is-in-list? (z/list? (z/up zloc))]
     (and is-first? is-in-list?)))
+
+
 
 (defn label-for-bucket [bucket]
   [:div
@@ -36,11 +44,15 @@
             :padding "5px 10px"}}
    (str bucket)])
 
+
+
 (defn label-for-function [ns-name fn-name]
   [:div
    (if ns-name
      (str ns-name "/" fn-name)
      (str fn-name))])
+
+
 
 (defn one-reference [the-ref]
   (let [{:keys [uri row col from alias name bucket]} the-ref
@@ -64,11 +76,15 @@
        [label-for-function from name]
        [label-for-bucket bucket]])))
 
+
+
 (defn go-to-references-button [the-refs]
   [:div
    (map  (fn [a]
            ^{:key (str (random-uuid))} [one-reference a])
      the-refs)])
+
+
 
 (defn go-to-definition-button [the-def]
   (let [{:keys [uri row col name namespace bucket]} the-def]
@@ -87,6 +103,8 @@
      [label-for-function namespace name]
      [label-for-bucket bucket]]))
 
+
+
 (defn references-button [open? set-open?]
   [:div {:style {:display :flex
                  :justify-content :center
@@ -101,12 +119,16 @@
    [:i {:style {:font-size "16px"}
         :class "fa-solid fa-book-journal-whills"}]])
 
+
+
 (defn refs-and-def-title [title]
   [:div
    {:style {:border-bottom "1px solid black"
             :font-weight :bold
             :padding "10px"}}
    [:div title]])
+
+
 
 (defn references-and-definition [the-definition the-references]
 
@@ -121,6 +143,8 @@
    [go-to-definition-button the-definition]
    [refs-and-def-title "References"]
    [go-to-references-button the-references]])
+
+
 
 (defn references-overlay [ref]
   (let [[open? set-open?] (react/useState false)
@@ -151,7 +175,9 @@
          [references-and-definition @the-definition @the-references]])]
      open?]))
 
-(defn token-inner [selected? unused-binding? token-color token-text-color first-in-list? token-string]
+
+
+(defn token-inner [selected? same-as-selected? unused-binding? token-color token-text-color first-in-list? token-string]
   (let [ref (react/useRef)]
     [:div {:ref ref
            :style {:box-shadow style/box-shadow
@@ -174,19 +200,23 @@
                             :else token-text-color)
                    :background (cond
                                  selected?         (style/color [:selection :background-color])
-                                  ;same-as-selected? (style/color [:same-as-selection :background-color])
+                                 same-as-selected? (style/color [:same-as-selection :background-color])
 
                                  unused-binding?   (style/color [:unused-binding :background-color])
                                  :else token-color)}}
      (when selected? [references-overlay ref])
      [:div token-string]]))
 
+
+
 (defn view [zloc selected?]
   (let [token-color (decide-token-color zloc)
         token-text-color (decide-token-text-color zloc)
-        token-string  (if (= nil (z/tag zloc))
-                        [:br]
-                        (z/string zloc))
+        selected-string (subscribe [:db/get [:parenoia :selected-zloc]])
+        token-string (if (= nil (z/tag zloc))
+                       [:br]
+                       (z/string zloc))
+        same-as-selected? (fn [] (= (z/string @selected-string) token-string))
         first-in-list? (first-in-list? zloc)
         unused-binding?   (subscribe [:parenoia/unused-binding? zloc])]
-    [token-inner  selected? @unused-binding? token-color token-text-color first-in-list? token-string]))
+    [token-inner  selected? (same-as-selected?) @unused-binding? token-color token-text-color first-in-list? token-string]))
