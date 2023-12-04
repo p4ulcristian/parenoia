@@ -198,9 +198,7 @@
                                 unused-binding?   (style/color [:unused-binding :background-color])
                                 :else token-color)}}
     (when selected? [references-overlay ref])
-    [:div 
-      (str (rand-nth (range 10000)))
-      token-string]]))
+    [:div token-string]]))
 
 (defn view [zloc selected?]
   (let [token-color (decide-token-color zloc)

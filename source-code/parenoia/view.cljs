@@ -200,11 +200,6 @@
    component))
   
   
-
-
-(defn example []
-  [:div (str (rand-nth (range 1000)))])
-
 (defn is-in-position-span? [zloc]
   (let [selected-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
         position-span  (has-position-span? zloc)
@@ -213,10 +208,7 @@
      (let [[[start-x start-y] [end-x end-y]] position-span
            [x y] position]
       (and (<= start-x x end-x) (<= start-y y end-y)))))) 
-  
 
-(defn wrapper-to-not-rerender []
- [:div [example]])
 
 (defn form-container [zloc index ns-name file-path]
    (let [[hovered? set-hovered?] (react/useState false)
@@ -245,11 +237,9 @@
 
                         :flex-wrap :wrap
                         :margin-top 10}}
-          [:div 
-            [wrapper-to-not-rerender]
-            [form-interpreter (if in-position-span? 
+          [form-interpreter (if in-position-span? 
                                 zloc
-                                zloc-at-index)]]]]]]))))
+                                zloc-at-index)]]]]]))))
            ;(not (in-position-span? form-position-span selection-position))]]]])))
 
 (defn forms-container [forms ns-name file-path]
