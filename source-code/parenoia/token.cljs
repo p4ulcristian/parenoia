@@ -175,6 +175,7 @@
   (let [ref (react/useRef)]
    [:div {:ref ref
           :style {:box-shadow style/box-shadow
+                  :user-select :none
                   :border-radius "10px"
                   :padding-left "8px"
                   :padding-right "10px"
