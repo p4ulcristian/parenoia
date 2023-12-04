@@ -2,7 +2,8 @@
   (:require ["react" :as react]
             [re-frame.core :refer [dispatch subscribe]]
             [rewrite-clj.paredit :as paredit]
-            [rewrite-clj.zip :as z]))
+            [rewrite-clj.zip :as z]
+          ))
 
 (defn has-position? [zloc]
   (try (z/position zloc)
@@ -197,6 +198,7 @@
       (.preventDefault event)
       (let [removed-zloc (z/remove zloc)
             to-right (z/right removed-zloc)]
+        
         (modify-file (if to-right
                        to-right
                        removed-zloc))))))

@@ -198,7 +198,9 @@
                                 unused-binding?   (style/color [:unused-binding :background-color])
                                 :else token-color)}}
     (when selected? [references-overlay ref])
-    [:div token-string]]))
+    [:div 
+      (str (rand-nth (range 10000)))
+      token-string]]))
 
 (defn view [zloc selected?]
   (let [token-color (decide-token-color zloc)
@@ -208,4 +210,4 @@
                           (z/string zloc))
         first-in-list? (first-in-list? zloc)
         unused-binding?   (subscribe [:parenoia/unused-binding? zloc])]
-    [token-inner  selected? @unused-binding? token-color token-text-color first-in-list? token-string]))
+   [token-inner  selected? @unused-binding? token-color token-text-color first-in-list? token-string]))

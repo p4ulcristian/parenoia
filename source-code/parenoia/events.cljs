@@ -6,7 +6,9 @@
    [parenoia.rewrite :as rewrite]
    [parenoia.undo :refer [undoable]]
    [re-frame.core :refer [reg-event-db dispatch reg-sub]]
-   [rewrite-clj.zip :as z]))
+   [rewrite-clj.zip :as z]
+   [editscript.core :as e]))
+
 
 (reg-event-db
   :db/set
