@@ -46,10 +46,7 @@
 (defn search-input [ref set-term term set-timeout? timeout?]
   [:input.global-search
    {:ref ref
-    :style {:border-bottom-left-radius "50px"
-            :border-bottom-right-radius "10px"
-            :border-top-left-radius "10px"
-            :border-top-right-radius "10px"
+    :style {:border-radius "20px"
             :padding "5px"
             :text-align :center
             :font-weight :bold}
@@ -69,6 +66,31 @@
 
 
 
+(defn result-iterator [results]
+  (when-not (empty? results)
+    [:div
+     {:style {:width "400px"
+              :border-radius "10px"
+              :overflow-y :auto
+              :max-height "80vh"
+
+              :background "#111"}}
+
+     (map (fn [a] ^{:key (str a)} [one-result a])
+       results)]))
+
+
+
+(defn autofocus-effect [global-search? ref]
+  (react/useEffect
+    (fn [] (when global-search?
+             (.select (.-current ref)))
+      (fn []))
+
+    #js [global-search?]))
+
+
+
 (defn view []
   (let [ref (react/useRef)
         global-search? (subscribe [:db/get [:parenoia :global-search?]])
@@ -82,32 +104,18 @@
           (fn []
             (keyboard/remove-listener current-ref keyboard/block-some-keyboard-events))))
       #js [])
-    (react/useEffect
-      (fn [] (when @global-search?
-               (.select (.-current ref)))
-        (fn []))
-
-      #js [@global-search?])
+    (autofocus-effect global-search? ref)
 
     [:div {:style {:padding "5px 10px"
                    :display (if @global-search? :flex :none)
                    :position :fixed
-                   :right 0
+                   :left "50%"
                    :top 50
+                   :transform "translateX(-50%)"
                    :z-index 1000
                    :flex-direction :column
                    :justify-content :center
                    :align-items :flex-end}}
 
      [search-input ref set-term term set-timeout? timeout?]
-     (when-not (empty? results)
-       [:div
-        {:style {:width "400px"
-                 :border-radius "10px"
-                 :overflow-y :auto
-                 :max-height "80vh"
-
-                 :background "#111"}}
-
-        (map (fn [a] ^{:key (str a)} [one-result a])
-          results)])]))
+     [result-iterator results]]))
