@@ -1,37 +1,38 @@
 (ns editor.api
-  (:require [clojure-lsp.api :as clojure-lsp]
-            [clojure-lsp.db :as lsp-db]
-            [clojure-lsp.feature.move-form :as move-form]
-            [clojure-lsp.internal-api :as internal-api]
+  (:require [clojure-lsp.internal-api :as internal-api]
             [clojure-lsp.internal-api :as internal-api :refer [db*]]
-            [clojure-lsp.queries :as lsp-queries]
-            [clojure.core.async :as async]
-            [clojure.java.io :as io]
-            [clojure.pprint :as pprint]
             [clojure.tools.namespace.repl :as tn]
             [editor.config :as config]
             [editor.html :as html]
             [editor.load-files :as load-files]
             [editor.refactor :as refactor]
-            [editor.utils :as utils]
             [org.httpkit.server :as http]
             [reitit.ring                  :as reitit-ring]
-            [rewrite-clj.zip :as z]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.reload :refer [wrap-reload]]
             [ring.middleware.transit      :refer [wrap-transit-params]]))
+
+
 
 (defn request-wrap [status content-type body]
   {:status  status
    :headers {"Content-Type" content-type}
    :body    body})
 
+
+
 (defn html-wrap [content]
   (request-wrap 200 "text/html" content))
 
+
+
 (defn string-wrap [content]
-  (request-wrap 200 "text/plain" content)) (str request-wrap)
+  (request-wrap 200 "text/plain" content))
+
+ (str request-wrap)
+
+
 
 ;(refactor/move-form 'test-a/a 'test-b/a)
 
@@ -103,9 +104,15 @@
         #(wrap-params %)
         #(wrap-transit-params % {:opts {}})])}))
 
+
+
 (defonce server (atom nil))
 
+
+
 (def port 4200)
+
+
 
 (defn start []
   (reset! server
@@ -113,10 +120,14 @@
                           :join? false}))
   (println (str "Listening on port " port)))
 
+
+
 (defn stop []
   (when @server
     (@server :timeout 100)
     (reset! server nil)))
+
+
 
 (defn restart []
   (stop)
