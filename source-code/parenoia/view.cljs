@@ -17,8 +17,8 @@
    [parenoia.token :as token]
    [re-frame.core :refer [dispatch subscribe]]
    [reagent.core :refer [atom] :as reagent]
-   [rewrite-clj.zip :as z]
-   [reagent.dom.server :as reagent.dom.server]))
+   [reagent.dom.server :as reagent.dom.server]
+   [rewrite-clj.zip :as z]))
 
 (defn load-effect []
   (react/useEffect
@@ -188,56 +188,52 @@
                    :text-align :right}}
      ns-name]]])
 
-
-
 (defn block-re-render [component block?]
   (if block?
-   [:div.block-re-render
-    (if block? 
-     {:dangerouslySetInnerHTML
-      {:__html (reagent.dom.server/render-to-static-markup
-                      component)}})]
-   component))
-  
-  
+    [:div.block-re-render
+     (if block?
+       {:dangerouslySetInnerHTML
+        {:__html (reagent.dom.server/render-to-static-markup
+                   component)}})]
+    component))
+
 (defn is-in-position-span? [zloc]
   (let [selected-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
         position-span  (has-position-span? zloc)
-        position (has-position? selected-zloc)]                
+        position (has-position? selected-zloc)]
     (when (and position position-span)
-     (let [[[start-x start-y] [end-x end-y]] position-span
-           [x y] position]
-      (and (<= start-x x end-x) (<= start-y y end-y)))))) 
-
+      (let [[[start-x start-y] [end-x end-y]] position-span
+            [x y] position]
+        (and (<= start-x x end-x) (<= start-y y end-y))))))
 
 (defn form-container [zloc index ns-name file-path]
-   (let [[hovered? set-hovered?] (react/useState false)
-         [zloc-at-index set-zloc-at-index] (react/useState nil)
-         in-position-span? (is-in-position-span? zloc)]
+  (let [[hovered? set-hovered?] (react/useState false)
+        [zloc-at-index set-zloc-at-index] (react/useState nil)
+        in-position-span? (is-in-position-span? zloc)]
     (react/useEffect (fn []
-                       (set-zloc-at-index @(subscribe [:parenoia/get-form-by-index file-path index])) 
+                       (set-zloc-at-index @(subscribe [:parenoia/get-form-by-index file-path index]))
                        (fn []))
-                     #js [in-position-span?]) 
+      #js [in-position-span?])
     (if zloc-at-index
-     (let [form-position-span (z/position-span zloc)
-           selection-position (has-position? @(subscribe [:db/get [:parenoia :selected-zloc]]))]
-      [:div
-       {:on-mouse-enter #(set-hovered? true)
-        :on-mouse-leave #(set-hovered? false)
-        :style {:border-radius "10px"
-                :position :relative
-                :overflow-wrap "break-word"}}
-       [sticky-function-header zloc index ns-name]
-       [:div {:style {:padding "40px"}}
-        [:div {:style {:width "100%"
-                       :box-sizing :border-box
-                       :overflow-x :auto}}
-         [:div {:style {:display :flex
-                        :gap "10px"
+      (let [form-position-span (z/position-span zloc)
+            selection-position (has-position? @(subscribe [:db/get [:parenoia :selected-zloc]]))]
+        [:div
+         {:on-mouse-enter #(set-hovered? true)
+          :on-mouse-leave #(set-hovered? false)
+          :style {:border-radius "10px"
+                  :position :relative
+                  :overflow-wrap "break-word"}}
+         [sticky-function-header zloc index ns-name]
+         [:div {:style {:padding "40px"}}
+          [:div {:style {:width "100%"
+                         :box-sizing :border-box
+                         :overflow-x :auto}}
+           [:div {:style {:display :flex
+                          :gap "10px"
 
-                        :flex-wrap :wrap
-                        :margin-top 10}}
-          [form-interpreter (if in-position-span? 
+                          :flex-wrap :wrap
+                          :margin-top 10}}
+            [form-interpreter (if in-position-span?
                                 zloc
                                 zloc-at-index)]]]]]))))
            ;(not (in-position-span? form-position-span selection-position))]]]])))
@@ -437,7 +433,7 @@
        pins-data)]))
 
 (defn placeholder-div []
-  [:div {:style {:height "80vh"
+  [:div {:style {:height "100vh"
                  :background "linear-gradient(180deg, rgba(51,51,51,1) 21%, rgba(42,42,42,1) 44%, rgba(68,68,68,1) 66%, rgba(0,0,0,1) 91%)"}}])
 
 (defn namespace-container []

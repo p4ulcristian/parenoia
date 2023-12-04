@@ -3,7 +3,8 @@
             [re-frame.core :refer [dispatch subscribe]]
             [rewrite-clj.paredit :as paredit]
             [rewrite-clj.zip :as z]
-          ))
+            [parenoia.utils :as utils]))
+          
 
 (defn has-position? [zloc]
   (try (z/position zloc)
@@ -258,6 +259,17 @@
         (let [menu? @(subscribe [:db/get [:parenoia :menu?]])]
           (dispatch [:db/set [:parenoia :menu?] (not menu?)]))))))
 
+(defn on-l-fn [zloc]
+  (fn [^js event]
+    (when (and (without-special-keys event) (check-key event "l"))
+      (do
+        (.preventDefault event)
+        (let [the-def   @(subscribe [:db/get [:parenoia :definition]])
+              {:keys [uri row col]} the-def]
+          (when (utils/file-uri? uri) 
+            (dispatch [:parenoia/go-to! (utils/uri->path uri) [row col]])))))))
+
+
 (defn on-g-fn [zloc]
   (fn [^js event]
     (when (check-key event "g")
@@ -292,6 +304,7 @@
         on-a               (on-a-fn zloc)
         on-s               (on-s-fn zloc)
         on-d               (on-d-fn zloc)
+        on-l               (on-l-fn zloc)
         on-shift-a         (on-shift-a-fn zloc)
         on-shift-d         (on-shift-d-fn zloc)]
     (react/useEffect
@@ -324,6 +337,7 @@
         (add-listener js/document on-a)
         (add-listener js/document on-s)
         (add-listener js/document on-d)
+        (add-listener js/document on-l)
         (add-listener js/document on-shift-a)
         (add-listener js/document on-shift-d)
 
@@ -353,6 +367,7 @@
           (remove-listener js/document on-a)
           (remove-listener js/document on-s)
           (remove-listener js/document on-d)
+          (remove-listener js/document on-l)
           (remove-listener js/document on-shift-a)
           (remove-listener js/document on-shift-d)))
       #js [zloc])))
@@ -375,6 +390,7 @@
           (check-key e "r")
           (check-key e "a")
           (check-key e "s")
-          (check-key e "d"))
+          (check-key e "d")
+          (check-key e "l"))
     (.stopPropagation e)))
 

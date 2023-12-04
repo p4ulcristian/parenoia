@@ -4,6 +4,7 @@
             [parenoia.style :as style]
             [parenoia.overlays :as overlays]
             ["react" :as react]
+            [parenoia.utils :as utils]
             [re-frame.core :refer [subscribe dispatch]]))
 
 
@@ -29,10 +30,6 @@
         is-in-list? (z/list? (z/up zloc))]
     (and is-first? is-in-list?)))
 
-(defn uri->path [uri]
-  (apply str (drop 7 uri)))
-
-
 
 (defn label-for-bucket [bucket]
  [:div 
@@ -51,12 +48,13 @@
 
 
 
+
 (defn one-reference [the-ref]
  (let [selected-zloc (subscribe [:db/get [:parenoia :selected-zloc]])
        selected-position (subscribe [:parenoia/selected-position])
        {:keys [uri row col from alias name bucket]} the-ref
        
-       reference-zloc  (z/find-last-by-pos @(subscribe [:db/get [:parenoia :project (uri->path uri)]])
+       reference-zloc  (z/find-last-by-pos @(subscribe [:db/get [:parenoia :project (utils/uri->path uri)]])
                                            [row col])
        reference-is-first-parameter? (boolean (z/down reference-zloc))
        reference-pos (if reference-is-first-parameter? 
@@ -71,7 +69,7 @@
                   :grid-template-columns "auto auto"}
           :on-click (fn [e]
                      (.stopPropagation e)
-                     (dispatch [:parenoia/go-to! (uri->path uri) reference-pos]))}
+                     (dispatch [:parenoia/go-to! (utils/uri->path uri) reference-pos]))}
       [label-for-function from name]
       [label-for-bucket bucket]])))     
 
@@ -93,7 +91,7 @@
               (fn [e]
                 (.stopPropagation e)
                 (dispatch [:parenoia/go-to! 
-                                (uri->path uri) 
+                                (utils/uri->path uri) 
                                 [row col]]))}
         [label-for-function namespace name]
         [label-for-bucket bucket]]))
