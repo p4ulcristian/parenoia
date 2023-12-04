@@ -403,6 +403,11 @@
     db))
 
 (reg-event-db
+  :parenoia/toggle-global-search!
+  (fn [db [_]]
+    (let [global-search? (-> db :parenoia :global-search?)]
+      (assoc-in db [:parenoia :global-search?] (not global-search?)))))
+(reg-event-db
   :parenoia/remove-pin!
   []
   (fn [db [_ pin]]

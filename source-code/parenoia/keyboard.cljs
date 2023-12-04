@@ -194,7 +194,8 @@
 
 (defn on-backspace-fn [zloc]
   (fn [^js event]
-    (when (and (check-key event "Backspace") (not (.-shiftKey event)))
+    (when (and (check-key event "Backspace")
+            (not (.-shiftKey event)))
       (.preventDefault event)
       (let [removed-zloc (z/remove zloc)
             to-down (z/down removed-zloc)]
@@ -274,6 +275,11 @@
         (.preventDefault event)
         (let [project-map? @(subscribe [:db/get [:parenoia :project-map?]])]
           (dispatch [:db/set [:parenoia :project-map?] (not project-map?)]))))))
+(defn on-f-fn [zloc]
+  (fn [^js event]
+    (when (and (without-special-keys event) (check-key event "f"))
+      (.preventDefault event)
+      (dispatch [:parenoia/toggle-global-search!]))))
 
 (defn effect [zloc]
   (let [on-left            (on-left-fn zloc)
@@ -302,6 +308,7 @@
         on-s               (on-s-fn zloc)
         on-d               (on-d-fn zloc)
         on-l               (on-l-fn zloc)
+        on-f (on-f-fn zloc)
         on-shift-a         (on-shift-a-fn zloc)
         on-shift-d         (on-shift-d-fn zloc)]
     (react/useEffect
@@ -334,6 +341,7 @@
         (add-listener js/document on-s)
         (add-listener js/document on-d)
         (add-listener js/document on-l)
+        (add-listener js/document on-f)
         (add-listener js/document on-shift-a)
         (add-listener js/document on-shift-d)
 
@@ -364,6 +372,7 @@
           (remove-listener js/document on-s)
           (remove-listener js/document on-d)
           (remove-listener js/document on-l)
+          (remove-listener js/document on-f)
           (remove-listener js/document on-shift-a)
           (remove-listener js/document on-shift-d)))
       #js [zloc])))
@@ -387,6 +396,7 @@
           (check-key e "a")
           (check-key e "s")
           (check-key e "d")
-          (check-key e "l"))
+          (check-key e "l")
+          (check-key e "f"))
     (.stopPropagation e)))
 

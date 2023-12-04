@@ -260,11 +260,12 @@
      [forms-container (rewrite/get-forms-from-file zloc) ns-name file-path]]))
 
 (defn parenoia-icon []
-  (let [[open? set-open?] (react/useState false)]
+  (let [[open? set-open?] (react/useState false)
+        menu? (subscribe [:db/get [:parenoia :menu?]])]
     [:div
      {:on-mouse-enter #(set-open? true)
       :on-mouse-leave #(set-open? false)
-      :on-click #(dispatch [:db/set [:parenoia :menu?] (not @(subscribe [:db/get [:parenoia :menu?]]))])}
+      :on-click #(dispatch [:db/set [:parenoia :menu?] (not @menu?)])}
      [:i {:style {:font-size "22px"
                   :cursor :pointer}
           :class (if open?
@@ -297,6 +298,9 @@
 
 (defn global-search []
   (let [ref (react/useRef)
+        global-search? (subscribe [:db/get [:parenoia :global-search?]])
+        toggle-global-search-fn (fn [] (dispatch [:db/set [:parenoia :global-search?]
+                                                          (not @global-search?)]))
         [term set-term] (react/useState "")
         [timeout? set-timeout?] (react/useState nil)
         results (or @(subscribe [:db/get [:parenoia :search-results]]) [])]
@@ -307,9 +311,10 @@
           (fn []
             (keyboard/remove-listener current-ref keyboard/block-some-keyboard-events))))
       #js [])
+    
     [:div {:ref ref
            :style {:padding "5px 10px"
-                   :display :flex
+                   :display (if @global-search? :flex :none)
                    :position :fixed
                    :right 0
                    :top 50

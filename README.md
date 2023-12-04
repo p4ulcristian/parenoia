@@ -34,7 +34,8 @@ clj -X:dev
 |`Tab` | wrap with ()|
 |`Shift+Tab` | unwrap|
 |`m` | menu|
-|`l` | Go to definition|
+|`f` | global search|
+|`l` | go to definition|
 |`g` | namespace-graph|
 |`;` | if editing token, when typing ";" autocomplete to all function names in project (also reg-event-db if you are a re-frame fan like me)|
 |`Esc` | Close menu or finish editing token / s-expression|
