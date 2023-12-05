@@ -3,6 +3,8 @@
             [parenoia.utils :as utils]
             [re-frame.core :refer [dispatch subscribe]]
             [rewrite-clj.paredit :as paredit]
+            [rewrite-clj.parser :as zparser]
+            [rewrite-clj.node :as node]
             [rewrite-clj.zip :as z]))
 
 (defn has-position? [zloc]
@@ -159,7 +161,8 @@
   (fn [^js event]
     (when (and (check-key event " ") (not  (.-shiftKey event)))
       (.preventDefault event)
-      (modify-file (z/right (z/insert-right zloc 'x))))))
+          
+      (modify-file (z/insert-left zloc (node/comment-node ";hello there \n"))))))
 
 (defn on-shift-space-fn [zloc]
   (fn [^js event]
