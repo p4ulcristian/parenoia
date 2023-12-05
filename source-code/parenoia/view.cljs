@@ -213,17 +213,6 @@
 
 
 
-(defn block-re-render [component block?]
-  (if block?
-    [:div.block-re-render
-     (if block?
-       {:dangerouslySetInnerHTML
-        {:__html (reagent.dom.server/render-to-static-markup
-                   component)}})]
-    component))
-
-
-
 (defn is-in-position-span? [zloc]
   (let [selected-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
         position-span  (has-position-span? zloc)
@@ -240,6 +229,7 @@
         [zloc-at-index set-zloc-at-index] (react/useState nil)
         in-position-span? (is-in-position-span? zloc)]
     (react/useEffect (fn []
+                       (println "Changing zloc context")
                        (set-zloc-at-index zloc)
                        (fn []))
       #js [in-position-span? (z/string zloc)])
