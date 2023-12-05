@@ -7,7 +7,7 @@
 
 #### Unjustified fear of parens.
 
-Edit your code through S-expressions. Dealing with text can be tedious, a lot of spaces, tabs, backspaces, just so your code looks better.
+Edit your code through S-expressions. Don't deal with code formatting.
 
 ## Straight to the point?
 
@@ -46,7 +46,7 @@ This editor is a tribute to Clojure/Script. A beautiful language deserves a beau
 
 ## Why? but longer
 
-1. Hate. I hate editing in a text editor. I have to imagine the structure in my head, also have to count parens when I want to cut out a block. Parinfer doesn't work well in all cases in VSCode. Paredit is not enough for me. 
+1. I'd like to try something else than a text editor.
 
 2. Jealousy. Every profession has beautiful tools like AutoCad, Unreal Engine, Final Cut Pro, Figma ... All beautiful and practical apps.
 
@@ -82,7 +82,7 @@ And I decided that I'll make one of my dreams true, making programming visually 
 1. Connection to REPL somehow, ideally both Clojure and ClojureScript.
 2. After REPL possibility to eval code like in calva.
 3. (Plan for me) Make a webapp not compiled, but running REPL on the server and update only code. Only send new code to server, maybe skip Docker 🤞
-4. Move-form. Seriously, how longer do we want to refactor by hand? Wake up, Clojure needs this (or just me, I am a lazy coder).
+4. Move-form. I don't want to manually refactor. I need this frequently.
     - reference: https://github.com/clojure-lsp/clojure-lsp/issues/566
     - How I imagine it: 
       1. (user) Click rename

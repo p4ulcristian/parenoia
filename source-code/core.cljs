@@ -10,4 +10,5 @@
 
 (def root  (.getElementById js/document "app"))
 
+
 (defn start! [] (reagent-dom/render [parenoia/view] root ))

@@ -6,7 +6,8 @@
    [parenoia.rewrite :as rewrite]
    [parenoia.undo :refer [undoable]]
    [re-frame.core :refer [reg-event-db dispatch reg-sub]]
-   [rewrite-clj.zip :as z]))
+   [rewrite-clj.zip :as z]
+   [accountant.core :as accountant]))
 
 (reg-event-db
   :db/set
@@ -155,11 +156,34 @@
     (get-project-structure)
     db))
 
+(defn replace-slashes [input-str]
+  (clojure.string/replace input-str #"/" "\\")) ; Replace forward slashes with backward slashes
+
+(defn replace-backward-slashes [input-str]
+  (clojure.string/replace input-str #"\\\\" "/")) ; Replace backward slashes with forward slashes
+
+
+
+(defn navigate-to-link [path pos]
+  (let [encoded-path (js/window.encodeURIComponent path)
+        encoded-pos  (js/window.encodeURI (str pos))
+        new-url (str "/navigation/" encoded-path "/" encoded-pos)]
+   (accountant/navigate! new-url)))  
+
+
 (reg-event-db
   :parenoia/go-to!
   []
   (fn [db [_ path pos]]
+    (when (and path pos)
+     (navigate-to-link path pos))
+    db))
+    
 
+(reg-event-db
+  :parenoia/navigate-to!
+  []
+  (fn [db [_ path pos]]
     (let [file-zloc (get-in db [:parenoia :project path])
           selected-zloc (z/find-last-by-pos file-zloc pos)]
       (.setTimeout js/window #(dispatch [:db/set [:parenoia :selected-zloc]  selected-zloc])

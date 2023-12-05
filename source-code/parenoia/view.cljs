@@ -18,7 +18,8 @@
    [re-frame.core :refer [dispatch subscribe]]
    [reagent.core :refer [atom] :as reagent]
    [reagent.dom.server :as reagent.dom.server]
-   [rewrite-clj.zip :as z]))
+   [rewrite-clj.zip :as z]
+   [routes :as routes]))
 
 
 
@@ -400,7 +401,11 @@
 
 
 (defn view []
-
+  (react/useEffect 
+    (fn []
+      (routes/add-routing!)
+      (fn []))
+    #js [])
   [:div {:class "parenoia-background"
          :style {:color "#EEE"
                  :height "100vh"

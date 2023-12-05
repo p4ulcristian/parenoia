@@ -89,7 +89,8 @@
        ["/file"  {:post {:handler  (fn [req]
                                      (reset! db* {})
                                      (string-wrap (load-files/save-file (:params req))))}}]
-       ["/files" {:get  {:handler  (fn [req]  (string-wrap (str (load-files/project-structure))))}}]])
+       ["/files" {:get  {:handler  (fn [req]  (string-wrap (str (load-files/project-structure))))}}]
+       ["/navigation/:path/:position"           {:get  {:handler  (fn [req]  (html-wrap (html/page)))}}]])
 
     (reitit-ring/routes
       (reitit-ring/create-resource-handler
