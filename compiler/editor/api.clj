@@ -1,6 +1,5 @@
 (ns editor.api
-  (:require [clojure-lsp.internal-api :as internal-api]
-            [clojure-lsp.internal-api :as internal-api :refer [db*]]
+  (:require [clojure-lsp.internal-api :as internal-api :refer [db*]]
             [clojure.tools.namespace.repl :as tn]
             [editor.config :as config]
             [editor.html :as html]

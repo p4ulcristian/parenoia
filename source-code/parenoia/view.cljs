@@ -11,7 +11,6 @@
    [parenoia.menu :as menu]
    [parenoia.namespace-graph :as namespace-graph]
    [parenoia.overlays :as overlays]
-   [parenoia.refactor-ui :as refactor-ui]
    [parenoia.rewrite :as rewrite]
    [parenoia.style :as style]
    [parenoia.textarea :as textarea]
@@ -21,6 +20,8 @@
    [reagent.dom.server :as reagent.dom.server]
    [rewrite-clj.zip :as z]))
 
+
+
 (defn load-effect []
   (react/useEffect
     (fn []
@@ -28,18 +29,26 @@
       (fn []))
     #js []))
 
+
+
 (defn has-position? [zloc]
   (try (z/position zloc)
     (catch js/Error e false)))
+
+
 
 (defn has-position-span? [zloc]
   (try (z/position-span zloc)
     (catch js/Error e false)))
 
+
+
 (defn split-namespace [namespace]
   (clojure.string/join
     " || "
     (clojure.string/split  namespace #"\.")))
+
+
 
 (defn new-line-before-last? [zloc]
   (if (= :newline (z/tag zloc))
@@ -48,7 +57,11 @@
       (new-line-before-last? (z/left* zloc))
       false)))
 
+
+
 (def timeout (atom nil))
+
+
 
 (defn get-info-about-zloc [zloc]
   (do
@@ -57,6 +70,8 @@
     (dispatch [:parenoia/get-kondo-lints zloc])
     (dispatch [:parenoia/get-definition zloc])
     (dispatch [:parenoia/get-references zloc])))
+
+
 
 (defn form-interpreter-effect [zloc selected? ref timeout set-timeout]
   (react/useEffect
@@ -80,6 +95,8 @@
             (set-timeout nil))))
       (fn []))
     #js [selected?]))
+
+
 
 (defn form-interpreter-inner [zloc selected? editable? form-interpreter]
   (let [ref (react/useRef)
@@ -145,11 +162,15 @@
         [overlays/overlay-wrapper
          ref [textarea/view zloc]])]]))
 
+
+
 (defn form-interpreter [zloc]
   (let [selected? (subscribe [:parenoia/selected? zloc])
         editable?     (subscribe [:parenoia/editable? zloc])]
     [form-interpreter-inner zloc @selected? @editable?
      form-interpreter]))
+
+
 
 (defn sticky-function-header [zloc index ns-name]
   [:div {:style {:position :sticky
@@ -189,6 +210,8 @@
                    :text-align :right}}
      ns-name]]])
 
+
+
 (defn block-re-render [component block?]
   (if block?
     [:div.block-re-render
@@ -198,6 +221,8 @@
                    component)}})]
     component))
 
+
+
 (defn is-in-position-span? [zloc]
   (let [selected-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
         position-span  (has-position-span? zloc)
@@ -206,6 +231,8 @@
       (let [[[start-x start-y] [end-x end-y]] position-span
             [x y] position]
         (and (<= start-x x end-x) (<= start-y y end-y))))))
+
+
 
 (defn form-container [zloc index ns-name file-path]
   (let [[hovered? set-hovered?] (react/useState false)
@@ -237,6 +264,8 @@
             [form-interpreter (if in-position-span?
                                 zloc
                                 zloc-at-index)]]]]]))))
+
+
            ;(not (in-position-span? form-position-span selection-position))]]]])))
 
 (defn forms-container [forms ns-name file-path]
@@ -249,6 +278,8 @@
            :on-click (fn [e] (.stopPropagation e))}
      (map-indexed render-fn forms)]))
 
+
+
 (defn one-namespace [file-path zloc]
   (let [[clicked? set-clicked?] (react/useState true)
         style {:font-size "16px"
@@ -259,6 +290,8 @@
         ns-name (rewrite/get-namespace-from-file zloc)]
     [:div {:style style}
      [forms-container (rewrite/get-forms-from-file zloc) ns-name file-path]]))
+
+
 
 (defn parenoia-icon []
   (let [[open? set-open?] (react/useState false)
@@ -272,6 +305,8 @@
           :class (if open?
                    "fa-solid fa-circle"
                    "fa-regular fa-circle")}]]))
+
+
 
 ;[:pre (:content result)]])
 
@@ -303,6 +338,8 @@
       [parenoia-icon]
       [:div [:span "ia"]]]]))
 
+
+
 (defn pins []
   (let [pins-data @(subscribe [:db/get [:parenoia :pins]])]
     [:div
@@ -332,9 +369,13 @@
 
        pins-data)]))
 
+
+
 (defn placeholder-div []
   [:div {:style {:height "100vh"
                  :background "linear-gradient(180deg, rgba(51,51,51,1) 21%, rgba(42,42,42,1) 44%, rgba(68,68,68,1) 66%, rgba(0,0,0,1) 91%)"}}])
+
+
 
 (defn namespace-container []
   (let [ref (react/useRef)
@@ -355,6 +396,8 @@
      ^{:key (str selected-file-path)}
      [one-namespace selected-file-path selected-file]
      [placeholder-div]]))
+
+
 
 (defn view []
 

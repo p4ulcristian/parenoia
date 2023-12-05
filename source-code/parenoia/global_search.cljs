@@ -91,34 +91,35 @@
 
 
 
-(defn search-view-style [global-search?] 
- {:padding "5px 10px"
-  :display (if global-search? :flex :none)
-  :position :fixed
-  :left "50%"
-  :top 50
-  :transform "translateX(-50%)"
-  :z-index 1000
-  :flex-direction :column
-  :justify-content :center
-  :align-items :flex-end})
+(defn search-view-style [global-search?]
+  {:padding "5px 10px"
+   :display (if global-search? :flex :none)
+   :position :fixed
+   :left "50%"
+   :top 50
+   :transform "translateX(-50%)"
+   :z-index 1000
+   :flex-direction :column
+   :justify-content :center
+   :align-items :flex-end})
+
+
 
 (defn view []
-   (let [ref (react/useRef)
-         global-search? (subscribe [:db/get [:parenoia :global-search?]])
-         [term set-term] (react/useState "")
-         [timeout? set-timeout?] (react/useState nil)
-         results (or @(subscribe [:db/get [:parenoia :search-results]]) [])]
-     (react/useEffect
-       (fn []
-         (let [current-ref (.-current ref)]
-           (keyboard/add-listener current-ref keyboard/block-some-keyboard-events)
-           (fn []
-             (keyboard/remove-listener current-ref keyboard/block-some-keyboard-events))))
-       #js [])
-     (autofocus-effect global-search? ref)
+  (let [ref (react/useRef)
+        global-search? (subscribe [:db/get [:parenoia :global-search?]])
+        [term set-term] (react/useState "")
+        [timeout? set-timeout?] (react/useState nil)
+        results (or @(subscribe [:db/get [:parenoia :search-results]]) [])]
+    (react/useEffect
+      (fn []
+        (let [current-ref (.-current ref)]
+          (keyboard/add-listener current-ref keyboard/block-some-keyboard-events)
+          (fn []
+            (keyboard/remove-listener current-ref keyboard/block-some-keyboard-events))))
+      #js [])
+    (autofocus-effect @global-search? ref)
 
-     [:div {:style (search-view-style @global-search?)}
-
-      [search-input ref set-term term set-timeout? timeout?]
-      [result-iterator results]]))
+    [:div {:style (search-view-style @global-search?)}
+     [search-input ref set-term term set-timeout? timeout?]
+     [result-iterator results]]))
