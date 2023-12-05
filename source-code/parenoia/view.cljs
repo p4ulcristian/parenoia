@@ -120,10 +120,10 @@
        :on-click (fn [e]
                    (.stopPropagation e)
                    (dispatch [:db/set [:parenoia :editable?] false])
-                   (js/window.setTimeout
-                     (fn [] (dispatch [:parenoia/go-to! file-path this-pos]))
-                     50))}
+                   (dispatch [:parenoia/go-to! file-path this-pos]))}
+                     
       (when-not selected? [lint/view this-pos zloc ref])
+      
       (cond
         (form-conditionals/is-ns? zloc)
         [form-interpreters/ns-interpreter zloc form-interpreter selected?]

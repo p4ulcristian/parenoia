@@ -156,12 +156,6 @@
     (get-project-structure)
     db))
 
-(defn replace-slashes [input-str]
-  (clojure.string/replace input-str #"/" "\\")) ; Replace forward slashes with backward slashes
-
-(defn replace-backward-slashes [input-str]
-  (clojure.string/replace input-str #"\\\\" "/")) ; Replace backward slashes with forward slashes
-
 
 
 (defn navigate-to-link [path pos]
@@ -186,9 +180,8 @@
   (fn [db [_ path pos]]
     (let [file-zloc (get-in db [:parenoia :project path])
           selected-zloc (z/find-last-by-pos file-zloc pos)]
-      (.setTimeout js/window #(dispatch [:db/set [:parenoia :selected-zloc]  selected-zloc])
-        150)
       (-> db
+        (assoc-in [:parenoia :selected-zloc] selected-zloc)
         (assoc-in [:parenoia :selected :file-path] path)
         (assoc-in [:parenoia :editable?] false)))))
 
