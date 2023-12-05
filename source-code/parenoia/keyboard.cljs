@@ -21,8 +21,9 @@
   (= key-to-check (.-key event)))
 
 (defn set-zloc [zloc]
-  (when (has-position? zloc)
-    (dispatch [:db/set [:parenoia :selected-zloc] zloc])))
+  (let [file-path @(subscribe [:db/get [:parenoia :selected :file-path]])]
+   (when (has-position? zloc)
+     (dispatch [:parenoia/go-to! file-path (has-position? zloc)]))))
 
 (defn zloc->file [zloc]
   (z/of-node

@@ -99,7 +99,7 @@
 
 
 
-(defn form-interpreter-inner [zloc selected? editable? form-interpreter]
+(defn form-interpreter-inner [zloc selected? editable? file-path form-interpreter]
   (let [ref (react/useRef)
         this-pos     (has-position? zloc)
         [timeout set-timeout] (react/useState)]
@@ -121,7 +121,7 @@
                    (.stopPropagation e)
                    (dispatch [:db/set [:parenoia :editable?] false])
                    (js/window.setTimeout
-                     (fn [] (dispatch [:db/set [:parenoia :selected-zloc] zloc]))
+                     (fn [] (dispatch [:parenoia/go-to! file-path this-pos]))
                      50))}
       (when-not selected? [lint/view this-pos zloc ref])
       (cond
@@ -167,8 +167,9 @@
 
 (defn form-interpreter [zloc]
   (let [selected? (subscribe [:parenoia/selected? zloc])
-        editable?     (subscribe [:parenoia/editable? zloc])]
-    [form-interpreter-inner zloc @selected? @editable?
+        editable?     (subscribe [:parenoia/editable? zloc])
+        file-path   (subscribe [:db/get [:parenoia :selected :file-path]])]
+    [form-interpreter-inner zloc @selected? @editable? @file-path
      form-interpreter]))
 
 
