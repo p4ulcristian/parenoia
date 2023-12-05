@@ -97,7 +97,28 @@
       (fn []))
     #js [selected?]))
 
+(defn gather-comments-before-zloc
+  ([zloc] 
+   (gather-comments-before-zloc zloc []))
+  ([zloc comments]
+   (if (z/whitespace-or-comment? (z/left* zloc))
+       (gather-comments-before-zloc 
+         (z/left* zloc) (if 
+                         (z/whitespace? (z/left* zloc))
+                         comments
+                         (vec (conj comments (z/string (z/left* zloc))))))
+       comments)))
 
+(defn comment-zloc [zloc]
+ (let [comment-str (apply str (gather-comments-before-zloc zloc))
+       comment-str? (not= "" comment-str)]
+   (if comment-str?
+    [:div 
+      {:style {
+               :background :grey 
+               :color :white 
+               :padding "10px"}}
+      comment-str])))
 
 (defn form-interpreter-inner [zloc selected? editable? file-path form-interpreter]
   (let [ref (react/useRef)
@@ -122,6 +143,9 @@
                    (dispatch [:db/set [:parenoia :editable?] false])
                    (dispatch [:parenoia/go-to! file-path this-pos]))}
                      
+      ;; [overlays/overlay-wrapper
+      ;;    ref 
+      ;;    [comment-zloc zloc]]
       (when-not selected? [lint/view this-pos zloc ref])
       
       (cond
