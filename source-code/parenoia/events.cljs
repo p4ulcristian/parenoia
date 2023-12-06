@@ -102,22 +102,20 @@
 
 (reg-sub
   :parenoia/selected?
-  (fn [db [_ zloc]]
-    (selected-zloc? zloc
-      (get-in db [:parenoia :selected-zloc]))))
+  (fn [db [_ pos]]
+    (= pos (get-in db [:parenoia :selected-pos]))))
 
 (reg-sub
   :parenoia/selected-position
   (fn [db [_ zloc]]
-    (has-position? (get-in db [:parenoia :selected-zloc]))))
+    (get-in db [:parenoia :selected-pos])))
 
 (reg-sub
   :parenoia/editable?
-  (fn [db [_ zloc]]
+  (fn [db [_ pos]]
     (and
       (get-in db [:parenoia :editable?])
-      (selected-zloc? zloc
-        (get-in db [:parenoia :selected-zloc])))))
+      (= pos (get-in db [:parenoia :selected-pos])))))
 
 (reg-event-db
   :db/merge
@@ -178,10 +176,11 @@
   :parenoia/navigate-to!
   []
   (fn [db [_ path pos]]
-    (let [file-zloc (get-in db [:parenoia :project path])
-          selected-zloc (z/find-last-by-pos file-zloc pos)]
+    (let [file-zloc (get-in db [:parenoia :project path])]
+          ;selected-zloc (z/find-depth-first file-zloc (fn [a] (= pos (has-position? a))))]
+      (println "Is this slow?")
       (-> db
-        (assoc-in [:parenoia :selected-zloc] selected-zloc)
+        (assoc-in [:parenoia :selected-pos] pos)
         (assoc-in [:parenoia :selected :file-path] path)
         (assoc-in [:parenoia :editable?] false)))))
 
@@ -257,7 +256,7 @@
     (let [file-name (-> db :parenoia :selected :file-path)]
       (-> db
         (assoc-in [:parenoia :project file-name] file)
-        (assoc-in [:parenoia :selected-zloc] zloc)))))
+        (assoc-in [:parenoia :selected-pos] (has-position? zloc))))))
 
 (defn uri->path [uri]
   (apply str (drop 7 uri)))

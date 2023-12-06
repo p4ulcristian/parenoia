@@ -125,6 +125,7 @@
         this-pos     (has-position? zloc)
         [timeout set-timeout] (react/useState)]
     (form-interpreter-effect zloc selected? ref timeout set-timeout)
+    (keyboard/effect selected? zloc)
     ^{:key (z/string zloc)}
     [:div {:style {:display :flex
                    :justify-content :flex-start
@@ -146,6 +147,7 @@
       ;; [overlays/overlay-wrapper
       ;;    ref 
       ;;    [comment-zloc zloc]]
+      ;[:div (str (rand-nth (range 1000)))]
       (when-not selected? [lint/view this-pos zloc ref])
       
       (cond
@@ -190,8 +192,8 @@
 
 
 (defn form-interpreter [zloc]
-  (let [selected? (subscribe [:parenoia/selected? zloc])
-        editable?     (subscribe [:parenoia/editable? zloc])
+  (let [selected? (subscribe [:parenoia/selected? (has-position? zloc)])
+        editable?     (subscribe [:parenoia/editable? (has-position? zloc)])
         file-path   (subscribe [:db/get [:parenoia :selected :file-path]])]
     [form-interpreter-inner zloc @selected? @editable? @file-path
      form-interpreter]))
@@ -239,9 +241,8 @@
 
 
 (defn is-in-position-span? [zloc]
-  (let [selected-zloc @(subscribe [:db/get [:parenoia :selected-zloc]])
-        position-span  (has-position-span? zloc)
-        position (has-position? selected-zloc)]
+  (let [position-span  (has-position-span? zloc)
+        position @(subscribe [:db/get [:parenoia :selected-pos]])]
     (when (and position position-span)
       (let [[[start-x start-y] [end-x end-y]] position-span
             [x y] position]
@@ -399,7 +400,6 @@
         selected-file-path @(subscribe [:db/get [:parenoia :selected :file-path]])
         selected-file @(subscribe [:db/get [:parenoia :project selected-file-path]])]
     (load-effect)
-    (keyboard/effect @current-zloc)
     [:div {:ref ref
            :id "parenoia-body"
            :style {:height "100vh"
@@ -413,14 +413,9 @@
      [one-namespace selected-file-path selected-file]
      [placeholder-div]]))
 
-
+(routes/add-routing!)
 
 (defn view []
-  (react/useEffect 
-    (fn []
-      (routes/add-routing!)
-      (fn []))
-    #js [])
   [:div {:class "parenoia-background"
          :style {:color "#EEE"
                  :height "100vh"
