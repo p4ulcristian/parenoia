@@ -175,15 +175,16 @@
 
 
 (defn rename-symbol [path position new-name]
- (let [[row col] position]
+ (let [[row col] position
+       rename-positions (lsp-rename/rename-from-position 
+                          (path->uri path) 
+                          new-name
+                          row 
+                          col 
+                          @db*)]
+  
   (str 
-   (load-files/edit-files
-        (lsp-rename/rename-from-position 
-         (path->uri path) 
-         new-name 
-         row 
-         col 
-         @db*))
+   (load-files/edit-files rename-positions)
    (reset! db* {}))))   
 
 

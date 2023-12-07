@@ -120,7 +120,7 @@
                :padding "10px"}}
       comment-str])))
 
-(defn form-interpreter-inner [zloc selected? editable? file-path form-interpreter]
+(defn form-interpreter-inner [zloc in-position-span? selected? editable? file-path form-interpreter]
   (let [ref (react/useRef)
         this-pos     (has-position? zloc)
         [timeout set-timeout] (react/useState)]
@@ -184,18 +184,27 @@
         ;; (form-conditionals/is-function? zloc)
         ;; [form-interpreters/form-interpreter-iterator (z/down zloc) form-interpreter :horizontal]
         :else [token/view zloc selected?])
-      (if (and selected? editable?)
+      (if (and selected? editable? in-position-span?)
 
         [overlays/overlay-wrapper
          ref [textarea/view zloc]])]]))
 
 
+(defn is-in-position-span? [zloc]
+  (let [position-span  (has-position-span? zloc)
+        position @(subscribe [:db/get [:parenoia :selected-pos]])]
+    (when (and position position-span)
+      (let [[[start-x start-y] [end-x end-y]] position-span
+            [x y] position]
+        (and (<= start-x x end-x) (<= start-y y end-y))))))
+
 
 (defn form-interpreter [zloc]
   (let [selected? (subscribe [:parenoia/selected? (has-position? zloc)])
         editable?     (subscribe [:parenoia/editable? (has-position? zloc)])
-        file-path   (subscribe [:db/get [:parenoia :selected :file-path]])]
-    [form-interpreter-inner zloc @selected? @editable? @file-path
+        file-path   (subscribe [:db/get [:parenoia :selected :file-path]])
+        in-position-span? (is-in-position-span? zloc)]
+    [form-interpreter-inner zloc in-position-span? @selected? @editable? @file-path
      form-interpreter]))
 
 
@@ -240,25 +249,22 @@
 
 
 
-(defn is-in-position-span? [zloc]
-  (let [position-span  (has-position-span? zloc)
-        position @(subscribe [:db/get [:parenoia :selected-pos]])]
-    (when (and position position-span)
-      (let [[[start-x start-y] [end-x end-y]] position-span
-            [x y] position]
-        (and (<= start-x x end-x) (<= start-y y end-y))))))
 
 
 
 (defn form-container [zloc index ns-name file-path]
   (let [[hovered? set-hovered?] (react/useState false)
-        [zloc-at-index set-zloc-at-index] (react/useState nil)
-        in-position-span? (is-in-position-span? zloc)]
+        [zloc-at-index set-zloc-at-index] (react/useState zloc)
+        [last-index set-last-index] (react/useState index)]
     (react/useEffect (fn []
-                       (println "Changing zloc context")
-                       (set-zloc-at-index zloc)
+                      ;;  (when (or (not= last-index index)
+                      ;;            (not= (z/string zloc) (z/string zloc-at-index))
+                      ;;            (is-in-position-span? zloc))
+                        (println "did position changed?" last-index index)
+                        (set-last-index index)
+                        (set-zloc-at-index zloc)
                        (fn []))
-      #js [in-position-span? (z/string zloc)])
+      #js [zloc index (z/string zloc)])
     (if zloc-at-index
       (let [form-position-span (z/position-span zloc)
             selection-position (has-position? @(subscribe [:db/get [:parenoia :selected-zloc]]))]
@@ -278,9 +284,9 @@
 
                           :flex-wrap :wrap
                           :margin-top 10}}
-            [form-interpreter (if in-position-span?
-                                zloc
-                                zloc-at-index)]]]]]))))
+            ;(str in-position-span?)
+         
+            [form-interpreter zloc-at-index]]]]]))))
 
 
            ;(not (in-position-span? form-position-span selection-position))]]]])))
@@ -290,7 +296,7 @@
                :flex-direction :column
                :gap "20px"}
 
-        render-fn (fn [index form] ^{:key index} [form-container form index ns-name file-path])]
+        render-fn (fn [index form] ^{:key (str index (z/string form))} [form-container form index ns-name file-path])]
     [:div {:style style
            :on-click (fn [e] (.stopPropagation e))}
      (map-indexed render-fn forms)]))

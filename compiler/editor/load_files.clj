@@ -85,7 +85,6 @@
 (defn get-split-text-at-ranges [file positions]
   (let [changed-strings (reduce 
                          (fn [{:keys [result last-index]} [pos-start pos-end edit-text]]
-                            (println "heheee" (subs file last-index pos-start))
                             {:last-index pos-end
                              :result (vec (conj result 
                                            (subs file last-index pos-start)
@@ -137,7 +136,8 @@
 
 (defn edit-files [edits]
  (let [changes (:document-changes edits)]
-    
+     (println "Renaming")
+     (println changes)
      (doseq [change changes] 
          (edit-file change))))
 
