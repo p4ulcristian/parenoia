@@ -175,7 +175,7 @@
          [references-and-definition @the-definition @the-references]])]
      open?]))
 
-(defn rename-overlay [ref]
+(defn rename-overlay [ref token-string]
   (let [the-definition     (subscribe [:db/get [:parenoia :definition]])
         the-references     (subscribe [:db/get [:parenoia :references]])
         no-findings? (and (not (:uri the-definition)) (empty? @the-references))]
@@ -190,7 +190,7 @@
                     :position :absolute
                     :left 0
                     :top 0}}
-      [:div {:on-click (fn [a] (dispatch [:parenoia/rename! (.prompt js/window "Rename variable" "new-fn-name")]))
+      [:div {:on-click (fn [a] (dispatch [:parenoia/rename! (.prompt js/window "Rename variable" token-string)]))
              :style {:display :flex
                       :justify-content :center
                       :align-items :center
@@ -233,7 +233,7 @@
                                  unused-binding?   (style/color [:unused-binding :background-color])
                                  :else token-color)}}
      (when selected? [references-overlay ref])
-     (when selected? [rename-overlay ref])
+     (when selected? [rename-overlay ref token-string])
      [:div token-string]]))
 
 
