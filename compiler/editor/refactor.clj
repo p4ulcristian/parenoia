@@ -12,6 +12,7 @@
             [clojure.java.io :as io]
             [editor.config :as config]
             [editor.utils :as utils]
+            [editor.load-files :as load-files]
             [rewrite-clj.zip :as z]))
 
 (defn get-zloc [{:keys [file-path position]}]
@@ -171,15 +172,20 @@
                :from  from})
              the-defs)))))        
 
+
+
 (defn rename-symbol [path position new-name]
  (let [[row col] position]
-  (println "Miert nem: " new-name row col)
-  (str (lsp-rename/rename-from-position 
-        (path->uri path) 
-        new-name 
-        row 
-        col 
-        @db*))))
+  (str 
+   (load-files/edit-files
+        (lsp-rename/rename-from-position 
+         (path->uri path) 
+         new-name 
+         row 
+         col 
+         @db*))
+   (reset! db* {}))))   
+
 
 
 (defn get-definition [path position]
