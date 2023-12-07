@@ -175,7 +175,35 @@
          [references-and-definition @the-definition @the-references]])]
      open?]))
 
+(defn rename-overlay [ref]
+  (let [the-definition     (subscribe [:db/get [:parenoia :definition]])
+        the-references     (subscribe [:db/get [:parenoia :references]])
+        no-findings? (and (not (:uri the-definition)) (empty? @the-references))]
 
+    [overlays/overlay-wrapper
+     ref
+     [:div {:style {:pointer-events :auto
+                    :height 0
+                    :width 0
+                    :transform "translate( -15px, -45px)"
+                    :border-radius "50%"
+                    :position :absolute
+                    :left 0
+                    :top 0}}
+      [:div {:on-click (fn [a] (dispatch [:parenoia/rename! (.prompt js/window "Rename variable" "new-fn-name")]))
+             :style {:display :flex
+                      :justify-content :center
+                      :align-items :center
+                      :height 30
+                      :width 30
+                      :border "1px solid white"
+                      :border-radius "50%"
+                      :background "#333"
+                      :color "lightblue"
+                      :transform "scale(0.75)"}}
+         [:i {:style {:font-size "16px"}
+              :class "fa-solid fa-code-compare"}]]]]))
+     
 
 (defn token-inner [selected? same-as-selected? unused-binding? token-color token-text-color first-in-list? token-string]
   (let [ref (react/useRef)]
@@ -205,6 +233,7 @@
                                  unused-binding?   (style/color [:unused-binding :background-color])
                                  :else token-color)}}
      (when selected? [references-overlay ref])
+     (when selected? [rename-overlay ref])
      [:div token-string]]))
 
 

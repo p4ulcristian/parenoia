@@ -73,10 +73,11 @@
                                             (refactor/get-form-details
                                               file-path position))))}}]
        ["/rename" {:post {:handler (fn [req]
-                                     (let [body (:params req)
-                                           {:keys [from to]} body]
+                                      (let [body (:params req)
+                                            {:keys [file-path position new-name]} body]
+                                       (println "NO: " file-path position new-name)
                                        (string-wrap
-                                         (refactor/rename from to))))}}]
+                                         (refactor/rename-symbol file-path position new-name))))}}]
        ["/set-project-path" {:post {:handler (fn [req]
                                                (reset! db* {})
                                                (let [body (:params req)

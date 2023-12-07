@@ -8,6 +8,7 @@
             [clojure-lsp.internal-api :as internal-api :refer [db*]]
             [clojure-lsp.queries :as lsp-queries]
             [clojure-lsp.refactor.edit :as lsp-edit]
+            [clojure-lsp.feature.rename :as lsp-rename]
             [clojure.java.io :as io]
             [editor.config :as config]
             [editor.utils :as utils]
@@ -170,6 +171,17 @@
                :from  from})
              the-defs)))))        
 
+(defn rename-symbol [path position new-name]
+ (let [[row col] position]
+  (println "Miert nem: " new-name row col)
+  (str (lsp-rename/rename-from-position 
+        (path->uri path) 
+        new-name 
+        row 
+        col 
+        @db*))))
+
+
 (defn get-definition [path position]
   (let [[row col] position]
     (clojure-lsp.api/analyze-project-and-deps! {:project-root (io/file @config/project-path)})
@@ -191,12 +203,6 @@
       col
       @db*)))
 
-(defn rename [from to]
-  (clojure-lsp.api/analyze-project-and-deps! {:project-root (io/file @config/project-path)})
-  (clojure-lsp/rename!
-    {:project-root (io/file @config/project-path)
-     :from (symbol from)
-     :to   (symbol to)}))
 
 
 

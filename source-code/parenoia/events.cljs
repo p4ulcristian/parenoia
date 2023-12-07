@@ -177,8 +177,6 @@
   []
   (fn [db [_ path pos]]
     (let [file-zloc (get-in db [:parenoia :project path])]
-          ;selected-zloc (z/find-depth-first file-zloc (fn [a] (= pos (has-position? a))))]
-      (println "Is this slow?")
       (-> db
         (assoc-in [:parenoia :selected-pos] pos)
         (assoc-in [:parenoia :selected :file-path] path)
@@ -387,7 +385,7 @@
           file      (z/root-string (get-in db [:parenoia :project file-name]))]
       (POST "/get-references"
         {:params {:file-path file-name
-                  :position (let [[r c] (z/position zloc)] [r c])}
+                  :position (z/position zloc)}
          :handler          (fn [e]
                              (dispatch [:db/set [:parenoia :references] (read-string e)]))
          :error-handler    (fn [e] (.log js/console e))}))
@@ -397,12 +395,13 @@
 (reg-event-db
   :parenoia/rename!
   []
-  (fn [db [_ zloc from to]]
-    (let [file-name  (-> db :parenoia :selected :file-path)
-          file-zloc  (get-in db [:parenoia :project file-name])]
+  (fn [db [_ new-name]]
+    (let [file-path  (-> db :parenoia :selected :file-path)
+          file-pos   (-> db :parenoia :selected-pos)]
       (POST "/rename"
-        {:params {:from (str (refactor/get-ns file-zloc) "/" from)
-                  :to   (str (refactor/get-ns file-zloc) "/" to)}
+        {:params {:file-path   file-path
+                  :position    file-pos
+                  :new-name    new-name}
          :handler          (fn [e] (println "Successful " e))
 
          :error-handler    (fn [e] (.log js/console e))}))
@@ -428,6 +427,8 @@
   (fn [db [_]]
     (let [global-search? (-> db :parenoia :global-search?)]
       (assoc-in db [:parenoia :global-search?] (not global-search?)))))
+
+
 (reg-event-db
   :parenoia/remove-pin!
   []
